@@ -152,16 +152,22 @@ suite('Public API', function() {
       assert.equal(mq.text(), '*2*3***4');
     });
 
-    test('.moveToDirEnd(dir)', function() {
-      mq.latex('a x^2 + b x + c = 0');
-      assert.equal(mq.__controller.cursor[L].ctrlSeq, '0');
+    test(".moveToDirEnd(dir)", function () {
+      mq.latex("a x^2 + b x + c = 0");
+      assert.equal(mq.__controller.cursor[L].ctrlSeq, "0");
       assert.equal(mq.__controller.cursor[R], 0);
+      assert.ok(mq.cursorAtRightEnd());
+      assert.ok(!mq.cursorAtLeftEnd());
       mq.moveToLeftEnd();
       assert.equal(mq.__controller.cursor[L], 0);
-      assert.equal(mq.__controller.cursor[R].ctrlSeq, 'a');
+      assert.equal(mq.__controller.cursor[R].ctrlSeq, "a");
+      assert.ok(mq.cursorAtLeftEnd());
+      assert.ok(!mq.cursorAtRightEnd());
       mq.moveToRightEnd();
-      assert.equal(mq.__controller.cursor[L].ctrlSeq, '0');
+      assert.equal(mq.__controller.cursor[L].ctrlSeq, "0");
       assert.equal(mq.__controller.cursor[R], 0);
+      assert.ok(mq.cursorAtRightEnd());
+      assert.ok(!mq.cursorAtLeftEnd());
     });
   });
 
