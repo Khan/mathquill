@@ -156,8 +156,8 @@ suite('Public API', function() {
       mq.latex('a x^2 + b x + c = 0');
       assert.equal(mq.__controller.cursor[L].ctrlSeq, '0');
       assert.equal(mq.__controller.cursor[R], 0);
-      assert.ok(mq.cursorAtRightEnd());
       assert.ok(!mq.cursorAtLeftEnd());
+      assert.ok(mq.cursorAtRightEnd());
       mq.moveToLeftEnd();
       assert.equal(mq.__controller.cursor[L], 0);
       assert.equal(mq.__controller.cursor[R].ctrlSeq, 'a');
@@ -166,8 +166,8 @@ suite('Public API', function() {
       mq.moveToRightEnd();
       assert.equal(mq.__controller.cursor[L].ctrlSeq, '0');
       assert.equal(mq.__controller.cursor[R], 0);
-      assert.ok(mq.cursorAtRightEnd());
       assert.ok(!mq.cursorAtLeftEnd());
+      assert.ok(mq.cursorAtRightEnd());
     });
   });
 
