@@ -149,6 +149,10 @@ var saneKeyboardEvents = (function() {
     }
 
     function handleKey() {
+      // android keyboard keycodes always send `229`
+      //   this allows us to detect we are dealing with an Android keyboard.
+      //   We then add a null character, because that makes it work.
+      //   Why? I have no idea. See: https://github.com/mathquill/mathquill/issues/875
       if (isandroid && keydown.which === 229) {
         androidcompose = true;
         textarea.val('\0');
