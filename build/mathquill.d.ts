@@ -9,7 +9,10 @@ declare namespace MathQuill {
   namespace v3 {
     type HandlersWithDirection = v1.HandlersWithDirection;
     type HandlersWithoutDirection = v1.HandlersWithoutDirection;
-    type HandlerOptions = v1.HandlerOptions<BaseMathQuill>;
+    // The following should probably take a type parameter, but that would require
+    //   a bit of a refactor. Since we only deal with EditableMathQuill, we'll
+    //   just use that for now.
+    type HandlerOptions = v1.HandlerOptions<Partial<EditableMathQuill>>;
     type EmbedOptions = v1.EmbedOptions;
     type EmbedOptionsData = v1.EmbedOptionsData;
 
@@ -33,20 +36,7 @@ declare namespace MathQuill {
       text(): string;
     }
 
-    interface EditableMathQuill {
-      id: number;
-      data: { [key: string]: any };
-      revert: () => HTMLElement;
-      config(opts: Config): EditableMathQuill;
-      latex(latex: string): EditableMathQuill;
-      latex(): string;
-      reflow: () => void;
-      el: () => HTMLElement;
-      getAriaLabel(): string;
-      setAriaLabel(str: string): EditableMathQuill;
-      html: () => string;
-      mathspeak: () => string;
-      text(): string;
+    interface EditableMathQuill extends BaseMathQuill {
       selection(): {
         latex: string;
         startIndex: number;
