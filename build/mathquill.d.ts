@@ -1,3 +1,4 @@
+export = MathQuill;
 declare namespace MathQuill {
   export function getInterface(version: 1): v1.API;
   export function getInterface(version: 2): v1.API;
