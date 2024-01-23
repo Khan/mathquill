@@ -1,6 +1,7 @@
 # Setting Configuration
 
 The configuration options object is of the following form:
+
 ```js
 {
   spaceBehavesLikeTab: true,
@@ -27,8 +28,6 @@ The configuration options object is of the following form:
 You can configure an editable math field by passing an options argument as the second argument to [the constructor (`MQ.MathField(html_element, config)`)](Api_Methods.md#mqmathfieldhtml_element-config), or by [calling `.config()` on the math field (`mathField.config(new_config)`)](Api_Methods.md#confignew_config).
 
 Defaults may be set with [`MQ.config(global_config)`](Api_Methods.md#mqconfigconfig).
-
-
 
 # Configuration Options
 
@@ -90,13 +89,14 @@ Nested content in latex rendered during initialization or pasted into mathquill 
 You can also specify a speech-friendly representation of the operator name by supplying the operator name, a `|` and its speech alternative (separate multiple words with a `-`). For example, `'sin|sine cos|cosine tan|tangent sinh|hyperbolic-sine'`.
 
 ## substituteTextarea
+
 `substituteTextarea` is a function that creates a focusable DOM element that is called when setting up a math field. Overwriting this may be useful for hacks like suppressing built-in virtual keyboards. It defaults to `<textarea autocorrect=off .../>`.
 For example, [Desmos](https://www.desmos.com/calculator) substitutes `<span tabindex=0></span>` on iOS to suppress the built-in virtual keyboard in favor of a custom math keypad that calls the MathQuill API. Unfortunately there's no universal [check for a virtual keyboard](http://stackoverflow.com/q/2593139/362030) or [way to detect a touchscreen](http://www.stucox.com/blog/you-cant-detect-a-touchscreen/), and even if you could, a touchscreen ≠ virtual keyboard (Windows 8 and ChromeOS devices have both physical keyboards and touchscreens and iOS and Android devices can have Bluetooth keyboards). Desmos currently sniffs the user agent for iOS, so Bluetooth keyboards just don't work in Desmos on iOS. The tradeoffs are up to you.
-
 
 # Handlers
 
 Handlers are called after a specified event. They are called directly on the `handlers` object passed in, preserving the `this` value, so you can do stuff like:
+
 ```js
 class MathList {
   constructor () {
@@ -119,17 +119,22 @@ class MathList {
 ```
 
 It's common to just ignore the last argument, like if the handlers close over the math field:
+
 ```js
 var latex = '';
 var mathField = MQ.MathField($('#mathfield')[0], {
   handlers: {
-    edit: function() { latex = mathField.latex(); },
-    enter: function() { submitLatex(latex); }
-  }
+    edit: function () {
+      latex = mathField.latex();
+    },
+    enter: function () {
+      submitLatex(latex);
+    },
+  },
 });
 ```
 
-## *OutOf handlers
+## \*OutOf handlers
 
 `.moveOutOf(direction, mathField)`, `.deleteOutOf(direction, mathField)`, `.selectOutOf(direction, mathField)`, `.upOutOf(mathField)`, `.downOutOf(mathField)`
 
