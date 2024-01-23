@@ -5,12 +5,13 @@ Download [the latest release](https://github.com/mathquill/mathquill/releases/la
 MathQuill depends on [jQuery 1.5.2+](http://jquery.com), we recommend the [Google CDN-hosted copy](http://code.google.com/apis/libraries/devguide.html#jquery).
 
 Load MathQuill with something like (order matters):
+
 ```html
-<link rel="stylesheet" href="/path/to/mathquill.css"/>
+<link rel="stylesheet" href="/path/to/mathquill.css" />
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="/path/to/mathquill.js"></script>
 <script>
-var MQ = MathQuill.getInterface(3);
+  var MQ = MathQuill.getInterface(3);
 </script>
 ```
 
@@ -23,6 +24,7 @@ MathQuill instances are created from HTML elements. For the full list of constru
 ## Static Math Rendering
 
 To statically render a formula, call [`MQ.StaticMath()`](Api_Methods.md#mqstaticmathhtml_element) on an HTML element:
+
 ```html
 <p>Solve <span id="problem">ax^2 + bx + c = 0</span>.</p>
 
@@ -35,6 +37,7 @@ To statically render a formula, call [`MQ.StaticMath()`](Api_Methods.md#mqstatic
 ## Editable Math Fields
 
 To create an editable math field, call [`MQ.MathField()`](Api_Methods.md#mqmathfieldhtml_element-config) on an HTML element and, optionally, a [config options object](Config.md). The following example features a math field with a handler to check the answer every time an edit may have occurred:
+
 ```html
 <p><span id="answer">x=</span></p>
 
@@ -42,11 +45,11 @@ To create an editable math field, call [`MQ.MathField()`](Api_Methods.md#mqmathf
   var answerSpan = document.getElementById('answer');
   var answerMathField = MQ.MathField(answerSpan, {
     handlers: {
-      edit: function() {
+      edit: function () {
         var enteredMath = answerMathField.latex(); // Get entered math in LaTeX format
         checkAnswer(enteredMath);
-      }
-    }
+      },
+    },
   });
 </script>
 ```

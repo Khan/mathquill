@@ -3,24 +3,27 @@
 The major change in this interface version is the removal of MathQuill's dependency on JQuery.
 
 **breaking changes:**
+
 - `.revert()` now returns an HTML element rather than a JQuery collection
 - The (undocumented) `substituteKeyboardEvents` configuration option is no longer supported
 - The (undocumented) `overrideKeystroke` configuration option now receives a native `KeyboardEvent` as its second parameter (it previously received a JQuery event).
-- In previous interface versions, `MQ.config()` changed the _global_ default configuration, shared across multiple API instances. On a v3 instance, however, it only affects the default configuration for the particular API instance on which it was called.  E.g.:
+- In previous interface versions, `MQ.config()` changed the _global_ default configuration, shared across multiple API instances. On a v3 instance, however, it only affects the default configuration for the particular API instance on which it was called. E.g.:
+
 ```javascript
 // Interface v1 and v2
-var MQ_a = MathQuill.getInterface(2), MQ_b = MathQuill.getInterface(2);
+var MQ_a = MathQuill.getInterface(2),
+  MQ_b = MathQuill.getInterface(2);
 MQ_a.config(myConfig);
 MQ_a.MathField(el_a); // configured with myConfig
 MQ_b.MathField(el_b); // configured with myConfig
 
 // Interface v3
-var MQ_c = MathQuill.getInterface(3), MQ_d = MathQuill.getInterface(3);
+var MQ_c = MathQuill.getInterface(3),
+  MQ_d = MathQuill.getInterface(3);
 MQ_c.config(myConfig);
 MQ_c.MathField(el_a); // configured with myConfig
 MQ_d.MathField(el_b); // unaffected by myConfig
 ```
-
 
 ## v0.10.1: Fix `font-size: 0` typing problems and more
 
@@ -34,15 +37,16 @@ used instead and expected to be much more robust.
 (Note: if you're coming from v0.9.x, there've been major API changes,
 see the [v0.9.x → v0.10.0 Migration Guide][].)
 
-[v0.9.x → v0.10.0 Migration Guide]: https://github.com/mathquill/mathquill/wiki/v0.9.x-%E2%86%92-v0.10.0-Migration-Guide
+[v0.9.x → v0.10.0 migration guide]: https://github.com/mathquill/mathquill/wiki/v0.9.x-%E2%86%92-v0.10.0-Migration-Guide
 
 **new features:**
+
 - (#544, #552, #558, #581) new symbols `\nparallel`, `\measuredangle`,
   `\odot`, `\parallelogram` (nonstandard), `\nless`, `\ngtr`, `\square`
 - (#544) new commands `\overleftarrow`, `\overrightarrow`
 
-
 **bugfixes:**
+
 - (#585) fix typing in Chrome Canary, Enter key in Webkit+Blink
 - (#582) fix `\degree` symbol to round-trip (rather than exporting
   `^\circ` which doesn't parse as one symbol)
@@ -59,6 +63,7 @@ see the [v0.9.x → v0.10.0 Migration Guide][].)
 - (#525) fix Tab while there's a selection
 
 **build system fixes:**
+
 - (#532) add console output to show URL of local test pages
 
 ## v0.10.0: Total API overhaul, new features galore
@@ -72,11 +77,12 @@ itself): See the [v0.9.x → v0.10.0 Migration Guide]
 (https://github.com/mathquill/mathquill/wiki/v0.9.x-%E2%86%92-v0.10.0-Migration-Guide).
 
 (If you already use the new global `MathQuill()`-based API from the
- `dev` branch, migrating to v0.10.0 should be just [one small change]
- (https://github.com/mathquill/mathquill/wiki/%60dev%60-branch-(2014%E2%80%932015)-%E2%86%92-v0.10.0-Migration-Guide)
- for you.)
+`dev` branch, migrating to v0.10.0 should be just [one small change]
+(https://github.com/mathquill/mathquill/wiki/%60dev%60-branch-(2014%E2%80%932015)-%E2%86%92-v0.10.0-Migration-Guide)
+for you.)
 
 **API-only changes:**
+
 - (#336, #349, #351, #353) config options architecture
 - (#308) don't auto-MathQuill-ify on jQuery `ready`
 - (#297) prefix all CSS classes with `mq-`
@@ -84,6 +90,7 @@ itself): See the [v0.9.x → v0.10.0 Migration Guide]
   global `MathQuill()` returns API objects
 
 **typist-facing changes:**
+
 - (#506) delete `\caret` and `\underscore`
 - (#453) incremental backspace: backspacing into a compound command like
   fraction or exponent goes left into it rather than selecting it
@@ -101,6 +108,7 @@ itself): See the [v0.9.x → v0.10.0 Migration Guide]
 - (#157) stop fractions created by typing `/` at `,`/`;`/`:`
 
 **new features:**
+
 - (#468) add WOFF and WOFF2 font formats
 - (#376, #398) add `autoSubscriptNumerals` option
 - (#338) config option `sumStartsWithNEquals`
@@ -121,10 +129,12 @@ itself): See the [v0.9.x → v0.10.0 Migration Guide]
 - (#151) `\textcolor{color}{math}`
 
 **new build system features:**
+
 - (#377) `OMIT_FONT_FACE=true make` omits `@font-face {...}`
 - (#319) `make basic` builds stripped-down MathQuill for basic math
 
 **bugfixes:**
+
 - (#452) fix blinking blue cursor and autocorrect on iOS
 - (#448) fix `\ddots` to be downward-rightward not upward-rightward
 - (#432) fix quadratic-time fragment construction
@@ -148,12 +158,14 @@ itself): See the [v0.9.x → v0.10.0 Migration Guide]
 - (c1fe1ef, 9aef35f) fix up/down in an `\editable{}` in a fraction
 
 **docs:**
+
 - (#485) add more metadata to package.json
 - (#484) fix links in README
 - (#393) correctly credit co-creator @jneen
 - (#283) use Mozilla Public License (MPL) instead of LGPL
 
 **internal refactors:**
+
 - (#303) remove STIX font files, never used them
 - (#244) refactor focus/blur out into its own service
 - (#240) simplify `saneKeyboardEvents()` handlers pattern
@@ -172,6 +184,7 @@ _2014-1-22_
 URGENT HOTFIX for cursor showing up as an ugly box in Chrome 40 (#371)
 
 **bugfixes:**
+
 - (#371) fix cursor showing up as an ugly box in Chrome 40
 - (#230) fix selecting previously selected static math can't be copied
 - (#217) fix no Array::indexOf in IE&lt;9, use RegExp::test
@@ -179,10 +192,12 @@ URGENT HOTFIX for cursor showing up as an ugly box in Chrome 40 (#371)
 - (#211) fix CSS typo causing no italics when there should be
 
 **build system changes:**
+
 - (#222 and #228) `make server` auto-rebuilds without restarting server
 - (#212) use empty target trick in Makefile
 
 **docs:**
+
 - (#283) change license from LGPL to Mozilla Public License
 
 ## v0.9.3: Fix `NZQRC` appearing double-struck/blackboard bold
@@ -190,18 +205,22 @@ URGENT HOTFIX for cursor showing up as an ugly box in Chrome 40 (#371)
 _2013-11-11_
 
 **new features:**
+
 - (#185) add `\vec`
 
 **bugfixes:**
+
 - (#164) displaying `NZQRC` as `\mathbb{NZQRC}` (double-struck)
 - (#180) can't type >1 spaces in `RootTextBlock`s
 - (#190) `$` at the end of a `TextBlock` causes errors later
 - (#152) when "Select All"-ed, `.mathquill('latex')` throws
 
 **internal refactors:**
+
 - rename `.end` and `.endChild` both to `.ends`
 
 **build system changes:**
+
 - fix `make publish` to work on BSD
 - (#189) replace Connect with tiny handwritten static server
 - upgrade to uglifyjs2
@@ -214,9 +233,11 @@ NOTE: The hotfix for typing over selections in Safari 5.1 (#135) from
 v0.9.1 had a huge bug, fixed as #166.
 
 **feature changes:**
+
 - (#156) stop LiveFraction at commas/colons/semicolons
 
 **bugfixes:**
+
 - allow angle bracket as a VanillaSymbol (thanks @fpirsch!)
 - (#166) fix selecting after paste
 - (#121) editing `\text{...}` created from LaTeX
@@ -225,11 +246,13 @@ v0.9.1 had a huge bug, fixed as #166.
 - stretched parens not being grayed
 
 **internal refactors:**
+
 - Massive renaming introducing direction constants `L` and `R`, and
   directionalized methods
 - Use a subclass of jQuery with directionalized methods (see `d5597e4`)
 
 **build system changes:**
+
 - New site-building system
 - no more submodules, `npm` only
 
@@ -237,6 +260,6 @@ v0.9.1 had a huge bug, fixed as #166.
 
 _2012-12-19_
 
-  * Started the changelog
-  * Added a `make publish` script
-  * Hotfix for typing over selections in Safari 5.1 (#135)
+- Started the changelog
+- Added a `make publish` script
+- Hotfix for typing over selections in Safari 5.1 (#135)

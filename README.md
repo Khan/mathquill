@@ -13,6 +13,7 @@ MathQuill is resuming active development and we're committed to getting things r
 ## Getting Started
 
 MathQuill has a simple interface. This brief example creates a MathQuill element and renders, then reads a given input:
+
 ```javascript
 var htmlElement = document.getElementById('some_id');
 var config = {
