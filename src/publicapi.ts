@@ -349,6 +349,9 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     cursor() {
       return this.__controller.cursor;
     }
+    controller() {
+      return this.__controller;
+    }
   }
 
   abstract class EditableField
