@@ -2339,6 +2339,9 @@ function getInterface(v) {
       });
       return this;
     };
+    AbstractMathQuill.prototype.cursor = function () {
+      return this.__controller.cursor;
+    };
     return AbstractMathQuill;
   })(Progenote);
   var EditableField = /** @class */ (function (_super) {
