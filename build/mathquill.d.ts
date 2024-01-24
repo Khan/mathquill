@@ -1,4 +1,6 @@
 export = MathQuill;
+
+// the below should be identical to src/mathquill.d.ts
 declare namespace MathQuill {
   export function getInterface(version: 1): v1.API;
   export function getInterface(version: 2): v1.API;
@@ -12,7 +14,7 @@ declare namespace MathQuill {
     // The following should probably take a type parameter, but that would require
     //   a bit of a refactor. Since we only deal with EditableMathQuill, we'll
     //   just use that for now.
-    type HandlerOptions = v1.HandlerOptions<Partial<EditableMathQuill>>;
+    type HandlerOptions = v1.HandlerOptions<BaseMathQuill | EditableMathQuill>;
     type EmbedOptions = v1.EmbedOptions;
     type EmbedOptionsData = v1.EmbedOptionsData;
 
