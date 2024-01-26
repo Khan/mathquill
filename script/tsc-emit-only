@@ -2,26 +2,30 @@
 
 var ts = require('typescript');
 
-function compileTypescript (tsSource) {
+const compileTypescript = (tsSource) => {
   compilerOptions = {
-    target: 'es5'
+    // module: 'commonjs',
+    target: 'es5',
+    // noImplicitAny: false,
+    // sourceMap: false,
+    // removeComments: false,
   };
 
   var jsSource = ts.transpileModule(tsSource, {
-    compilerOptions: compilerOptions
+    compilerOptions,
   }).outputText;
 
   return jsSource;
-}
+};
 
 let contents = '';
 
 process.stdin.setEncoding('utf8');
-process.stdin.on('data', function(data) {
-    contents += data;
+process.stdin.on('data', (data) => {
+  contents += data;
 });
-process.stdin.on('end', function () {
-    var ts = compileTypescript(contents);
-    console.log(ts);
-})
+process.stdin.on('end', () => {
+  var ts = compileTypescript(contents);
+  console.log(ts);
+});
 process.stdin.resume();

@@ -592,13 +592,6 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
   return MQ;
 }
 
-MathQuill.noConflict = function () {
-  window.MathQuill = origMathQuill;
-  return MathQuill;
-};
-var origMathQuill = window.MathQuill;
-window.MathQuill = MathQuill;
-
 function RootBlockMixin(_: RootBlockMixinInput) {
   _.moveOutOf = function (dir: Direction) {
     pray('controller is defined', this.controller);

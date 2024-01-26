@@ -21,8 +21,6 @@ endif
 
 # inputs
 SRC_DIR = ./src
-INTRO = $(SRC_DIR)/intro.js
-OUTRO = $(SRC_DIR)/outro.js
 
 BASE_SOURCES = \
   $(SRC_DIR)/utils.ts \
@@ -46,22 +44,18 @@ BASE_SOURCES = \
   $(SRC_DIR)/services/scrollHoriz.ts \
   $(SRC_DIR)/services/textarea.ts
 
-SOURCES_FULL = \
-  $(BASE_SOURCES) \
-  $(SRC_DIR)/commands/math.ts \
-  $(SRC_DIR)/commands/text.ts \
-  $(SRC_DIR)/commands/math/advancedSymbols.ts \
-  $(SRC_DIR)/commands/math/basicSymbols.ts \
-  $(SRC_DIR)/commands/math/commands.ts \
-  $(SRC_DIR)/commands/math/LatexCommandInput.ts
-
-
 SOURCES_BASIC = \
   $(BASE_SOURCES) \
   $(SRC_DIR)/commands/math.ts \
   $(SRC_DIR)/commands/math/advancedSymbols.ts \
   $(SRC_DIR)/commands/math/basicSymbols.ts \
   $(SRC_DIR)/commands/math/commands.ts
+
+SOURCES_FULL = \
+  $(SOURCES_BASIC) \
+  $(SRC_DIR)/commands/text.ts \
+  $(SRC_DIR)/commands/math/commands.ts \
+  $(SRC_DIR)/commands/math/LatexCommandInput.ts
 
 CSS_DIR = $(SRC_DIR)/css
 CSS_MAIN = $(CSS_DIR)/main.less
@@ -87,7 +81,7 @@ UGLY_BASIC_JS = $(BUILD_DIR)/mathquill-basic.min.js
 
 # programs and flags
 UGLIFY ?= ./node_modules/.bin/uglifyjs
-UGLIFY_OPTS ?= --mangle --compress hoist_vars=true --comments /maintainers@mathquill.com/
+UGLIFY_OPTS ?= --mangle --compress hoist_vars=true --comments
 
 LESSC ?= ./node_modules/.bin/lessc
 LESS_OPTS ?=
@@ -130,7 +124,7 @@ setup-gitconfig:
 prettify-all:
 	npx prettier --write '**/*.{ts,js,css,html}'
 
-$(BUILD_JS): $(INTRO) $(SOURCES_FULL) $(OUTRO) $(BUILD_DIR_EXISTS)
+$(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
@@ -138,7 +132,7 @@ $(BUILD_JS): $(INTRO) $(SOURCES_FULL) $(OUTRO) $(BUILD_DIR_EXISTS)
 $(UGLY_JS): $(BUILD_JS) $(NODE_MODULES_INSTALLED)
 	$(UGLIFY) $(UGLIFY_OPTS) < $< > $@
 
-$(BASIC_JS): $(INTRO) $(SOURCES_BASIC) $(OUTRO) $(BUILD_DIR_EXISTS)
+$(BASIC_JS): $(SOURCES_BASIC) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
@@ -188,6 +182,6 @@ benchmark: dev $(BUILD_TEST) $(BASIC_JS) $(BASIC_CSS)
 	@echo
 	@echo "** now open benchmark/{render,select,update}.html in your browser. **"
 
-$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(OUTRO) $(BUILD_DIR_EXISTS)
+$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/tsc-emit-only > $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
