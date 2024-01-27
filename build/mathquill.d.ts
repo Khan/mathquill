@@ -22,6 +22,47 @@ declare namespace MathQuill {
       handlers?: HandlerOptions;
     };
 
+    interface MQNode {
+      id: number;
+      parent: NodeBase;
+    }
+  
+    interface MQSelection {
+      id: number;
+      getEnd(dir: number): number;
+    }
+  
+    interface NodeBase extends MQNode {
+      ctrlSeq: string | undefined;
+      blocks: MQNode;
+    }
+  
+    interface Cursor {
+      parent: MQNode;
+      selection: MQSelection | undefined;
+  
+      show(): Cursor;
+      hide(): Cursor;
+      insAtRightEnd(root: ControllerRoot): Cursor;
+      insRightOf(el: MQNode): Cursor;
+      insLeftOf(el: MQNode): Cursor;
+      startSelection(): void;
+    }
+  
+    interface Controller {
+      parent: string;
+      root: ControllerRoot;
+      cursor: Cursor;
+  
+      backspace(): Controller;
+      seek(targetElm, clientX, _clientY): Controller;
+    }
+  
+    interface ControllerRoot {
+      controller: Controller;
+      cursor?: Cursor;
+    }
+
     interface BaseMathQuill {
       id: number;
       data: { [key: string]: any };
@@ -44,8 +85,8 @@ declare namespace MathQuill {
         startIndex: number;
         endIndex: number;
       };
-      cursor(): any; // TODO(LC-1659): Cursor interface
-      controller(): any; // ^^ Likewise
+      cursor(): Cursor;
+      controller(): Controller;
 
       select: () => EditableMathQuill;
       moveToRightEnd: () => EditableMathQuill;

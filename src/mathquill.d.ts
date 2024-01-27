@@ -44,8 +44,6 @@ declare namespace MathQuill {
         startIndex: number;
         endIndex: number;
       };
-      cursor(): any; // TODO(LC-1659): Cursor interface
-      controller(): any; // ^^ Likewise
 
       select: () => EditableMathQuill;
       moveToRightEnd: () => EditableMathQuill;
