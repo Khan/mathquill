@@ -9422,3 +9422,4 @@ CharCmds['\\'] = /** @class */ (function (_super) {
     return LatexCommandInput;
 }(MathCommand));
 
+module.exports = MathQuill;

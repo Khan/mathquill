@@ -132,6 +132,7 @@ prettify-all:
 $(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
+	echo 'module.exports = MathQuill;' >> $@
 	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
