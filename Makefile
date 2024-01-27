@@ -26,14 +26,14 @@ BASE_SOURCES = \
   $(SRC_DIR)/utils.ts \
   $(SRC_DIR)/dom.ts \
   $(SRC_DIR)/unicode.ts \
-		$(SRC_DIR)/browser.ts \
+  $(SRC_DIR)/browser.ts \
   $(SRC_DIR)/animate.ts \
   $(SRC_DIR)/services/aria.ts \
   $(SRC_DIR)/domFragment.ts \
   $(SRC_DIR)/tree.ts \
   $(SRC_DIR)/cursor.ts \
   $(SRC_DIR)/controller.ts \
-		$(SRC_DIR)/publicapi.ts \
+  $(SRC_DIR)/publicapi.ts \
   $(SRC_DIR)/services/parser.util.ts \
   $(SRC_DIR)/services/saneKeyboardEvents.util.ts \
   $(SRC_DIR)/services/exportText.ts \
