@@ -3,7 +3,7 @@
   "description": "Easily type math in your webapp",
   "version": "0.10.1",
   "license": "MPL-2.0",
-  "main": "build/mathquill.min.js",
+  "main": "build/mathquill.js",
   "types": "build/mathquill.d.ts",
   "repository": {
     "type": "git",
