@@ -26,14 +26,14 @@ BASE_SOURCES = \
   $(SRC_DIR)/utils.ts \
   $(SRC_DIR)/dom.ts \
   $(SRC_DIR)/unicode.ts \
-	$(SRC_DIR)/browser.ts \
+		$(SRC_DIR)/browser.ts \
   $(SRC_DIR)/animate.ts \
   $(SRC_DIR)/services/aria.ts \
   $(SRC_DIR)/domFragment.ts \
   $(SRC_DIR)/tree.ts \
   $(SRC_DIR)/cursor.ts \
   $(SRC_DIR)/controller.ts \
-  $(SRC_DIR)/publicapi.ts \
+		$(SRC_DIR)/publicapi.ts \
   $(SRC_DIR)/services/parser.util.ts \
   $(SRC_DIR)/services/saneKeyboardEvents.util.ts \
   $(SRC_DIR)/services/exportText.ts \
@@ -63,6 +63,9 @@ CSS_SOURCES = $(shell find $(CSS_DIR) -name '*.less')
 
 FONT_SOURCE = $(SRC_DIR)/fonts
 FONT_TARGET = $(BUILD_DIR)/fonts
+
+BUILD_TYPES	= $(BUILD_DIR)/mathquill.d.ts
+TYPES_SOURCE = $(SRC_DIR)/mathquill.d.ts
 
 TEST_SUPPORT = ./test/support/assert.ts ./test/support/trigger-event.ts ./test/support/jquery-stub.ts
 UNIT_TESTS = ./test/unit/*.test.js ./test/unit/*.test.ts
@@ -104,7 +107,7 @@ BUILD_DIR_EXISTS = $(BUILD_DIR)/.exists--used_by_Makefile
 #
 
 .PHONY: all basic dev js uglify css font clean setup-gitconfig prettify-all
-all: font css uglify
+all: font css uglify types
 basic: $(UGLY_BASIC_JS) $(BASIC_CSS)
 unminified_basic: $(BASIC_JS) $(BASIC_CSS)
 # dev is like all, but without minification
@@ -113,6 +116,7 @@ js: $(BUILD_JS)
 uglify: $(UGLY_JS)
 css: $(BUILD_CSS)
 font: $(FONT_TARGET)
+types: $(BUILD_TYPES)
 clean:
 	rm -rf $(BUILD_DIR)
 # This adds an entry to your local .git/config file that looks like this:
@@ -124,9 +128,11 @@ setup-gitconfig:
 prettify-all:
 	npx prettier --write '**/*.{ts,js,css,html}'
 
+# add contents of source-code-form.txt to top of compiled file
 $(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
 $(UGLY_JS): $(BUILD_JS) $(NODE_MODULES_INSTALLED)
@@ -143,6 +149,7 @@ $(UGLY_BASIC_JS): $(BASIC_JS) $(NODE_MODULES_INSTALLED)
 $(BUILD_CSS): $(CSS_SOURCES) $(NODE_MODULES_INSTALLED) $(BUILD_DIR_EXISTS)
 	$(LESSC) $(LESS_OPTS) $(CSS_MAIN) > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
 $(BASIC_CSS): $(CSS_SOURCES) $(NODE_MODULES_INSTALLED) $(BUILD_DIR_EXISTS)
@@ -162,6 +169,13 @@ $(BUILD_DIR_EXISTS):
 $(FONT_TARGET): $(FONT_SOURCE) $(BUILD_DIR_EXISTS)
 	rm -rf $@
 	cp -r $< $@
+
+# copy file and add "export = MathQuill" to the beginning
+$(BUILD_TYPES): $(TYPES_SOURCE) $(BUILD_DIR_EXISTS)
+	cp $< $@
+	perl -pi -e 'print "export = MathQuill;\n" if $$. == 1' $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
+	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
 #
 # -*- Test tasks -*-

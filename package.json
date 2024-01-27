@@ -10,9 +10,11 @@
     "url": "https://github.com/mathquill/mathquill.git"
   },
   "files": [
-    "build/mathquill.{css,min.js,d.ts}",
-    "LICENSE.txt",
-    "build/fonts/Symbola.*"
+    "build/mathquill.min.js",
+    "build/mathquill.d.ts",
+    "build/mathquill.css",
+    "build/fonts/Symbola.*",
+    "LICENSE.txt"
   ],
   "devDependencies": {
     "@types/mocha": "^5.2.7",
@@ -22,7 +24,7 @@
     "mocha": ">=2.4.1",
     "prettier": "^2.5.1",
     "typescript": "^4.5.2",
-    "uglify-js": "2.x"
+    "uglify-js": "^3.17.4"
   },
   "lint-staged": {
     "*.{ts,js,css,html}": "prettier --write"
