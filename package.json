@@ -11,6 +11,7 @@
   },
   "files": [
     "build/mathquill.{css,js,min.js,d.ts}",
+    "LICENSE.txt",
     "build/fonts/Symbola.*"
   ],
   "devDependencies": {
