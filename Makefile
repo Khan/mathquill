@@ -21,14 +21,12 @@ endif
 
 # inputs
 SRC_DIR = ./src
-INTRO = $(SRC_DIR)/intro.js
-OUTRO = $(SRC_DIR)/outro.js
 
 BASE_SOURCES = \
   $(SRC_DIR)/utils.ts \
   $(SRC_DIR)/dom.ts \
   $(SRC_DIR)/unicode.ts \
-	$(SRC_DIR)/browser.ts \
+  $(SRC_DIR)/browser.ts \
   $(SRC_DIR)/animate.ts \
   $(SRC_DIR)/services/aria.ts \
   $(SRC_DIR)/domFragment.ts \
@@ -46,16 +44,6 @@ BASE_SOURCES = \
   $(SRC_DIR)/services/scrollHoriz.ts \
   $(SRC_DIR)/services/textarea.ts
 
-SOURCES_FULL = \
-  $(BASE_SOURCES) \
-  $(SRC_DIR)/commands/math.ts \
-  $(SRC_DIR)/commands/text.ts \
-  $(SRC_DIR)/commands/math/advancedSymbols.ts \
-  $(SRC_DIR)/commands/math/basicSymbols.ts \
-  $(SRC_DIR)/commands/math/commands.ts \
-  $(SRC_DIR)/commands/math/LatexCommandInput.ts
-
-
 SOURCES_BASIC = \
   $(BASE_SOURCES) \
   $(SRC_DIR)/commands/math.ts \
@@ -63,12 +51,21 @@ SOURCES_BASIC = \
   $(SRC_DIR)/commands/math/basicSymbols.ts \
   $(SRC_DIR)/commands/math/commands.ts
 
+SOURCES_FULL = \
+  $(SOURCES_BASIC) \
+  $(SRC_DIR)/commands/text.ts \
+  $(SRC_DIR)/commands/math/commands.ts \
+  $(SRC_DIR)/commands/math/LatexCommandInput.ts
+
 CSS_DIR = $(SRC_DIR)/css
 CSS_MAIN = $(CSS_DIR)/main.less
 CSS_SOURCES = $(shell find $(CSS_DIR) -name '*.less')
 
 FONT_SOURCE = $(SRC_DIR)/fonts
 FONT_TARGET = $(BUILD_DIR)/fonts
+
+BUILD_TYPES	= $(BUILD_DIR)/mathquill.d.ts
+TYPES_SOURCE = $(SRC_DIR)/mathquill.d.ts
 
 TEST_SUPPORT = ./test/support/assert.ts ./test/support/trigger-event.ts ./test/support/jquery-stub.ts
 UNIT_TESTS = ./test/unit/*.test.js ./test/unit/*.test.ts
@@ -87,7 +84,7 @@ UGLY_BASIC_JS = $(BUILD_DIR)/mathquill-basic.min.js
 
 # programs and flags
 UGLIFY ?= ./node_modules/.bin/uglifyjs
-UGLIFY_OPTS ?= --mangle --compress hoist_vars=true --comments /maintainers@mathquill.com/
+UGLIFY_OPTS ?= --mangle --compress hoist_vars=true --comments
 
 LESSC ?= ./node_modules/.bin/lessc
 LESS_OPTS ?=
@@ -110,7 +107,7 @@ BUILD_DIR_EXISTS = $(BUILD_DIR)/.exists--used_by_Makefile
 #
 
 .PHONY: all basic dev js uglify css font clean setup-gitconfig prettify-all
-all: font css uglify
+all: font css uglify types
 basic: $(UGLY_BASIC_JS) $(BASIC_CSS)
 unminified_basic: $(BASIC_JS) $(BASIC_CSS)
 # dev is like all, but without minification
@@ -119,6 +116,7 @@ js: $(BUILD_JS)
 uglify: $(UGLY_JS)
 css: $(BUILD_CSS)
 font: $(FONT_TARGET)
+types: $(BUILD_TYPES)
 clean:
 	rm -rf $(BUILD_DIR)
 # This adds an entry to your local .git/config file that looks like this:
@@ -130,15 +128,18 @@ setup-gitconfig:
 prettify-all:
 	npx prettier --write '**/*.{ts,js,css,html}'
 
-$(BUILD_JS): $(INTRO) $(SOURCES_FULL) $(OUTRO) $(BUILD_DIR_EXISTS)
+# add contents of source-code-form.txt to top of compiled file
+$(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
+	echo 'module.exports = MathQuill;' >> $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
 $(UGLY_JS): $(BUILD_JS) $(NODE_MODULES_INSTALLED)
 	$(UGLIFY) $(UGLIFY_OPTS) < $< > $@
 
-$(BASIC_JS): $(INTRO) $(SOURCES_BASIC) $(OUTRO) $(BUILD_DIR_EXISTS)
+$(BASIC_JS): $(SOURCES_BASIC) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
@@ -149,6 +150,7 @@ $(UGLY_BASIC_JS): $(BASIC_JS) $(NODE_MODULES_INSTALLED)
 $(BUILD_CSS): $(CSS_SOURCES) $(NODE_MODULES_INSTALLED) $(BUILD_DIR_EXISTS)
 	$(LESSC) $(LESS_OPTS) $(CSS_MAIN) > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
 $(BASIC_CSS): $(CSS_SOURCES) $(NODE_MODULES_INSTALLED) $(BUILD_DIR_EXISTS)
@@ -169,6 +171,13 @@ $(FONT_TARGET): $(FONT_SOURCE) $(BUILD_DIR_EXISTS)
 	rm -rf $@
 	cp -r $< $@
 
+# copy file and add "export = MathQuill" to the beginning
+$(BUILD_TYPES): $(TYPES_SOURCE) $(BUILD_DIR_EXISTS)
+	cp $< $@
+	perl -pi -e 'print "export = MathQuill;\n" if $$. == 1' $@
+	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
+	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
+
 #
 # -*- Test tasks -*-
 #
@@ -188,6 +197,6 @@ benchmark: dev $(BUILD_TEST) $(BASIC_JS) $(BASIC_CSS)
 	@echo
 	@echo "** now open benchmark/{render,select,update}.html in your browser. **"
 
-$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(OUTRO) $(BUILD_DIR_EXISTS)
+$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/tsc-emit-only > $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
