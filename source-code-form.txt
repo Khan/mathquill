@@ -1,4 +1,5 @@
 /**
+ * @license
  * MathQuill {VERSION}, by Han, Jeanine, and Mary
  * http://mathquill.com | maintainers@mathquill.com
  *
@@ -8,4 +9,3 @@
  * one at http://mozilla.org/MPL/2.0/.
  */
 
-(function() {

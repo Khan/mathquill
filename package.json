@@ -3,15 +3,18 @@
   "description": "Easily type math in your webapp",
   "version": "0.10.1",
   "license": "MPL-2.0",
-  "main": "build/mathquill.js",
-  "typings": "build/mathquill.d.ts",
+  "main": "build/mathquill.min.js",
+  "types": "build/mathquill.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/mathquill/mathquill.git"
   },
   "files": [
-    "build/mathquill.{css,js,min.js,d.ts}",
-    "build/fonts/Symbola.*"
+    "build/mathquill.min.js",
+    "build/mathquill.d.ts",
+    "build/mathquill.css",
+    "build/fonts/Symbola.*",
+    "LICENSE.txt"
   ],
   "devDependencies": {
     "@types/mocha": "^5.2.7",

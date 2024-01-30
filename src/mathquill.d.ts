@@ -1,10 +1,7 @@
 declare namespace MathQuill {
-  /** The global MathQuill object */
-  interface MathQuill {
-    getInterface(version: 1): v1.API;
-    getInterface(version: 2): v1.API;
-    getInterface(version: 3): v3.API;
-  }
+  export function getInterface(version: 1): v1.API;
+  export function getInterface(version: 2): v1.API;
+  export function getInterface(version: 3): v3.API;
 
   type Direction = -1 | 1;
 
