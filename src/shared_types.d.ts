@@ -1,3 +1,13 @@
+import { LatexFragment } from './commands/math/basicSymbols';
+import { Cursor } from './cursor';
+import MathQuill = require('./mathquill');
+import { Options } from './publicapi';
+import { MQNode } from './services/keystroke';
+import { TempSingleCharNode } from './services/latex';
+import { Controller } from './services/textarea';
+import { NodeBase } from './tree';
+import { L, R } from './utils';
+
 type NodeRef = MQNode | 0;
 type ControllerEvent =
   | 'move'
@@ -8,7 +18,7 @@ type ControllerEvent =
   | undefined;
 type JoinMethod = 'mathspeak' | 'text' | 'latex';
 
-type CursorOptions = Options;
+export type CursorOptions = Options;
 
 // These types are just aliases for the corresponding public types, for use in internal code.
 // If we version the interface, these can be changed to "MathQuill.v4...." (or maybe "MathQuill.v3.... | MathQuill.v3....")
@@ -47,7 +57,7 @@ type LatexContext = {
   endSelectionAfter?: NodeBase;
 };
 
-type ControllerData = any;
+type ControllerData = { [key: string]: any };
 type ControllerRoot = MQNode & {
   controller: Controller;
   cursor?: Cursor;
@@ -58,7 +68,7 @@ type JQ_KeyboardEvent = KeyboardEvent & {
   originalEvent?: KeyboardEvent;
 };
 type RootBlockMixinInput = MQNode & { controller?: Controller };
-type BracketSide = L | R | 0;
+type BracketSide = typeof L | typeof R | 0;
 
 type InnerMathField = any;
 type InnerFields = any;
@@ -82,7 +92,7 @@ type LatexCmd =
 type LatexCmds = Record<string, LatexCmd>;
 type CharCmds = Record<string, LatexCmd>;
 
-declare var validateAutoCommandsOption: any;
+declare let validateAutoCommandsOption: any;
 
 type JQSelector =
   | $

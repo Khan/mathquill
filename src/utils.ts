@@ -2,17 +2,20 @@
 // R = 'right'
 //
 // the contract is that they can be used as object properties
+
+import { NodeRef } from './shared_types';
+
 // and (-L) === R, and (-R) === L.
 type L = -1;
 type R = 1;
-const L: L = -1;
-const R: R = 1;
-type Direction = L | R;
+export const L: L = -1;
+export const R: R = 1;
+export type Direction = L | R;
 
-var min = Math.min;
-var max = Math.max;
+export const min = Math.min;
+export const max = Math.max;
 
-function noop() {}
+export function noop() {}
 
 function walkUpAsFarAsPossible(node: NodeRef | undefined) {
   while (node) {
@@ -34,9 +37,9 @@ function walkUpAsFarAsPossible(node: NodeRef | undefined) {
  * with the same name, and only call this function by
  * name.
  */
-function pray(
+export function pray(
   message: string,
-  cond?: any,
+  cond?: unknown,
   optionalContextNodes?: Record<string, NodeRef>
 ): asserts cond {
   if (!cond) {
@@ -53,7 +56,7 @@ function pray(
       // info with the error.
       (error as any).dcgExtraErrorMetaData = jsonData;
 
-      for (let contextName in optionalContextNodes) {
+      for (const contextName in optionalContextNodes) {
         const localNode = optionalContextNodes[contextName];
         const data: any = (jsonData[contextName] = {});
 
@@ -73,6 +76,6 @@ function pray(
   }
 }
 
-function prayDirection(dir: Direction) {
+export function prayDirection(dir: Direction) {
   pray('a direction was passed', dir === L || dir === R);
 }

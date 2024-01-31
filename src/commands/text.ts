@@ -2,13 +2,30 @@
  * Abstract classes of text blocks
  ************************************************/
 
+import { Cursor, Anticursor } from 'src/cursor';
+import { h, HTMLTagName } from 'src/dom';
+import { MQNode } from 'src/services/keystroke';
+import { Parser } from 'src/services/parser.util';
+import { Controller } from 'src/services/textarea';
+import { LatexContext, MathspeakOptions } from 'src/shared_types';
+import { Fragment, NodeBase, LatexCmds } from 'src/tree';
+import { L, R, Direction, pray, prayDirection } from 'src/utils';
+import {
+  MathCommand,
+  VanillaSymbol,
+  MathBlock,
+  DOMView,
+  RootMathBlock,
+} from './math';
+import { API, APIClasses, IBaseMathQuill, IEditableField } from 'src/publicapi';
+
 /**
  * Blocks of plain text, with one or two TextPiece's as children.
  * Represents flat strings of typically serif-font Roman characters, as
  * opposed to hierchical, nested, tree-structured math.
  * Wraps a single HTMLSpanElement.
  */
-class TextBlock extends MQNode {
+export class TextBlock extends MQNode {
   ctrlSeq = '\\text';
   ariaLabel = 'Text';
   replacedText?: string;
@@ -34,13 +51,13 @@ class TextBlock extends MQNode {
   }
 
   createLeftOf(cursor: Cursor) {
-    var textBlock = this;
+    const textBlock = this;
     super.createLeftOf(cursor);
 
     cursor.insAtRightEnd(textBlock);
 
     if (textBlock.replacedText)
-      for (var i = 0; i < textBlock.replacedText.length; i += 1)
+      for (let i = 0; i < textBlock.replacedText.length; i += 1)
         textBlock.write(cursor, textBlock.replacedText.charAt(i));
 
     const textBlockR = textBlock[R];
@@ -54,12 +71,12 @@ class TextBlock extends MQNode {
   }
 
   parser() {
-    var textBlock = this;
+    const textBlock = this;
 
     // TODO: correctly parse text mode
-    var string = Parser.string;
-    var regex = Parser.regex;
-    var optWhitespace = Parser.optWhitespace;
+    const string = Parser.string;
+    const regex = Parser.regex;
+    const optWhitespace = Parser.optWhitespace;
     return optWhitespace
       .then(string('{'))
       .then(regex(/^[^}]*/))
@@ -83,7 +100,7 @@ class TextBlock extends MQNode {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    var contents = this.textContents();
+    const contents = this.textContents();
     if (contents.length > 0) {
       ctx.latex += this.ctrlSeq + '{';
       ctx.latex += contents
@@ -157,7 +174,7 @@ class TextBlock extends MQNode {
     cursor.show().deleteSelection();
 
     if (ch !== '$') {
-      let cursorL = cursor[L];
+      const cursorL = cursor[L];
       if (!cursorL) new TextPiece(ch).createLeftOf(cursor);
       else if (cursorL instanceof TextPiece) cursorL.appendText(ch);
     } else if (this.isEmpty()) {
@@ -167,8 +184,8 @@ class TextBlock extends MQNode {
     else if (!cursor[L]) cursor.insLeftOf(this);
     else {
       // split apart
-      var leftBlock = new TextBlock();
-      var leftPc = this.getEnd(L);
+      const leftBlock = new TextBlock();
+      const leftPc = this.getEnd(L);
       if (leftPc) {
         leftPc.disown().domFrag().detach();
         leftPc.adopt(leftBlock, 0, 0);
@@ -196,18 +213,18 @@ class TextBlock extends MQNode {
 
   seek(clientX: number, cursor: Cursor) {
     cursor.hide();
-    var textPc = TextBlockFuseChildren(this);
+    const textPc = TextBlockFuseChildren(this);
     if (!textPc) return;
 
     // insert cursor at approx position in DOMTextNode
     const textNode = this.domFrag().children().oneText();
     const range = document.createRange();
     range.selectNodeContents(textNode);
-    var rects = range.getClientRects();
+    const rects = range.getClientRects();
     if (rects.length === 1) {
       const { width, left } = rects[0];
-      var avgChWidth = width / this.textContents().length;
-      var approxPosition = Math.round((clientX - left) / avgChWidth);
+      const avgChWidth = width / this.textContents().length;
+      const approxPosition = Math.round((clientX - left) / avgChWidth);
       if (approxPosition <= 0) {
         cursor.insAtLeftEnd(this);
       } else if (approxPosition >= textPc.textStr.length) {
@@ -220,10 +237,10 @@ class TextBlock extends MQNode {
     }
 
     // move towards mousedown (clientX)
-    var displ =
+    let displ =
       clientX - cursor.show().getBoundingClientRectWithoutMargin().left; // displacement
-    var dir = displ && displ < 0 ? L : R;
-    var prevDispl = dir as number;
+    const dir = displ && displ < 0 ? L : R;
+    let prevDispl = dir as number;
     // displ * prevDispl > 0 iff displacement direction === previous direction
     while (cursor[dir] && displ * prevDispl > 0) {
       (cursor[dir] as MQNode).moveTowards(dir, cursor);
@@ -245,18 +262,19 @@ class TextBlock extends MQNode {
     } else if (cursor.anticursor.parent === this) {
       // mouse-selecting within this TextBlock, re-insert the anticursor
       const cursorL = cursor[L];
-      var cursorPosition = cursorL && (cursorL as TextPiece).textStr.length;
+      const cursorPosition = cursorL && (cursorL as TextPiece).textStr.length;
       if (this.anticursorPosition === cursorPosition) {
         cursor.anticursor = Anticursor.fromCursor(cursor);
       } else {
+        let newTextPc;
         if (this.anticursorPosition! < cursorPosition!) {
-          var newTextPc = (cursorL as any as TextPiece).splitRight(
+          newTextPc = (cursorL as unknown as TextPiece).splitRight(
             this.anticursorPosition!
           );
           cursor[L] = newTextPc;
         } else {
-          const cursorR = cursor[R] as any as TextPiece;
-          var newTextPc = cursorR.splitRight(
+          const cursorR = cursor[R] as unknown as TextPiece;
+          newTextPc = cursorR.splitRight(
             this.anticursorPosition! - cursorPosition!
           );
         }
@@ -290,7 +308,7 @@ function TextBlockFuseChildren(self: TextBlock) {
   // nodeType === 3 has meant a Text node since ancient times:
   //   http://reference.sitepoint.com/javascript/Node/nodeType
 
-  var textPc = new TextPiece(textPcDom.data);
+  const textPc = new TextPiece(textPcDom.data);
   textPc.setDOM(textPcDom);
 
   self.children().disown();
@@ -331,7 +349,7 @@ class TextPiece extends MQNode {
     else this.prependText(text);
   }
   splitRight(i: number) {
-    var newPc = new TextPiece(this.textStr.slice(i)).adopt(
+    const newPc = new TextPiece(this.textStr.slice(i)).adopt(
       this.parent,
       this,
       this[R]
@@ -348,9 +366,9 @@ class TextPiece extends MQNode {
   moveTowards(dir: Direction, cursor: Cursor) {
     prayDirection(dir);
 
-    var ch = this.endChar(-dir as Direction, this.textStr);
+    const ch = this.endChar(-dir as Direction, this.textStr);
 
-    var from = this[-dir as Direction];
+    const from = this[-dir as Direction];
     if (from instanceof TextPiece) from.insTextAtDirEnd(ch, dir);
     else new TextPiece(ch).createDir(-dir as Direction, cursor);
     return this.deleteTowards(dir, cursor);
@@ -367,7 +385,7 @@ class TextPiece extends MQNode {
 
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (this.textStr.length > 1) {
-      var deletedChar;
+      let deletedChar;
       if (dir === R) {
         this.domFrag().oneText().deleteData(0, 1);
         deletedChar = this.textStr[0];
@@ -391,21 +409,21 @@ class TextPiece extends MQNode {
 
   selectTowards(dir: Direction, cursor: Cursor) {
     prayDirection(dir);
-    var anticursor = cursor.anticursor;
+    const anticursor = cursor.anticursor;
     if (!anticursor) return;
 
-    var ch = this.endChar(-dir as Direction, this.textStr);
+    const ch = this.endChar(-dir as Direction, this.textStr);
 
     if (anticursor[dir] === this) {
-      var newPc = new TextPiece(ch).createDir(dir, cursor);
+      const newPc = new TextPiece(ch).createDir(dir, cursor);
       anticursor[dir] = newPc;
       cursor.insDirOf(dir, newPc);
     } else {
-      var from = this[-dir as Direction];
+      const from = this[-dir as Direction];
       if (from instanceof TextPiece) from.insTextAtDirEnd(ch, dir);
       else {
-        var newPc = new TextPiece(ch).createDir(-dir as Direction, cursor);
-        var selection = cursor.selection;
+        const newPc = new TextPiece(ch).createDir(-dir as Direction, cursor);
+        const selection = cursor.selection;
         if (selection) {
           newPc.domFrag().insDirOf(-dir as Direction, selection.domFrag());
         }
@@ -483,7 +501,7 @@ LatexCmds.lowercase = makeTextBlock('\\lowercase', 'Lowercase', 'span', {
   class: 'mq-text-mode',
 });
 
-class RootMathCommand extends MathCommand {
+export class RootMathCommand extends MathCommand {
   cursor: Cursor;
   constructor(cursor: Cursor) {
     super('$');
@@ -516,7 +534,7 @@ class RootMathCommand extends MathCommand {
   }
 }
 
-class RootTextBlock extends RootMathBlock {
+export class RootTextBlock extends RootMathBlock {
   keystroke(key: string, e: KeyboardEvent, ctrlr: Controller) {
     if (key === 'Spacebar' || key === 'Shift-Spacebar') return;
     return super.keystroke(key, e, ctrlr);
@@ -525,7 +543,7 @@ class RootTextBlock extends RootMathBlock {
     cursor.show().deleteSelection();
     if (ch === '$') new RootMathCommand(cursor).createLeftOf(cursor);
     else {
-      var html;
+      let html;
       if (ch === '<') html = h.entityText('&lt;');
       else if (ch === '>') html = h.entityText('&gt;');
       new VanillaSymbol(ch, html).createLeftOf(cursor);

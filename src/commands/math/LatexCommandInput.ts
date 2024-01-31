@@ -2,6 +2,16 @@
  * Input box to type backslash commands
  ***************************************/
 
+import { MQNode } from 'src/services/keystroke';
+import { TempSingleCharNode } from 'src/services/latex';
+import { LatexContext } from 'src/shared_types';
+import { CharCmds, Fragment, LatexCmds, isMQNodeClass } from 'src/tree';
+import { L, R } from 'src/utils';
+import { DOMView, MathCommand, VanillaSymbol } from '../math';
+import { Cursor } from 'src/cursor';
+import { h } from 'src/dom';
+import { TextBlock } from '../text';
+
 CharCmds['\\'] = class LatexCommandInput extends MathCommand {
   ctrlSeq = '\\';
   _replacedFragment?: Fragment;
@@ -45,7 +55,7 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
         // TODO needs tests
         cursor.controller.aria.alert(ch);
       } else {
-        var cmd = (this.parent as LatexCommandInput).renderCommand(cursor);
+        const cmd = (this.parent as LatexCommandInput).renderCommand(cursor);
         // TODO needs tests
         cursor.controller.aria.queue(cmd.mathspeak({ createdLeftOf: cursor }));
         if (ch !== '\\' || !this.isEmpty()) cursor.parent.write(cursor, ch);
@@ -53,10 +63,10 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
       }
     };
 
-    var originalKeystroke = endsL.keystroke;
+    const originalKeystroke = endsL.keystroke;
     endsL.keystroke = function (key, e, ctrlr) {
       if (key === 'Tab' || key === 'Enter' || key === 'Spacebar') {
-        var cmd = (this.parent as LatexCommandInput).renderCommand(
+        const cmd = (this.parent as LatexCommandInput).renderCommand(
           ctrlr.cursor
         );
         // TODO needs tests
@@ -110,9 +120,9 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
       cursor.insAtRightEnd(this.parent);
     }
 
-    var latex = this.getEnd(L).latex();
+    let latex = this.getEnd(L).latex();
     if (!latex) latex = ' ';
-    var cmd = LatexCmds[latex];
+    const cmd = LatexCmds[latex];
 
     if (cmd) {
       let node: MQNode;

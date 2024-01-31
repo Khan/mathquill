@@ -6,8 +6,25 @@
  * of the tree.
  ************************************************/
 
+import { MathBlock, MathCommand } from './commands/math';
+import { SupSub } from './commands/math/commands';
+import { TextBlock } from './commands/text';
+import { Cursor, MQSelection } from './cursor';
+import { DOMFragment, domFrag } from './domFragment';
+import { MQNode } from './services/keystroke';
+import { Parser } from './services/parser.util';
+import {
+  CursorOptions,
+  InnerFields,
+  InnerMathField,
+  LatexContext,
+  MathspeakOptions,
+  NodeRef,
+} from './shared_types';
+import { Direction, L, R, pray, prayDirection } from './utils';
+
 /** A cursor-like location in an mq node tree. */
-class Point {
+export class Point {
   /** The node to the left of this point (or 0 for the position before a first child) */
   [L]: NodeRef;
   /** The node to the right of this point (or 0 for the position after a last child) */
@@ -34,10 +51,10 @@ function eachNode(
   ends: Ends<NodeRef>,
   yield_: (el: MQNode) => boolean | undefined | void
 ) {
-  var el = ends[L];
+  let el = ends[L];
   if (!el) return;
 
-  var stop = ends[R];
+  let stop = ends[R];
   if (!stop) return; //shouldn't happen because ends[L] is defined;
   stop = stop[R];
 
@@ -46,7 +63,7 @@ function eachNode(
   // verify that this will throw an error. So I'm keeping the behavior but ignoring the
   // type error.
   for (; el !== stop; el = (el as MQNode)[R]) {
-    var result = yield_(el as MQNode); // TODO - might be passing in 0 intead of a MQNode, but tests want this
+    const result = yield_(el as MQNode); // TODO - might be passing in 0 intead of a MQNode, but tests want this
     if (result === false) break;
   }
 }
@@ -56,10 +73,10 @@ function foldNodes<T>(
   fold: T,
   yield_: (fold: T, el: MQNode) => T
 ): T {
-  var el = ends[L];
+  let el = ends[L];
   if (!el) return fold;
 
-  var stop = ends[R];
+  let stop = ends[R];
   if (!stop) return fold; //shouldn't happen because ends[L] is defined;
   stop = stop[R];
 
@@ -79,12 +96,12 @@ type ElementTrackingNode = {
   mqCmdNode?: NodeBase;
 };
 
-type Ends<T> = {
+export type Ends<T> = {
   readonly [L]: T;
   readonly [R]: T;
 };
 
-class NodeBase {
+export class NodeBase {
   static idCounter = 0;
   static uniqueNodeId() {
     return (NodeBase.idCounter += 1);
@@ -99,7 +116,7 @@ class NodeBase {
     if (!el.nodeType)
       throw new Error('must pass an Element to NodeBase.getNodeOfElement');
 
-    var elTrackingNode = el as ElementTrackingNode;
+    const elTrackingNode = el as ElementTrackingNode;
     return elTrackingNode.mqBlockNode || elTrackingNode.mqCmdNode;
   }
 
@@ -186,7 +203,7 @@ class NodeBase {
 
   createDir(dir: Direction, cursor: Cursor) {
     prayDirection(dir);
-    var node = this;
+    const node = this;
     node.html();
     node.domFrag().insDirOf(dir, cursor.domFrag());
     cursor[dir] = node.adopt(cursor.parent, cursor[L]!, cursor[R]!); // TODO - assuming not undefined, could be 0
@@ -201,10 +218,10 @@ class NodeBase {
   }
 
   bubble(yield_: (ancestor: MQNode) => boolean | undefined) {
-    var self = this.getSelfNode();
+    const self = this.getSelfNode();
 
-    for (var ancestor: NodeRef = self; ancestor; ancestor = ancestor.parent) {
-      var result = yield_(ancestor);
+    for (let ancestor: NodeRef = self; ancestor; ancestor = ancestor.parent) {
+      const result = yield_(ancestor);
       if (result === false) break;
     }
 
@@ -212,7 +229,7 @@ class NodeBase {
   }
 
   postOrder(yield_: (el: MQNode) => void) {
-    var self = this.getSelfNode();
+    const self = this.getSelfNode();
 
     (function recurse(descendant: MQNode) {
       if (!descendant) return false;
@@ -233,7 +250,7 @@ class NodeBase {
     if (!dlms) return false;
     if (!this.parent || this.parent.ctrlSeq === undefined) return false;
     // Remove any leading \left or \right from the ctrl sequence before looking it up.
-    var key = this.parent.ctrlSeq.replace(/^\\(left|right)?/, '');
+    const key = this.parent.ctrlSeq.replace(/^\\(left|right)?/, '');
     return dlms.hasOwnProperty(key);
   }
 
@@ -275,13 +292,13 @@ class NodeBase {
    * See `Fragment#adopt()`
    */
   adopt(parent: MQNode, leftward: NodeRef, rightward: NodeRef) {
-    var self = this.getSelfNode();
+    const self = this.getSelfNode();
     new Fragment(self, self).adopt(parent, leftward, rightward);
     return this.getSelfNode();
   }
 
   disown() {
-    var self = this.getSelfNode();
+    const self = this.getSelfNode();
     new Fragment(self, self).disown();
     return this;
   }
@@ -327,7 +344,7 @@ class NodeBase {
     return '';
   }
   latex() {
-    let ctx: LatexContext = { latex: '', startIndex: -1, endIndex: -1 };
+    const ctx: LatexContext = { latex: '', startIndex: -1, endIndex: -1 };
     this.latexRecursive(ctx);
     return ctx.latex;
   }
@@ -424,7 +441,7 @@ function prayWellFormed(parent: MQNode, leftward: NodeRef, rightward: NodeRef) {
  * DocumentFragment, whose contents must be detached from the visible tree
  * and have their 'parent' pointers set to the DocumentFragment).
  */
-class Fragment {
+export class Fragment {
   /**
    * The (doubly-linked) list of nodes contained in this fragment.
    *
@@ -523,16 +540,16 @@ class Fragment {
   adopt(parent: MQNode, leftward: NodeRef, rightward: NodeRef) {
     prayWellFormed(parent, leftward, rightward);
 
-    var self = this;
+    const self = this;
     this.disowned = false;
 
-    var leftEnd = self.ends[L];
+    const leftEnd = self.ends[L];
     if (!leftEnd) return this;
 
-    var rightEnd = self.ends[R];
+    const rightEnd = self.ends[R];
     if (!rightEnd) return this;
 
-    var ends = { [L]: parent.getEnd(L), [R]: parent.getEnd(R) };
+    const ends = { [L]: parent.getEnd(L), [R]: parent.getEnd(R) };
 
     if (leftward) {
       // NB: this is handled in the ::each() block
@@ -567,31 +584,31 @@ class Fragment {
    * Remove the nodes in this fragment from their parent.
    */
   disown() {
-    var self = this;
-    var leftEnd = self.ends[L];
+    const self = this;
+    const leftEnd = self.ends[L];
 
     // guard for empty and already-disowned fragments
     if (!leftEnd || self.disowned) return self;
 
     this.disowned = true;
 
-    var rightEnd = self.ends[R];
+    const rightEnd = self.ends[R];
     if (!rightEnd) return self;
-    var parent = leftEnd.parent;
+    const parent = leftEnd.parent;
 
     prayWellFormed(parent, leftEnd[L], leftEnd);
     prayWellFormed(parent, rightEnd, rightEnd[R]);
 
-    var ends = { [L]: parent.getEnd(L), [R]: parent.getEnd(R) };
+    const ends = { [L]: parent.getEnd(L), [R]: parent.getEnd(R) };
     if (leftEnd[L]) {
-      var leftLeftEnd = leftEnd[L] as MQNode;
+      const leftLeftEnd = leftEnd[L] as MQNode;
       leftLeftEnd[R] = rightEnd[R];
     } else {
       ends[L] = rightEnd[R];
     }
 
     if (rightEnd[R]) {
-      var rightRightEnd = rightEnd[R] as MQNode;
+      const rightRightEnd = rightEnd[R] as MQNode;
       rightRightEnd[L] = leftEnd[L];
     } else {
       ends[R] = leftEnd[L];
@@ -635,9 +652,11 @@ class Fragment {
  *
  * (Commands are all subclasses of Node.)
  */
-var LatexCmds: LatexCmds = {};
-var CharCmds: CharCmds = {};
+export const LatexCmds: { [key: string]: any } = {};
+export const CharCmds: {
+  [key: string]: unknown;
+} = {};
 
-function isMQNodeClass(cmd: any): cmd is typeof MQNode {
+export function isMQNodeClass(cmd: any): cmd is typeof MQNode {
   return cmd && cmd.prototype instanceof MQNode;
 }

@@ -1,3 +1,4 @@
+export = MathQuill;
 declare namespace MathQuill {
   export function getInterface(version: 1): v1.API;
   export function getInterface(version: 2): v1.API;
@@ -5,7 +6,7 @@ declare namespace MathQuill {
 
   type Direction = -1 | 1;
 
-  namespace v3 {
+  export namespace v3 {
     type HandlersWithDirection = v1.HandlersWithDirection;
     type HandlersWithoutDirection = v1.HandlersWithoutDirection;
     // The following should probably take a type parameter, but that would require
@@ -87,7 +88,7 @@ declare namespace MathQuill {
     }
   }
 
-  namespace v1 {
+  export namespace v1 {
     interface Config<$ = DefaultJquery> {
       ignoreNextMousedown?: (_el: MouseEvent) => boolean;
       substituteTextarea?: () => HTMLElement;

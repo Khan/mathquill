@@ -1,3 +1,5 @@
+import { pray } from 'src/utils';
+
 function parseError(stream: string, message: string): never {
   if (stream) {
     stream = "'" + stream + "'";
@@ -16,7 +18,7 @@ type ParserBody<T> = (
   onFailure: (stream: string, msg: string) => UnknownParserResult
 ) => T;
 
-class Parser<T> {
+export class Parser<T> {
   _: ParserBody<T>;
 
   // The Parser object is a wrapper for a parser function.
@@ -41,7 +43,7 @@ class Parser<T> {
   or<Q>(alternative: Parser<Q>): Parser<T | Q> {
     pray('or is passed a parser', alternative instanceof Parser);
 
-    var self = this;
+    const self = this;
 
     return new Parser(function (stream, onSuccess, onFailure) {
       return self._(stream, onSuccess, failure);
@@ -53,13 +55,13 @@ class Parser<T> {
   }
 
   then<Q>(next: Parser<Q> | ((result: T) => Parser<Q>)): Parser<Q> {
-    var self = this;
+    const self = this;
 
     return new Parser<Q>(function (stream: string, onSuccess, onFailure) {
       return self._(stream, success, onFailure) as any as Q;
 
       function success(newStream: string, result: T) {
-        var nextParser = next instanceof Parser ? next : next(result);
+        const nextParser = next instanceof Parser ? next : next(result);
         pray('a parser is returned', nextParser instanceof Parser);
         return nextParser._(newStream, onSuccess, onFailure);
       }
@@ -68,10 +70,10 @@ class Parser<T> {
 
   // -*- optimized iterative combinators -*- //
   many(): Parser<T[]> {
-    var self = this;
+    const self = this;
 
     return new Parser(function (stream, onSuccess, _onFailure) {
-      var xs: T[] = [];
+      const xs: T[] = [];
       while (self._(stream, success, failure));
       return onSuccess(stream, xs);
 
@@ -89,21 +91,21 @@ class Parser<T> {
 
   times(min: number, max?: number): Parser<T[]> {
     if (arguments.length < 2) max = min;
-    var self = this;
+    const self = this;
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      var xs: T[] = [];
-      var result: boolean = true;
-      var failure;
+      const xs: T[] = [];
+      let result: boolean = true;
+      let failure;
 
-      for (var i = 0; i < min; i += 1) {
+      for (let i = 0; i < min; i += 1) {
         // TODO, this may be incorrect for parsers that return boolean
         // (or generally, falsey) values
         result = !!self._(stream, success, firstFailure);
         if (!result) return onFailure(stream, failure as any as string);
       }
 
-      for (; i < (max as number) && result; i += 1) {
+      for (let i = 0; i < (max as number) && result; i += 1) {
         self._(stream, success, secondFailure);
       }
 
@@ -135,7 +137,7 @@ class Parser<T> {
     return this.times(0, n);
   }
   atLeast(n: number) {
-    var self = this;
+    const self = this;
     return self.times(n).then(function (start) {
       return self.many().map(function (end) {
         return start.concat(end);
@@ -157,11 +159,11 @@ class Parser<T> {
 
   // -*- primitive parsers -*- //
   static string(str: string): Parser<string> {
-    var len = str.length;
-    var expected = "expected '" + str + "'";
+    const len = str.length;
+    const expected = "expected '" + str + "'";
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      var head = stream.slice(0, len);
+      const head = stream.slice(0, len);
 
       if (head === str) {
         return onSuccess(stream.slice(len), head);
@@ -174,13 +176,13 @@ class Parser<T> {
   static regex(re: RegExp): Parser<string> {
     pray('regexp parser is anchored', re.toString().charAt(1) === '^');
 
-    var expected = 'expected ' + re;
+    const expected = 'expected ' + re;
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      var match = re.exec(stream);
+      const match = re.exec(stream);
 
       if (match) {
-        var result = match[0];
+        const result = match[0];
         return onSuccess(stream.slice(result.length), result);
       } else {
         return onFailure(stream, expected);

@@ -2,7 +2,37 @@
  * The publicly exposed MathQuill API.
  ********************************************************/
 
-type KIND_OF_MQ = 'StaticMath' | 'MathField' | 'InnerMathField' | 'TextField';
+import { getScrollX, getScrollY } from './browser';
+import { MathBlock } from './commands/math';
+import { EmbedNode } from './commands/math/commands';
+import { h } from './dom';
+import { domFrag } from './domFragment';
+import {
+  Controller,
+  defaultSubstituteKeyboardEvents,
+} from './services/textarea';
+import {
+  CursorOptions,
+  ConfigOptions,
+  BaseMathQuill,
+  EditableMathQuill,
+  EmbedOptionsData,
+  EmbedOptions,
+  HandlerOptions,
+  ControllerData,
+  LatexCmdsAny,
+  ControllerRoot,
+  RootBlockMixinInput,
+} from './shared_types';
+import { NodeBase, LatexCmds } from './tree';
+import { pray, L, R, Direction } from './utils';
+import MathQuillTypes = require('./mathquill');
+
+export type KIND_OF_MQ =
+  | 'StaticMath'
+  | 'MathField'
+  | 'InnerMathField'
+  | 'TextField';
 
 /** MathQuill instance fields/methods that are internal, not exposed in the public type defs. */
 interface InternalMathQuillInstance {
@@ -17,21 +47,25 @@ interface InternalMathQuillInstance {
   ): IBaseMathQuill;
 }
 
-interface IBaseMathQuill extends BaseMathQuill, InternalMathQuillInstance {}
+export interface IBaseMathQuill
+  extends BaseMathQuill,
+    InternalMathQuillInstance {}
 
 interface IBaseMathQuillClass {
   new (ctrlr: Controller): IBaseMathQuill;
   RootBlock: typeof MathBlock;
 }
 
-interface IEditableField extends EditableMathQuill, InternalMathQuillInstance {}
+export interface IEditableField
+  extends EditableMathQuill,
+    InternalMathQuillInstance {}
 
 interface IEditableFieldClass {
   new (ctrlr: Controller): IEditableField;
   RootBlock: typeof MathBlock;
 }
 
-interface APIClasses {
+export interface APIClasses {
   StaticMath?: IBaseMathQuillClass;
   MathField?: IEditableFieldClass;
   InnerMathField?: IEditableFieldClass;
@@ -47,9 +81,10 @@ type APIClassBuilders = {
   TextField?: (APIClasses: APIClasses) => IEditableFieldClass;
 };
 
-var API: APIClassBuilders = {};
+export const API: APIClassBuilders = {};
 
-var EMBEDS: Record<string, (data: EmbedOptionsData) => EmbedOptions> = {};
+export const EMBEDS: Record<string, (data: EmbedOptionsData) => EmbedOptions> =
+  {};
 
 const processedOptions = {
   handlers: true,
@@ -68,21 +103,21 @@ type OptionProcessors = Partial<{
   [K in ProcessedOption]: (optionValue: ConfigOptions[K]) => CursorOptions[K];
 }>;
 
-const baseOptionProcessors: OptionProcessors = {};
+export const baseOptionProcessors: OptionProcessors = {};
 
-type AutoDict = {
+export type AutoDict = {
   _maxLength?: number;
   [id: string]: any;
 };
 
 type SubstituteKeyboardEvents = (
-  el: $,
+  el: any, // was "$" from JQuery
   controller: Controller
 ) => {
   select: (text: string) => void;
 };
 
-class Options {
+export class Options {
   constructor(public version: 1 | 2 | 3) {}
 
   ignoreNextMousedown: (_el: MouseEvent) => boolean;
@@ -124,7 +159,7 @@ class Options {
   };
   scrollAnimationDuration?: number;
 
-  jQuery: $ | undefined;
+  jQuery: any | undefined; // was "$" from JQuery
   assertJquery() {
     pray('Interface versions > 2 do not depend on JQuery', this.version <= 2);
     pray('JQuery is set for interface v < 3', this.jQuery);
@@ -142,7 +177,7 @@ class Progenote {}
  * The methods are shimmed in outro.js so that MQ.MathField.prototype etc can
  * be accessed.
  */
-var insistOnInterVer = function () {
+let insistOnInterVer = function () {
   if (window.console)
     console.warn(
       'You are using the MathQuill API without specifying an interface version, ' +
@@ -191,13 +226,15 @@ MathQuill.interfaceVersion = function (v: number) {
 };
 MathQuill.getInterface = getInterface;
 
-var MIN = (getInterface.MIN = 1),
+const MIN = (getInterface.MIN = 1),
   MAX = (getInterface.MAX = 3);
 
-function getInterface(v: 1): MathQuill.v1.API;
-function getInterface(v: 2): MathQuill.v1.API;
-function getInterface(v: 3): MathQuill.v3.API;
-function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
+function getInterface(v: 1): MathQuillTypes.v1.API;
+function getInterface(v: 2): MathQuillTypes.v1.API;
+function getInterface(v: 3): MathQuillTypes.v3.API;
+function getInterface(
+  v: number
+): MathQuillTypes.v3.API | MathQuillTypes.v1.API {
   if (v !== 1 && v !== 2 && v !== 3)
     throw (
       'Only interface versions between ' +
@@ -238,8 +275,8 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
             ].join(' ')
           );
         }
-        var value = (newOptions as any)[name]; // TODO - think about typing this better
-        var processor = (optionProcessors as any)[name]; // TODO - validate option processors better
+        const value = (newOptions as any)[name]; // TODO - think about typing this better
+        const processor = (optionProcessors as any)[name]; // TODO - validate option processors better
         (currentOptions as any)[name] = processor ? processor(value) : value; // TODO - think about typing better
       }
     }
@@ -269,12 +306,12 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     ): IBaseMathQuill;
 
     mathquillify(classNames: string) {
-      var ctrlr = this.__controller,
+      const ctrlr = this.__controller,
         root = ctrlr.root,
         el = ctrlr.container;
       ctrlr.createTextarea();
 
-      var contents = domFrag(el).addClass(classNames).children().detach();
+      const contents = domFrag(el).addClass(classNames).children().detach();
 
       root.setDOM(
         domFrag(h('span', { class: 'mq-root-block', 'aria-hidden': true }))
@@ -314,7 +351,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     mathspeak() {
       return this.__controller.exportMathSpeak();
     }
-    latex(latex: unknown): typeof this;
+    latex(latex: unknown): this;
     latex(): string;
     latex(latex?: unknown) {
       if (arguments.length > 0) {
@@ -382,7 +419,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       return this;
     }
     empty() {
-      var root = this.__controller.root,
+      const root = this.__controller.root,
         cursor = this.__controller.cursor;
 
       root.setEnds({ [L]: 0, [R]: 0 });
@@ -392,12 +429,12 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       return this;
     }
     cmd(cmd: string) {
-      var ctrlr = this.__controller.notify(undefined),
+      const ctrlr = this.__controller.notify(undefined),
         cursor = ctrlr.cursor;
       if (/^\\[a-z]+$/i.test(cmd) && !cursor.isTooDeep()) {
         cmd = cmd.slice(1);
-        var klass = (LatexCmds as LatexCmdsAny)[cmd];
-        var node;
+        const klass = (LatexCmds as LatexCmdsAny)[cmd];
+        let node;
         if (klass) {
           if (klass.constructor) {
             node = new klass(cmd);
@@ -436,24 +473,24 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     }
 
     keystroke(keysString: string, evt?: KeyboardEvent) {
-      var keys = keysString.replace(/^\s+|\s+$/g, '').split(/\s+/);
-      for (var i = 0; i < keys.length; i += 1) {
+      const keys = keysString.replace(/^\s+|\s+$/g, '').split(/\s+/);
+      for (let i = 0; i < keys.length; i += 1) {
         this.__controller.keystroke(keys[i], evt);
       }
       return this;
     }
     typedText(text: string) {
-      for (var i = 0; i < text.length; i += 1)
+      for (let i = 0; i < text.length; i += 1)
         this.__controller.typedText(text.charAt(i));
       return this;
     }
     dropEmbedded(pageX: number, pageY: number, options: EmbedOptions) {
-      var clientX = pageX - getScrollX();
-      var clientY = pageY - getScrollY();
+      const clientX = pageX - getScrollX();
+      const clientY = pageY - getScrollY();
 
-      var el = document.elementFromPoint(clientX, clientY);
+      const el = document.elementFromPoint(clientX, clientY);
       this.__controller.seek(el, clientX, clientY);
-      var cmd = new EmbedNode().setOptions(options);
+      const cmd = new EmbedNode().setOptions(options);
       cmd.createLeftOf(this.__controller.cursor);
     }
     setAriaPostLabel(ariaPostLabel: string, timeout?: number) {
@@ -465,7 +502,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     }
     clickAt(clientX: number, clientY: number, target: HTMLElement) {
       target = target || document.elementFromPoint(clientX, clientY);
-      var ctrlr = this.__controller,
+      const ctrlr = this.__controller,
         root = ctrlr.root;
       const rootElement = root.domFrag().oneElement();
       if (!rootElement.contains(target)) target = rootElement;
@@ -479,7 +516,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     }
   }
 
-  var APIClasses: APIClasses = {
+  const APIClasses: APIClasses = {
     AbstractMathQuill,
     EditableField,
   } as unknown as APIClasses;
@@ -514,8 +551,8 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
         break;
       }
     }
-    var blockNode = NodeBase.getNodeOfElement(blockElement) as MathBlock; // TODO - assumng it's a MathBlock
-    var ctrlr = blockNode && blockNode.controller;
+    const blockNode = NodeBase.getNodeOfElement(blockElement) as MathBlock; // TODO - assumng it's a MathBlock
+    const ctrlr = blockNode && blockNode.controller;
     const APIClass = ctrlr && APIClasses[ctrlr.KIND_OF_MQ];
     return ctrlr && APIClass ? new APIClass(ctrlr) : null;
   };
@@ -576,9 +613,9 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     ): InstanceType<MQClass>;
     function mqEntrypoint(el?: HTMLElement | null, opts?: ConfigOptions) {
       if (!el || !el.nodeType) return null;
-      var mq = MQ(el);
+      const mq = MQ(el);
       if (mq instanceof APIClass) return mq;
-      var ctrlr = new Controller(
+      const ctrlr = new Controller(
         new APIClass.RootBlock() as ControllerRoot,
         el,
         new BaseOptions(version)
@@ -592,7 +629,7 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
   return MQ;
 }
 
-function RootBlockMixin(_: RootBlockMixinInput) {
+export function RootBlockMixin(_: RootBlockMixinInput) {
   _.moveOutOf = function (dir: Direction) {
     pray('controller is defined', this.controller);
     this.controller.handle('moveOutOf', dir);

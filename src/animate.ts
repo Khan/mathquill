@@ -23,7 +23,7 @@
  * to keep its implementation simple because it isn't used very widely
  * in the project.
  */
-const animate = (function () {
+export const animate = (function () {
   // IIFE exists just to hang on to configured rafShim and cancelShim
   // functions
   let rafShim: (cb: () => void) => number, cancelShim: (token: number) => void;
@@ -42,7 +42,7 @@ const animate = (function () {
     duration: number,
     cb: (progress: number, scheduleNext: () => void, cancel: () => void) => void
   ) {
-    let start = Date.now();
+    const start = Date.now();
     let cancelToken: number | undefined;
     let progress = 0;
     function step() {

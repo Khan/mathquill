@@ -1,4 +1,4 @@
-var assert = (function () {
+const assert = (function () {
   class AssertionError extends Error {
     message: string;
     explanation: string;
@@ -38,7 +38,7 @@ var assert = (function () {
       });
     },
     throws: function (fn: Function, message?: string) {
-      var error = false;
+      let error = false;
 
       try {
         fn();

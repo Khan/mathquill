@@ -1,5 +1,20 @@
+import { Cursor } from './cursor';
+import { KIND_OF_MQ } from './publicapi';
+import { Aria } from './services/aria';
+import { Controller } from './services/textarea';
+import {
+  HandlerOptions,
+  HandlersWithDirection,
+  HandlersWithoutDirection,
+  ControllerData,
+  ControllerRoot,
+  CursorOptions,
+  ControllerEvent,
+} from './shared_types';
+import { Direction, L, R, pray } from './utils';
+
 type TextareaKeyboardEventListeners = Partial<{
-  [K in keyof HTMLElementEventMap]: (event: HTMLElementEventMap[K]) => any;
+  [K in keyof HTMLElementEventMap]: (event: HTMLElementEventMap[K]) => unknown;
 }>;
 
 /*********************************************
@@ -13,7 +28,7 @@ type HandlerWithoutDirectionFunction = NonNullable<
   HandlerOptions[HandlersWithoutDirection]
 >;
 
-class ControllerBase {
+export class ControllerBase {
   id: number;
   data: ControllerData;
   readonly root: ControllerRoot;
@@ -29,7 +44,9 @@ class ControllerBase {
 
   textarea: HTMLElement | undefined;
   private textareaEventListeners: Partial<{
-    [K in keyof HTMLElementEventMap]: (event: HTMLElementEventMap[K]) => any;
+    [K in keyof HTMLElementEventMap]: (
+      event: HTMLElementEventMap[K]
+    ) => unknown;
   }> = {};
 
   textareaSpan: HTMLElement | undefined;
@@ -63,7 +80,7 @@ class ControllerBase {
 
   getControllerSelf() {
     // dance we have to do to tell this thing it's a full controller
-    return this as any as Controller;
+    return this as unknown as Controller;
   }
 
   handle(name: HandlersWithDirection, dir: Direction): void;
@@ -72,12 +89,12 @@ class ControllerBase {
     name: HandlersWithDirection | HandlersWithoutDirection,
     dir?: Direction
   ) {
-    var handlers = this.options.handlers;
+    const handlers = this.options.handlers;
     const handler = this.options.handlers?.fns[name];
     if (handler) {
       const APIClass = handlers?.APIClasses[this.KIND_OF_MQ];
       pray('APIClass is defined', APIClass);
-      var mq = new APIClass(this as any); // cast to any bedcause APIClass needs the final Controller subclass.
+      const mq = new APIClass(this as unknown as Controller);
       if (dir === L || dir === R)
         (handler as HandlerWithDirectionFunction)(dir, mq);
       else (handler as HandlerWithoutDirectionFunction)(mq);
@@ -89,13 +106,13 @@ class ControllerBase {
     ControllerBase.notifyees.push(f);
   }
   notify(e: ControllerEvent) {
-    for (var i = 0; i < ControllerBase.notifyees.length; i += 1) {
+    for (let i = 0; i < ControllerBase.notifyees.length; i += 1) {
       ControllerBase.notifyees[i](this.cursor, e);
     }
     return this;
   }
   setAriaLabel(ariaLabel: string) {
-    var oldAriaLabel = this.getAriaLabel();
+    const oldAriaLabel = this.getAriaLabel();
     if (ariaLabel && typeof ariaLabel === 'string' && ariaLabel !== '') {
       this.ariaLabel = ariaLabel;
     } else if (this.editable) {
@@ -158,13 +175,13 @@ class ControllerBase {
   }
 
   getTextareaOrThrow() {
-    var textarea = this.textarea;
+    const textarea = this.textarea;
     if (!textarea) throw new Error('expected a textarea');
     return textarea;
   }
 
   getTextareaSpanOrThrow() {
-    var textareaSpan = this.textareaSpan;
+    const textareaSpan = this.textareaSpan;
     if (!textareaSpan) throw new Error('expected a textareaSpan');
     return textareaSpan;
   }

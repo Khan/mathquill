@@ -2,6 +2,18 @@
  * Symbols for Advanced Mathematics
  ***********************************/
 
+import { LatexCmds, isMQNodeClass } from 'src/tree';
+import {
+  BinaryOperator,
+  MathCommand,
+  bindBinaryOperator,
+  bindVanillaSymbol,
+} from '../math';
+import { Cursor } from 'src/cursor';
+import { h } from 'src/dom';
+import { Parser } from 'src/services/parser.util';
+import { MQNodeBuilderNoParam } from 'src/shared_types';
+
 LatexCmds.notin =
   LatexCmds.cong =
   LatexCmds.equiv =
@@ -132,9 +144,9 @@ LatexCmds.mathbb = class extends MathCommand {
     return 1 as const;
   }
   parser() {
-    var string = Parser.string;
-    var regex = Parser.regex;
-    var optWhitespace = Parser.optWhitespace;
+    const string = Parser.string;
+    const regex = Parser.regex;
+    const optWhitespace = Parser.optWhitespace;
     return optWhitespace
       .then(string('{'))
       .then(optWhitespace)
@@ -143,7 +155,7 @@ LatexCmds.mathbb = class extends MathCommand {
       .skip(string('}'))
       .map(function (c) {
         // instantiate the class for the matching char
-        var cmd = LatexCmds[c];
+        const cmd = LatexCmds[c];
         if (isMQNodeClass(cmd)) {
           return new cmd();
         } else {

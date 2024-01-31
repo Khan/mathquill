@@ -1,3 +1,6 @@
+import { noop } from 'src/utils';
+import { Controller } from './textarea';
+
 /** Poller that fires once every tick. */
 class EveryTick<Args extends unknown[] = []> {
   private timeoutId: number;
@@ -41,7 +44,7 @@ class EveryTick<Args extends unknown[] = []> {
  * cross-browser issues that arise must be dealt
  * with here, and if necessary, the API updated.
  ************************************************/
-var saneKeyboardEvents = (function () {
+export const saneKeyboardEvents = (function () {
   // The following [key values][1] map was compiled from the
   // [DOM3 Events appendix section on key codes][2] and
   // [a widely cited report on cross-browser tests of key codes][3],
@@ -128,7 +131,7 @@ var saneKeyboardEvents = (function () {
    * of the key combo (i.e., key code and modifier keys). */
   function getMQKeyName(evt: KeyboardEvent) {
     const key = getMQKeyStem(evt);
-    var modifiers = [];
+    const modifiers = [];
 
     if (evt.ctrlKey) modifiers.push('Ctrl');
     if (evt.metaKey) modifiers.push('Meta');
@@ -148,8 +151,8 @@ var saneKeyboardEvents = (function () {
     textarea: HTMLElement,
     controller: Controller
   ) {
-    var keydown: KeyboardEvent | null = null;
-    var keypress: KeyboardEvent | null = null;
+    let keydown: KeyboardEvent | null = null;
+    let keypress: KeyboardEvent | null = null;
 
     // everyTick.listen() is called after key or clipboard events to
     // say "Hey, I think something was just typed" or "pasted" etc,
@@ -169,7 +172,9 @@ var saneKeyboardEvents = (function () {
         // fails to happen in this case. Why would the textarea
         // be hidden? And who would even be able to tell?
         if (textarea instanceof HTMLTextAreaElement) textarea.select();
-      } catch (e) {}
+      } catch (e) {
+        /* noop */
+      }
     }
 
     // -*- public methods -*- //
@@ -184,7 +189,7 @@ var saneKeyboardEvents = (function () {
       if (text) guardedTextareaSelect();
       shouldBeSelected = !!text;
     }
-    var shouldBeSelected = false;
+    let shouldBeSelected = false;
 
     // -*- helper subroutines -*- //
 
@@ -283,7 +288,7 @@ var saneKeyboardEvents = (function () {
       // b1318e5349160b665003e36d4eedd64101ceacd8
       if (hasSelection()) return;
       if (!(textarea instanceof HTMLTextAreaElement)) return;
-      var text = textarea.value;
+      const text = textarea.value;
 
       // In Linux and Chrome or Chrome OS, users may issue the Ctrl-Shift-U command to input a Unicode character.
       // Unfortunately, when the system is in this state, Chrome sends a keydown of "Ctrl-Shift-Unidentified" in Linux, "Ctrl-Shift-U" on Windows/Mac, or "Ctrl-Shift-Process" in the latest Chrome OS.
@@ -350,7 +355,7 @@ var saneKeyboardEvents = (function () {
 
       everyTick.listen(function pastedText() {
         if (!(textarea instanceof HTMLTextAreaElement)) return;
-        var text = textarea.value;
+        const text = textarea.value;
         textarea.value = '';
         if (text) controller.paste(text);
       });

@@ -1,7 +1,11 @@
+import { ControllerBase } from 'src/controller';
+import { Controller_exportText } from './exportText';
+import { domFrag } from 'src/domFragment';
+
 ControllerBase.onNotify(function (cursor, e) {
   // these try to cover all ways that mathquill can be modified
   if (e === 'edit' || e === 'replace' || e === undefined) {
-    var controller = cursor.controller;
+    const controller = cursor.controller;
     if (!controller) return;
     if (!controller.options.enableDigitGrouping) return;
 
@@ -15,7 +19,7 @@ ControllerBase.onNotify(function (cursor, e) {
   }
 });
 
-class Controller_focusBlur extends Controller_exportText {
+export class Controller_focusBlur extends Controller_exportText {
   blurred: boolean;
   __disableGroupingTimeout: number;
   textareaSelectionTimeout: number;
@@ -106,7 +110,7 @@ class Controller_focusBlur extends Controller_exportText {
   }
 
   addEditableFocusBlurListeners() {
-    var ctrlr = this,
+    const ctrlr = this,
       cursor = ctrlr.cursor;
     this.addTextareaEventListeners({
       focus: this.handleTextareaFocusEditable,

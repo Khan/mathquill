@@ -1,3 +1,6 @@
+import { DOMView, MathCommand, MathBlock } from 'src/commands/math';
+import { h, parseHTML } from 'src/dom';
+
 suite('HTML', function () {
   function renderHtml(domView: DOMView) {
     const Cmd = class extends MathCommand {
