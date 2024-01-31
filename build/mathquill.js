@@ -4310,6 +4310,11 @@ var Controller_mouse = /** @class */ (function (_super) {
             if (closest(e.target, '.mq-ignore-mousedown')) {
                 return;
             }
+            // triple click should select all mathQuill content
+            if (e.detail === 3) {
+                ctrlr.selectAll();
+                return;
+            }
             var lastMousemoveTarget = null;
             function mousemove(e) {
                 lastMousemoveTarget = e.target;
