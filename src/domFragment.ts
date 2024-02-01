@@ -1,5 +1,4 @@
-import { Ends } from './tree';
-import { pray, L, R, Direction } from './utils';
+import { Ends, pray, L, R, Direction } from './bundle';
 
 /**
  * A `DOMFragment` represents a contiguous span of sibling DOM Nodes,
@@ -42,7 +41,7 @@ import { pray, L, R, Direction } from './utils';
  * nodes between its ends.
  */
 export class DOMFragment {
-  private ends: Ends<Node> | undefined;
+  ends: Ends<Node> | undefined;
 
   /**
    * Returns a `DOMFragment` representing the contiguous span of sibling
@@ -60,18 +59,18 @@ export class DOMFragment {
   ): DOMFragment {
     if (arguments.length === 1) last = first;
     pray('No half-empty DOMFragments', !!first === !!last);
-    const out = new DOMFragment(first, last);
+    var out = new DOMFragment(first, last);
     pray('last is a forward sibling of first', out.isValid());
     return out;
   }
 
   /**
-   * Constructor is private to enforce that the invariant checks in
+   * Do not call. Internal in order to enforce that the invariant checks in
    * `create` are applied to outside callers. Internal methods are
    * allowed to use this constructor when they can guarantee they're
    * passing sibling nodes (such as children of a parent node).
    */
-  private constructor(first?: Node, last?: Node) {
+  constructor(first?: Node, last?: Node) {
     if (arguments.length === 1) last = first;
     if (!first || !last) return;
     this.ends = { [L]: first, [R]: last };
@@ -98,7 +97,7 @@ export class DOMFragment {
   isValid(): boolean {
     if (!this.ends) return true;
     if (this.ends[L] === this.ends[R]) return true;
-    let maybeLast: Node | undefined;
+    var maybeLast: Node | undefined;
     this.eachNode((el) => (maybeLast = el));
     return maybeLast === this.ends[R];
   }
@@ -135,9 +134,9 @@ export class DOMFragment {
    * like jQuery's .contents() than jQuery's .children()
    */
   children() {
-    const el = this.oneNode();
-    const first = el.firstChild;
-    const last = el.lastChild;
+    var el = this.oneNode();
+    var first = el.firstChild;
+    var last = el.lastChild;
     return first && last ? new DOMFragment(first, last) : new DOMFragment();
   }
 
@@ -154,8 +153,8 @@ export class DOMFragment {
     if (!sibling.ends) return this;
 
     // Check if sibling is actually a sibling of this span
-    let found = false;
-    let current: Node | null = this.ends[R].nextSibling;
+    var found = false;
+    var current: Node | null = this.ends[R].nextSibling;
     while (current) {
       if (current === sibling.ends[L]) {
         found = true;
@@ -188,7 +187,7 @@ export class DOMFragment {
    * is an Element node.
    */
   oneElement(): HTMLElement {
-    const el = this.oneNode();
+    var el = this.oneNode();
     pray('Node is an Element', el.nodeType === Node.ELEMENT_NODE);
     return el as HTMLElement;
   }
@@ -200,7 +199,7 @@ export class DOMFragment {
    * is a Text node.
    */
   oneText(): Text {
-    const el = this.oneNode();
+    var el = this.oneNode();
     pray('Node is Text', el.nodeType === Node.TEXT_NODE);
     return el as Text;
   }
@@ -212,8 +211,8 @@ export class DOMFragment {
    */
   eachNode(cb: (el: Node) => void): DOMFragment {
     if (!this.ends) return this;
-    const stop = this.ends[R];
-    for (let node: Node = this.ends[L], next: Node; node; node = next) {
+    var stop = this.ends[R];
+    for (var node: Node = this.ends[L], next: Node; node; node = next) {
       // Note, this loop is organized in a slightly tricky way in order
       // cache "next" before calling the callback. This is done because
       // the callback could mutate node.nextSibling (e.g. by moving the
@@ -247,7 +246,7 @@ export class DOMFragment {
    * fragment.
    */
   text() {
-    let accum = '';
+    var accum = '';
     this.eachNode((node) => {
       accum += node.textContent || '';
     });
@@ -259,7 +258,7 @@ export class DOMFragment {
    * that are not Element nodes such as Text and Comment nodes;
    */
   toNodeArray() {
-    const accum: Node[] = [];
+    var accum: Node[] = [];
     this.eachNode((el) => accum.push(el));
     return accum;
   }
@@ -270,7 +269,7 @@ export class DOMFragment {
    * and Comment nodes.
    */
   toElementArray() {
-    const accum: HTMLElement[] = [];
+    var accum: HTMLElement[] = [];
     this.eachElement((el) => accum.push(el));
     return accum;
   }
@@ -281,7 +280,7 @@ export class DOMFragment {
    * Text and Comment nodes.
    */
   toDocumentFragment() {
-    const frag = document.createDocumentFragment();
+    var frag = document.createDocumentFragment();
     this.eachNode((el) => frag.appendChild(el));
     return frag;
   }
@@ -361,7 +360,7 @@ export class DOMFragment {
    */
   parent() {
     if (!this.ends) return this;
-    const parent = this.ends[L].parentNode;
+    var parent = this.ends[L].parentNode;
     if (!parent) return new DOMFragment();
     return new DOMFragment(parent);
   }
@@ -374,8 +373,8 @@ export class DOMFragment {
   wrapAll(el: HTMLElement) {
     el.textContent = ''; // First empty the wrapping element
     if (!this.ends) return this;
-    const parent = this.ends[L].parentNode;
-    const next = this.ends[R].nextSibling;
+    var parent = this.ends[L].parentNode;
+    var next = this.ends[R].nextSibling;
     this.appendTo(el);
     if (parent) {
       parent.insertBefore(el, next);
@@ -396,18 +395,18 @@ export class DOMFragment {
    * makes additional clones of `children`.
    */
   replaceWith(children: DOMFragment) {
-    const rightEnd = this.ends?.[R];
+    var rightEnd = this.ends?.[R];
 
     // Note: important to cache parent and nextSibling (if they exist)
     // before detaching this fragment from the document (which will
     // mutate its parent and sibling references)
-    const parent = rightEnd?.parentNode;
-    const nextSibling = rightEnd?.nextSibling;
+    var parent = rightEnd?.parentNode;
+    var nextSibling = rightEnd?.nextSibling;
     this.detach();
     // Note, this purposely detaches children from the document, even if
     // they can't be reinserted because this fragment is empty or has no
     // parent
-    const childDocumentFragment = children.toDocumentFragment();
+    var childDocumentFragment = children.toDocumentFragment();
     if (!rightEnd || !parent) return this;
     parent.insertBefore(childDocumentFragment, nextSibling || null);
     return this;
@@ -424,7 +423,7 @@ export class DOMFragment {
   nthElement(n: number): HTMLElement | undefined {
     if (!this.ends) return undefined;
     if (n < 0 || n !== Math.floor(n)) return undefined;
-    let current: Node | null = this.ends[L];
+    var current: Node | null = this.ends[L];
     while (current) {
       // Only count element nodes
       if (current.nodeType === Node.ELEMENT_NODE) {
@@ -453,7 +452,7 @@ export class DOMFragment {
    */
   lastElement(): HTMLElement | undefined {
     if (!this.ends) return undefined;
-    let current: Node | null = this.ends[R];
+    var current: Node | null = this.ends[R];
     while (current) {
       // Only count element nodes
       if (current.nodeType === Node.ELEMENT_NODE) {
@@ -503,7 +502,7 @@ export class DOMFragment {
     // Note, would be reasonable to extend this to take a second
     // argument if we ever find we need this
     if (!this.ends) return this;
-    const el = this.nthElement(n);
+    var el = this.nthElement(n);
     if (!el) return new DOMFragment();
     return new DOMFragment(el, this.ends[R]);
   }
@@ -517,7 +516,7 @@ export class DOMFragment {
    * Asserts that this fragment contains exactly one Node.
    */
   next() {
-    let current: Node | null = this.oneNode();
+    var current: Node | null = this.oneNode();
     while (current) {
       current = current.nextSibling;
       if (current && current.nodeType === Node.ELEMENT_NODE)
@@ -535,7 +534,7 @@ export class DOMFragment {
    * Asserts that this fragment contains exactly one Node.
    */
   prev() {
-    let current: Node | null = this.oneNode();
+    var current: Node | null = this.oneNode();
     while (current) {
       current = current.previousSibling;
       if (current && current.nodeType === Node.ELEMENT_NODE)
@@ -607,7 +606,7 @@ export class DOMFragment {
    */
   insDirOf(dir: Direction, sibling: DOMFragment): DOMFragment {
     if (!this.ends) return this;
-    const el = sibling.ends?.[dir];
+    var el = sibling.ends?.[dir];
     if (!el || !el.parentNode) return this.detach();
     _insDirOf(dir, el.parentNode, this.toDocumentFragment(), el);
     return this;
@@ -628,7 +627,7 @@ export class DOMFragment {
    * and false otherwise.
    */
   hasClass(className: string): boolean {
-    let out = false;
+    var out = false;
     this.eachElement((el) => {
       if (el.classList.contains(className)) out = true;
     });
@@ -640,7 +639,7 @@ export class DOMFragment {
    * `classNames` to each element in this fragment.
    */
   addClass(classNames: string) {
-    for (const className of classNames.split(/\s+/)) {
+    for (var className of classNames.split(/\s+/)) {
       if (!className) continue;
       this.eachElement((el) => {
         el.classList.add(className);
@@ -654,7 +653,7 @@ export class DOMFragment {
    * `classNames` from each element in this fragment.
    */
   removeClass(classNames: string) {
-    for (const className of classNames.split(/\s+/)) {
+    for (var className of classNames.split(/\s+/)) {
       if (!className) continue;
       this.eachElement((el) => {
         el.classList.remove(className);
@@ -673,7 +672,7 @@ export class DOMFragment {
   toggleClass(classNames: string, on?: boolean) {
     if (on === true) return this.addClass(classNames);
     if (on === false) return this.removeClass(classNames);
-    for (const className of classNames.split(/\s+/)) {
+    for (var className of classNames.split(/\s+/)) {
       if (!className) continue;
       this.eachElement((el) => {
         el.classList.toggle(className);
@@ -683,7 +682,7 @@ export class DOMFragment {
   }
 }
 
-export const domFrag = DOMFragment.create;
+export var domFrag = DOMFragment.create;
 
 /**
  * Insert `source` before or after `target` child of `parent` denending

@@ -1,0 +1,1 @@
+{"version":3,"file":"mouse.d.ts","sourceRoot":"","sources":["../../../src/services/mouse.ts"],"names":[],"mappings":"AAAA,OAAO,EAGL,gBAAgB,EAOjB,MAAM,WAAW,CAAC;AAkCnB,qBAAa,gBAAiB,SAAQ,gBAAgB;IACpD,eAAe,MAAO,UAAU,UAkH9B;IAEF,qBAAqB;IAKrB,wBAAwB;IAIxB,IAAI,CAAC,SAAS,EAAE,OAAO,GAAG,IAAI,EAAE,OAAO,EAAE,MAAM,EAAE,QAAQ,EAAE,MAAM;CA+BlE"}

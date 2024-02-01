@@ -3,24 +3,32 @@
  * interaction with the typist.
  ****************************************/
 
-import { ControllerBase } from 'src/controller';
-import { ControllerEvent } from 'src/shared_types';
-import { NodeBase, Fragment } from 'src/tree';
-import { L, R, Direction, pray, prayDirection } from 'src/utils';
-import { Controller_focusBlur } from './focusBlur';
-import { Controller } from './textarea';
-import { Cursor, Anticursor } from 'src/cursor';
-import { baseOptionProcessors } from 'src/publicapi';
+import {
+  Anticursor,
+  Controller,
+  ControllerBase,
+  ControllerEvent,
+  Controller_focusBlur,
+  Cursor,
+  Direction,
+  Fragment,
+  L,
+  NodeBase,
+  R,
+  baseOptionProcessors,
+  pray,
+  prayDirection,
+} from '../bundle';
 
 /**
  * Only one incremental selection may be open at a time. Track whether
  * an incremental selection is open to help enforce this invariant.
  */
-let INCREMENTAL_SELECTION_OPEN = false;
+var INCREMENTAL_SELECTION_OPEN = false;
 
 export class MQNode extends NodeBase {
   keystroke(key: string, e: KeyboardEvent | undefined, ctrlr: Controller) {
-    const cursor = ctrlr.cursor;
+    var cursor = ctrlr.cursor;
 
     switch (key) {
       case 'Ctrl-Shift-Backspace':
@@ -270,7 +278,7 @@ export class Controller_keystroke extends Controller_focusBlur {
 
   escapeDir(dir: Direction, _key: string, e?: KeyboardEvent) {
     prayDirection(dir);
-    const cursor = this.cursor;
+    var cursor = this.cursor;
 
     // only prevent default of Tab if not in the root editable
     if (cursor.parent !== this.root) e?.preventDefault();
@@ -286,9 +294,9 @@ export class Controller_keystroke extends Controller_focusBlur {
   }
   moveDir(dir: Direction) {
     prayDirection(dir);
-    const cursor = this.cursor,
+    var cursor = this.cursor,
       updown = cursor.options.leftRightIntoCmdGoes;
-    const cursorDir = cursor[dir];
+    var cursorDir = cursor[dir];
 
     if (cursor.selection) {
       cursor.insDirOf(dir, cursor.selection.getEnd(dir));
@@ -323,10 +331,10 @@ export class Controller_keystroke extends Controller_focusBlur {
     return this.moveUpDown('down');
   }
   moveUpDown(dir: 'up' | 'down') {
-    const self = this;
-    const cursor = self.notify('upDown').cursor;
-    let dirInto: 'upInto' | 'downInto';
-    let dirOutOf: 'upOutOf' | 'downOutOf';
+    var self = this;
+    var cursor = self.notify('upDown').cursor;
+    var dirInto: 'upInto' | 'downInto';
+    var dirOutOf: 'upOutOf' | 'downOutOf';
 
     if (dir === 'up') {
       dirInto = 'upInto';
@@ -336,17 +344,17 @@ export class Controller_keystroke extends Controller_focusBlur {
       dirOutOf = 'downOutOf';
     }
 
-    const cursorL = cursor[L];
-    const cursorR = cursor[R];
-    const cursorR_dirInto = cursorR && cursorR[dirInto];
-    const cursorL_dirInto = cursorL && cursorL[dirInto];
+    var cursorL = cursor[L];
+    var cursorR = cursor[R];
+    var cursorR_dirInto = cursorR && cursorR[dirInto];
+    var cursorL_dirInto = cursorL && cursorL[dirInto];
 
     if (cursorR_dirInto) cursor.insAtLeftEnd(cursorR_dirInto);
     else if (cursorL_dirInto) cursor.insAtRightEnd(cursorL_dirInto);
     else {
       cursor.parent.bubble(function (ancestor: MQNode) {
         // TODO - revist this
-        let prop = ancestor[dirOutOf];
+        var prop = ancestor[dirOutOf];
         if (prop) {
           if (typeof prop === 'function')
             prop = prop.call(ancestor, cursor) as any; // TODO - figure out if we need to assign to prop
@@ -360,10 +368,10 @@ export class Controller_keystroke extends Controller_focusBlur {
   }
   deleteDir(dir: Direction) {
     prayDirection(dir);
-    const cursor = this.cursor;
-    const cursorEl = cursor[dir] as MQNode;
-    const cursorElParent = cursor.parent.parent;
-    const ctrlr = cursor.controller;
+    var cursor = this.cursor;
+    var cursorEl = cursor[dir] as MQNode;
+    var cursorElParent = cursor.parent.parent;
+    var ctrlr = cursor.controller;
 
     if (cursorEl && cursorEl instanceof MQNode) {
       if (cursorEl.sides) {
@@ -390,8 +398,8 @@ export class Controller_keystroke extends Controller_focusBlur {
           // likely a fraction, and we just backspaced over the slash
           ctrlr.aria.queue(cursorElParent.mathspeakTemplate[1]);
         } else {
-          const mst = cursorElParent.mathspeakTemplate;
-          const textToQueue = dir === L ? mst[0] : mst[mst.length - 1];
+          var mst = cursorElParent.mathspeakTemplate;
+          var textToQueue = dir === L ? mst[0] : mst[mst.length - 1];
           ctrlr.aria.queue(textToQueue);
         }
       } else {
@@ -399,16 +407,16 @@ export class Controller_keystroke extends Controller_focusBlur {
       }
     }
 
-    const hadSelection = cursor.selection;
+    var hadSelection = cursor.selection;
     this.notify('edit'); // deletes selection if present
     if (!hadSelection) {
-      const cursorDir = cursor[dir];
+      var cursorDir = cursor[dir];
       if (cursorDir) cursorDir.deleteTowards(dir, cursor);
       else cursor.parent.deleteOutOf(dir, cursor);
     }
 
-    const cursorL = cursor[L] as MQNode;
-    const cursorR = cursor[R] as MQNode;
+    var cursorL = cursor[L] as MQNode;
+    var cursorR = cursor[R] as MQNode;
     if (cursorL.siblingDeleted) cursorL.siblingDeleted(cursor.options, R);
     if (cursorR.siblingDeleted) cursorR.siblingDeleted(cursor.options, L);
     cursor.parent.bubble(function (node) {
@@ -420,11 +428,11 @@ export class Controller_keystroke extends Controller_focusBlur {
   }
   ctrlDeleteDir(dir: Direction) {
     prayDirection(dir);
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     if (!cursor[dir] || cursor.selection) return this.deleteDir(dir);
 
     this.notify('edit');
-    let fragRemoved;
+    var fragRemoved;
     if (dir === L) {
       fragRemoved = new Fragment(
         (cursor.parent as MQNode).getEnd(L),
@@ -441,8 +449,8 @@ export class Controller_keystroke extends Controller_focusBlur {
 
     cursor.insAtDirEnd(dir, cursor.parent);
 
-    const cursorL = cursor[L];
-    const cursorR = cursor[R];
+    var cursorL = cursor[L];
+    var cursorR = cursor[R];
     if (cursorL) cursorL.siblingDeleted(cursor.options, R);
     if (cursorR) cursorR.siblingDeleted(cursor.options, L);
     cursor.parent.bubble(function (node) {
@@ -464,7 +472,7 @@ export class Controller_keystroke extends Controller_focusBlur {
    * should only be called by withIncrementalSelection because they must
    * be called in sequence.
    */
-  private startIncrementalSelection() {
+  startIncrementalSelection() {
     pray(
       "Multiple selections can't be simultaneously open",
       !INCREMENTAL_SELECTION_OPEN
@@ -472,7 +480,7 @@ export class Controller_keystroke extends Controller_focusBlur {
 
     INCREMENTAL_SELECTION_OPEN = true;
     this.notify('select');
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     if (!cursor.anticursor) cursor.startSelection();
   }
 
@@ -484,15 +492,15 @@ export class Controller_keystroke extends Controller_focusBlur {
    * should only be called by withIncrementalSelection because they must
    * be called in sequence.
    */
-  private selectDirIncremental(dir: Direction) {
+  selectDirIncremental(dir: Direction) {
     pray('A selection is open', INCREMENTAL_SELECTION_OPEN);
     INCREMENTAL_SELECTION_OPEN = true;
 
-    const cursor = this.cursor,
+    var cursor = this.cursor,
       seln = cursor.selection;
     prayDirection(dir);
 
-    const node = cursor[dir];
+    var node = cursor[dir];
     if (node) {
       // "if node we're selecting towards is inside selection (hence retracting)
       // and is on the *far side* of the selection (hence is only node selected)
@@ -514,12 +522,12 @@ export class Controller_keystroke extends Controller_focusBlur {
    * should only be called by withIncrementalSelection because they must
    * be called in sequence.
    */
-  private finishIncrementalSelection() {
+  finishIncrementalSelection() {
     pray('A selection is open', INCREMENTAL_SELECTION_OPEN);
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     cursor.clearSelection();
     cursor.select() || cursor.show();
-    const selection = cursor.selection;
+    var selection = cursor.selection;
     if (selection) {
       cursor.controller.aria
         .clear()
@@ -577,20 +585,20 @@ export class Controller_keystroke extends Controller_focusBlur {
   }
   selectAll() {
     this.notify('move');
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     cursor.insAtRightEnd(this.root);
     this.withIncrementalSelection((selectDir) => {
       while (cursor[L]) selectDir(L);
     });
   }
   selectToBlockEndInDir(dir: Direction) {
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     this.withIncrementalSelection((selectDir) => {
       while (cursor[dir]) selectDir(dir);
     });
   }
   selectToRootEndInDir(dir: Direction) {
-    const cursor = this.cursor;
+    var cursor = this.cursor;
     this.withIncrementalSelection((selectDir) => {
       while (cursor[dir] || cursor.parent !== this.root) {
         selectDir(dir);

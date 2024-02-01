@@ -3,21 +3,24 @@
  * overflow their width
  **********************************************/
 
-import { animate } from 'src/animate';
-import { getBoundingClientRect } from 'src/browser';
-import { Controller_mouse } from './mouse';
-import { L, R } from '../utils';
+import {
+  Controller_mouse,
+  L,
+  R,
+  animate,
+  getBoundingClientRect,
+} from '../bundle';
 
 export class Controller_scrollHoriz extends Controller_mouse {
-  private cancelScrollHoriz: (() => void) | undefined;
+  cancelScrollHoriz: (() => void) | undefined;
   setOverflowClasses() {
-    const root = this.root.domFrag().oneElement();
-    let shouldHaveOverflowRight = false;
-    let shouldHaveOverflowLeft = false;
+    var root = this.root.domFrag().oneElement();
+    var shouldHaveOverflowRight = false;
+    var shouldHaveOverflowLeft = false;
     if (!this.blurred) {
-      const width = getBoundingClientRect(root).width;
-      const scrollWidth = root.scrollWidth;
-      const scroll = root.scrollLeft;
+      var width = getBoundingClientRect(root).width;
+      var scrollWidth = root.scrollWidth;
+      var scroll = root.scrollLeft;
       shouldHaveOverflowRight = scrollWidth > width + scroll;
       shouldHaveOverflowLeft = scroll > 0;
     }
@@ -33,18 +36,18 @@ export class Controller_scrollHoriz extends Controller_mouse {
       root.classList.toggle('mq-editing-overflow-left');
   }
   scrollHoriz() {
-    const cursor = this.cursor,
+    var cursor = this.cursor,
       seln = cursor.selection;
-    let scrollBy = 0;
-    const rootRect = getBoundingClientRect(this.root.domFrag().oneElement());
+    var scrollBy = 0;
+    var rootRect = getBoundingClientRect(this.root.domFrag().oneElement());
     if (cursor.domFrag().isEmpty() && !seln) {
       if (this.cancelScrollHoriz) {
         this.cancelScrollHoriz();
         this.cancelScrollHoriz = undefined;
       }
 
-      const rootElt = this.root.domFrag().oneElement();
-      const start = rootElt.scrollLeft;
+      var rootElt = this.root.domFrag().oneElement();
+      var start = rootElt.scrollLeft;
       animate(
         this.getScrollAnimationDuration(),
         (progress, scheduleNext, cancel) => {
@@ -62,14 +65,14 @@ export class Controller_scrollHoriz extends Controller_mouse {
 
       return;
     } else if (!seln) {
-      const x = getBoundingClientRect(cursor.domFrag().oneElement()).left;
+      var x = getBoundingClientRect(cursor.domFrag().oneElement()).left;
       if (x > rootRect.right - 20) scrollBy = x - (rootRect.right - 20);
       else if (x < rootRect.left + 20) scrollBy = x - (rootRect.left + 20);
       else return;
     } else {
-      const rect = getBoundingClientRect(seln.domFrag().oneElement());
-      const overLeft = rect.left - (rootRect.left + 20);
-      const overRight = rect.right - (rootRect.right - 20);
+      var rect = getBoundingClientRect(seln.domFrag().oneElement());
+      var overLeft = rect.left - (rootRect.left + 20);
+      var overRight = rect.right - (rootRect.right - 20);
       if (seln.getEnd(L) === cursor[R]) {
         if (overLeft < 0) scrollBy = overLeft;
         else if (overRight > 0) {
@@ -85,7 +88,7 @@ export class Controller_scrollHoriz extends Controller_mouse {
       }
     }
 
-    const root = this.root.domFrag().oneElement();
+    var root = this.root.domFrag().oneElement();
     if (scrollBy < 0 && root.scrollLeft === 0) return;
     if (scrollBy > 0 && root.scrollWidth <= root.scrollLeft + rootRect.width)
       return;
@@ -95,8 +98,8 @@ export class Controller_scrollHoriz extends Controller_mouse {
       this.cancelScrollHoriz = undefined;
     }
 
-    const rootElt = this.root.domFrag().oneElement();
-    const start = rootElt.scrollLeft;
+    var rootElt = this.root.domFrag().oneElement();
+    var start = rootElt.scrollLeft;
     animate(
       this.getScrollAnimationDuration(),
       (progress, scheduleNext, cancel) => {
@@ -113,7 +116,7 @@ export class Controller_scrollHoriz extends Controller_mouse {
     );
   }
 
-  private getScrollAnimationDuration() {
+  getScrollAnimationDuration() {
     return this.options.scrollAnimationDuration ?? 100;
   }
 }

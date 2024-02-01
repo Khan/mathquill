@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationMap": true,
+    "noEmit": false,
+    "removeComments": true,
+    "target": "ES6",
+    "lib": ["ES6", "ScriptHost", "DOM"]
+  },
+  "exclude": ["./build/", "./dist/", "./test/"]
+}

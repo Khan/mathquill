@@ -3,7 +3,7 @@
  * As you can see, only half-baked so far.
  **********************************************/
 
-import { ControllerBase } from 'src/controller';
+import { ControllerBase } from '../bundle';
 
 export class Controller_exportText extends ControllerBase {
   exportText() {

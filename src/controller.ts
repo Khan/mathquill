@@ -1,17 +1,20 @@
-import { Cursor } from './cursor';
-import { KIND_OF_MQ } from './publicapi';
-import { Aria } from './services/aria';
-import { Controller } from './services/textarea';
 import {
+  Aria,
+  Controller,
+  ControllerData,
+  ControllerEvent,
+  ControllerRoot,
+  Cursor,
+  CursorOptions,
+  Direction,
   HandlerOptions,
   HandlersWithDirection,
   HandlersWithoutDirection,
-  ControllerData,
-  ControllerRoot,
-  CursorOptions,
-  ControllerEvent,
-} from './shared_types';
-import { Direction, L, R, pray } from './utils';
+  KIND_OF_MQ,
+  L,
+  R,
+  pray,
+} from './bundle';
 
 type TextareaKeyboardEventListeners = Partial<{
   [K in keyof HTMLElementEventMap]: (event: HTMLElementEventMap[K]) => unknown;
@@ -43,7 +46,7 @@ export class ControllerBase {
   KIND_OF_MQ: KIND_OF_MQ;
 
   textarea: HTMLElement | undefined;
-  private textareaEventListeners: Partial<{
+  textareaEventListeners: Partial<{
     [K in keyof HTMLElementEventMap]: (
       event: HTMLElementEventMap[K]
     ) => unknown;
@@ -89,12 +92,12 @@ export class ControllerBase {
     name: HandlersWithDirection | HandlersWithoutDirection,
     dir?: Direction
   ) {
-    const handlers = this.options.handlers;
-    const handler = this.options.handlers?.fns[name];
+    var handlers = this.options.handlers;
+    var handler = this.options.handlers?.fns[name];
     if (handler) {
-      const APIClass = handlers?.APIClasses[this.KIND_OF_MQ];
+      var APIClass = handlers?.APIClasses[this.KIND_OF_MQ];
       pray('APIClass is defined', APIClass);
-      const mq = new APIClass(this as unknown as Controller);
+      var mq = new APIClass(this as unknown as Controller);
       if (dir === L || dir === R)
         (handler as HandlerWithDirectionFunction)(dir, mq);
       else (handler as HandlerWithoutDirectionFunction)(mq);
@@ -106,13 +109,13 @@ export class ControllerBase {
     ControllerBase.notifyees.push(f);
   }
   notify(e: ControllerEvent) {
-    for (let i = 0; i < ControllerBase.notifyees.length; i += 1) {
+    for (var i = 0; i < ControllerBase.notifyees.length; i += 1) {
       ControllerBase.notifyees[i](this.cursor, e);
     }
     return this;
   }
   setAriaLabel(ariaLabel: string) {
-    const oldAriaLabel = this.getAriaLabel();
+    var oldAriaLabel = this.getAriaLabel();
     if (ariaLabel && typeof ariaLabel === 'string' && ariaLabel !== '') {
       this.ariaLabel = ariaLabel;
     } else if (this.editable) {
@@ -175,13 +178,13 @@ export class ControllerBase {
   }
 
   getTextareaOrThrow() {
-    const textarea = this.textarea;
+    var textarea = this.textarea;
     if (!textarea) throw new Error('expected a textarea');
     return textarea;
   }
 
   getTextareaSpanOrThrow() {
-    const textareaSpan = this.textareaSpan;
+    var textareaSpan = this.textareaSpan;
     if (!textareaSpan) throw new Error('expected a textareaSpan');
     return textareaSpan;
   }
@@ -189,16 +192,16 @@ export class ControllerBase {
   /** Add the given event listeners on this.textarea, replacing the existing listener for that event if it exists. */
   addTextareaEventListeners(listeners: TextareaKeyboardEventListeners) {
     if (!this.textarea) return;
-    for (const key in listeners) {
-      const event = key as keyof typeof listeners;
+    for (var key in listeners) {
+      var event = key as keyof typeof listeners;
       this.removeTextareaEventListener(event);
       this.textarea.addEventListener(event, listeners[event] as EventListener);
     }
   }
 
-  protected removeTextareaEventListener(event: keyof HTMLElementEventMap) {
+  removeTextareaEventListener(event: keyof HTMLElementEventMap) {
     if (!this.textarea) return;
-    const listener = this.textareaEventListeners[event];
+    var listener = this.textareaEventListeners[event];
     if (!listener) return;
     this.textarea.removeEventListener(event, listener as EventListener);
   }

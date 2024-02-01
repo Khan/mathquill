@@ -1,4 +1,4 @@
-import { pray } from 'src/utils';
+import { pray } from '../bundle';
 
 function parseError(stream: string, message: string): never {
   if (stream) {
@@ -43,7 +43,7 @@ export class Parser<T> {
   or<Q>(alternative: Parser<Q>): Parser<T | Q> {
     pray('or is passed a parser', alternative instanceof Parser);
 
-    const self = this;
+    var self = this;
 
     return new Parser(function (stream, onSuccess, onFailure) {
       return self._(stream, onSuccess, failure);
@@ -55,13 +55,13 @@ export class Parser<T> {
   }
 
   then<Q>(next: Parser<Q> | ((result: T) => Parser<Q>)): Parser<Q> {
-    const self = this;
+    var self = this;
 
     return new Parser<Q>(function (stream: string, onSuccess, onFailure) {
       return self._(stream, success, onFailure) as any as Q;
 
       function success(newStream: string, result: T) {
-        const nextParser = next instanceof Parser ? next : next(result);
+        var nextParser = next instanceof Parser ? next : next(result);
         pray('a parser is returned', nextParser instanceof Parser);
         return nextParser._(newStream, onSuccess, onFailure);
       }
@@ -70,10 +70,10 @@ export class Parser<T> {
 
   // -*- optimized iterative combinators -*- //
   many(): Parser<T[]> {
-    const self = this;
+    var self = this;
 
     return new Parser(function (stream, onSuccess, _onFailure) {
-      const xs: T[] = [];
+      var xs: T[] = [];
       while (self._(stream, success, failure));
       return onSuccess(stream, xs);
 
@@ -91,21 +91,21 @@ export class Parser<T> {
 
   times(min: number, max?: number): Parser<T[]> {
     if (arguments.length < 2) max = min;
-    const self = this;
+    var self = this;
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      const xs: T[] = [];
-      let result: boolean = true;
-      let failure;
+      var xs: T[] = [];
+      var result: boolean = true;
+      var failure;
 
-      for (let i = 0; i < min; i += 1) {
+      for (var i = 0; i < min; i += 1) {
         // TODO, this may be incorrect for parsers that return boolean
         // (or generally, falsey) values
         result = !!self._(stream, success, firstFailure);
         if (!result) return onFailure(stream, failure as any as string);
       }
 
-      for (let i = 0; i < (max as number) && result; i += 1) {
+      for (var i = 0; i < (max as number) && result; i += 1) {
         self._(stream, success, secondFailure);
       }
 
@@ -137,7 +137,7 @@ export class Parser<T> {
     return this.times(0, n);
   }
   atLeast(n: number) {
-    const self = this;
+    var self = this;
     return self.times(n).then(function (start) {
       return self.many().map(function (end) {
         return start.concat(end);
@@ -159,11 +159,11 @@ export class Parser<T> {
 
   // -*- primitive parsers -*- //
   static string(str: string): Parser<string> {
-    const len = str.length;
-    const expected = "expected '" + str + "'";
+    var len = str.length;
+    var expected = "expected '" + str + "'";
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      const head = stream.slice(0, len);
+      var head = stream.slice(0, len);
 
       if (head === str) {
         return onSuccess(stream.slice(len), head);
@@ -176,13 +176,13 @@ export class Parser<T> {
   static regex(re: RegExp): Parser<string> {
     pray('regexp parser is anchored', re.toString().charAt(1) === '^');
 
-    const expected = 'expected ' + re;
+    var expected = 'expected ' + re;
 
     return new Parser(function (stream, onSuccess, onFailure) {
-      const match = re.exec(stream);
+      var match = re.exec(stream);
 
       if (match) {
-        const result = match[0];
+        var result = match[0];
         return onSuccess(stream.slice(result.length), result);
       } else {
         return onFailure(stream, expected);

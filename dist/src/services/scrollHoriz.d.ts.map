@@ -1,0 +1,1 @@
+{"version":3,"file":"scrollHoriz.d.ts","sourceRoot":"","sources":["../../../src/services/scrollHoriz.ts"],"names":[],"mappings":"AAKA,OAAO,EACL,gBAAgB,EAKjB,MAAM,WAAW,CAAC;AAEnB,qBAAa,sBAAuB,SAAQ,gBAAgB;IAC1D,iBAAiB,EAAE,CAAC,MAAM,IAAI,CAAC,GAAG,SAAS,CAAC;IAC5C,kBAAkB;IAsBlB,WAAW;IAiFX,0BAA0B;CAG3B"}

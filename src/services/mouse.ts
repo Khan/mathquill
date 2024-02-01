@@ -1,17 +1,19 @@
-import { ControllerBase } from 'src/controller';
-import { closest } from 'src/dom';
-import { domFrag } from 'src/domFragment';
-import { Options } from 'src/publicapi';
-import { ControllerRoot } from 'src/shared_types';
-import { NodeBase } from 'src/tree';
-import { noop } from 'src/utils';
-import { Controller_latex } from './latex';
-import { Cursor } from 'src/cursor';
+import {
+  ControllerBase,
+  ControllerRoot,
+  Controller_latex,
+  Cursor,
+  NodeBase,
+  Options,
+  closest,
+  domFrag,
+  noop,
+} from '../bundle';
 
 /********************************************************
  * Deals with mouse events for clicking, drag-to-select
  *******************************************************/
-const ignoreNextMouseDownNoop = (_el: MouseEvent) => {
+var ignoreNextMouseDownNoop = (_el: MouseEvent) => {
   return false;
 };
 Options.prototype.ignoreNextMousedown = ignoreNextMouseDownNoop;
@@ -19,7 +21,7 @@ Options.prototype.ignoreNextMousedown = ignoreNextMouseDownNoop;
 // Whenever edits to the tree occur, in-progress selection events
 // must be invalidated and selection changes must not be applied to
 // the edited tree. cancelSelectionOnEdit takes care of this.
-let cancelSelectionOnEdit:
+var cancelSelectionOnEdit:
   | undefined
   | {
       cb: () => void;
@@ -41,24 +43,24 @@ let cancelSelectionOnEdit:
 })();
 
 export class Controller_mouse extends Controller_latex {
-  private handleMouseDown = (e: MouseEvent) => {
-    const rootElement = closest(
+  handleMouseDown = (e: MouseEvent) => {
+    var rootElement = closest(
       e.target as HTMLElement | null,
       '.mq-root-block'
     ) as HTMLElement | null;
 
-    const root = ((rootElement && NodeBase.getNodeOfElement(rootElement)) ||
+    var root = ((rootElement && NodeBase.getNodeOfElement(rootElement)) ||
       NodeBase.getNodeOfElement(
         this.root.domFrag().oneElement()
       )) as ControllerRoot;
 
-    const ownerDocument = root.domFrag().firstNode().ownerDocument;
+    var ownerDocument = root.domFrag().firstNode().ownerDocument;
 
-    const ctrlr = root.controller,
+    var ctrlr = root.controller,
       cursor = ctrlr.cursor,
       blink = cursor.blink;
-    const textareaSpan = ctrlr.getTextareaSpanOrThrow();
-    const textarea = ctrlr.getTextareaOrThrow();
+    var textareaSpan = ctrlr.getTextareaSpanOrThrow();
+    var textarea = ctrlr.getTextareaOrThrow();
 
     e.preventDefault(); // doesn't work in IE≤8, but it's a one-line fix:
     (e.target as any).unselectable = true; // http://jsbin.com/yagekiji/1 // TODO - no idea what this unselectable property is
@@ -78,7 +80,7 @@ export class Controller_mouse extends Controller_latex {
       return;
     }
 
-    let lastMousemoveTarget: HTMLElement | null = null;
+    var lastMousemoveTarget: HTMLElement | null = null;
     function mousemove(e: Event) {
       lastMousemoveTarget = e.target as HTMLElement | null;
     }
@@ -118,7 +120,7 @@ export class Controller_mouse extends Controller_latex {
       unbindListeners();
     }
 
-    let wasEdited;
+    var wasEdited;
     cancelSelectionOnEdit = {
       cursor: cursor,
       cb: function () {
@@ -167,8 +169,8 @@ export class Controller_mouse extends Controller_latex {
   }
 
   seek(targetElm: Element | null, clientX: number, _clientY: number) {
-    const cursor = this.notify('select').cursor;
-    let node;
+    var cursor = this.notify('select').cursor;
+    var node;
 
     // we can click on an element that is deeply nested past the point
     // that mathquill knows about. We need to traverse up to the first

@@ -2,15 +2,25 @@
  * Input box to type backslash commands
  ***************************************/
 
-import { MQNode } from 'src/services/keystroke';
-import { TempSingleCharNode } from 'src/services/latex';
-import { LatexContext } from 'src/shared_types';
-import { CharCmds, Fragment, LatexCmds, isMQNodeClass } from 'src/tree';
-import { L, R } from 'src/utils';
-import { DOMView, MathCommand, VanillaSymbol } from '../math';
-import { Cursor } from 'src/cursor';
-import { h } from 'src/dom';
-import { TextBlock } from '../text';
+// I can't get the blob pattern in eslint to work when the bundle is two levels down
+// eslint-disable-next-line no-restricted-imports
+import {
+  CharCmds,
+  Cursor,
+  DOMView,
+  Fragment,
+  L,
+  LatexCmds,
+  LatexContext,
+  MQNode,
+  MathCommand,
+  R,
+  TempSingleCharNode,
+  TextBlock,
+  VanillaSymbol,
+  h,
+  isMQNodeClass,
+} from '../../bundle';
 
 CharCmds['\\'] = class LatexCommandInput extends MathCommand {
   ctrlSeq = '\\';
@@ -33,7 +43,7 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
   textTemplate = ['\\'];
   createBlocks() {
     super.createBlocks();
-    const endsL = this.getEnd(L);
+    var endsL = this.getEnd(L);
 
     endsL.focus = function () {
       this.parent.domFrag().addClass('mq-hasCursor');
@@ -55,7 +65,7 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
         // TODO needs tests
         cursor.controller.aria.alert(ch);
       } else {
-        const cmd = (this.parent as LatexCommandInput).renderCommand(cursor);
+        var cmd = (this.parent as LatexCommandInput).renderCommand(cursor);
         // TODO needs tests
         cursor.controller.aria.queue(cmd.mathspeak({ createdLeftOf: cursor }));
         if (ch !== '\\' || !this.isEmpty()) cursor.parent.write(cursor, ch);
@@ -63,10 +73,10 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
       }
     };
 
-    const originalKeystroke = endsL.keystroke;
+    var originalKeystroke = endsL.keystroke;
     endsL.keystroke = function (key, e, ctrlr) {
       if (key === 'Tab' || key === 'Enter' || key === 'Spacebar') {
-        const cmd = (this.parent as LatexCommandInput).renderCommand(
+        var cmd = (this.parent as LatexCommandInput).renderCommand(
           ctrlr.cursor
         );
         // TODO needs tests
@@ -82,12 +92,12 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
     super.createLeftOf(cursor);
 
     if (this._replacedFragment) {
-      const frag = this.domFrag();
-      const el = frag.oneElement();
+      var frag = this.domFrag();
+      var el = frag.oneElement();
       this._replacedFragment.domFrag().addClass('mq-blur');
 
       //FIXME: is monkey-patching the mousedown and mousemove handlers the right way to do this?
-      const rewriteMousedownEventTarget = (e: MouseEvent) => {
+      var rewriteMousedownEventTarget = (e: MouseEvent) => {
         {
           // TODO - overwritting e.target
           (e as any).target = el;
@@ -120,9 +130,9 @@ CharCmds['\\'] = class LatexCommandInput extends MathCommand {
       cursor.insAtRightEnd(this.parent);
     }
 
-    let latex = this.getEnd(L).latex();
+    var latex = this.getEnd(L).latex();
     if (!latex) latex = ' ';
-    const cmd = LatexCmds[latex];
+    var cmd = LatexCmds[latex];
 
     if (cmd) {
       let node: MQNode;

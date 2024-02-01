@@ -8,6 +8,13 @@ module.exports = {
     '@typescript-eslint/no-this-alias': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'no-prototype-builtins': 'off',
+    'no-var': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: ['*/*', '!**/bundle'],
+      },
+    ],
   },
   root: true,
 };

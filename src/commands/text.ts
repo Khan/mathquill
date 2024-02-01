@@ -2,22 +2,34 @@
  * Abstract classes of text blocks
  ************************************************/
 
-import { Cursor, Anticursor } from 'src/cursor';
-import { h, HTMLTagName } from 'src/dom';
-import { MQNode } from 'src/services/keystroke';
-import { Parser } from 'src/services/parser.util';
-import { Controller } from 'src/services/textarea';
-import { LatexContext, MathspeakOptions } from 'src/shared_types';
-import { Fragment, NodeBase, LatexCmds } from 'src/tree';
-import { L, R, Direction, pray, prayDirection } from 'src/utils';
 import {
-  MathCommand,
-  VanillaSymbol,
-  MathBlock,
+  APIClasses,
+  Cursor,
+  Anticursor,
+  MQNode,
+  API,
+  Controller,
   DOMView,
+  Direction,
+  Fragment,
+  HTMLTagName,
+  IBaseMathQuill,
+  IEditableField,
+  L,
+  LatexCmds,
+  LatexContext,
+  MathBlock,
+  MathCommand,
+  MathspeakOptions,
+  NodeBase,
+  Parser,
+  R,
   RootMathBlock,
-} from './math';
-import { API, APIClasses, IBaseMathQuill, IEditableField } from 'src/publicapi';
+  VanillaSymbol,
+  h,
+  pray,
+  prayDirection,
+} from '../bundle';
 
 /**
  * Blocks of plain text, with one or two TextPiece's as children.
@@ -40,9 +52,9 @@ export class TextBlock extends MQNode {
 
   setDOMFrag(el: Element | undefined) {
     super.setDOM(el);
-    const endsL = this.getEnd(L);
+    var endsL = this.getEnd(L);
     if (endsL) {
-      const children = this.domFrag().children();
+      var children = this.domFrag().children();
       if (!children.isEmpty()) {
         endsL.setDOM(children.oneText());
       }
@@ -51,18 +63,18 @@ export class TextBlock extends MQNode {
   }
 
   createLeftOf(cursor: Cursor) {
-    const textBlock = this;
+    var textBlock = this;
     super.createLeftOf(cursor);
 
     cursor.insAtRightEnd(textBlock);
 
     if (textBlock.replacedText)
-      for (let i = 0; i < textBlock.replacedText.length; i += 1)
+      for (var i = 0; i < textBlock.replacedText.length; i += 1)
         textBlock.write(cursor, textBlock.replacedText.charAt(i));
 
-    const textBlockR = textBlock[R];
+    var textBlockR = textBlock[R];
     if (textBlockR) textBlockR.siblingCreated(cursor.options, L);
-    const textBlockL = textBlock[L];
+    var textBlockL = textBlock[L];
     if (textBlockL) textBlockL.siblingCreated(cursor.options, R);
     textBlock.bubble(function (node) {
       node.reflow();
@@ -71,12 +83,12 @@ export class TextBlock extends MQNode {
   }
 
   parser() {
-    const textBlock = this;
+    var textBlock = this;
 
     // TODO: correctly parse text mode
-    const string = Parser.string;
-    const regex = Parser.regex;
-    const optWhitespace = Parser.optWhitespace;
+    var string = Parser.string;
+    var regex = Parser.regex;
+    var optWhitespace = Parser.optWhitespace;
     return optWhitespace
       .then(string('{'))
       .then(regex(/^[^}]*/))
@@ -100,7 +112,7 @@ export class TextBlock extends MQNode {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    const contents = this.textContents();
+    var contents = this.textContents();
     if (contents.length > 0) {
       ctx.latex += this.ctrlSeq + '{';
       ctx.latex += contents
@@ -112,7 +124,7 @@ export class TextBlock extends MQNode {
     this.checkCursorContextClose(ctx);
   }
   html() {
-    const out = h('span', { class: 'mq-text-mode' }, [
+    var out = h('span', { class: 'mq-text-mode' }, [
       h.text(this.textContents()),
     ]);
     this.setDOM(out);
@@ -174,7 +186,7 @@ export class TextBlock extends MQNode {
     cursor.show().deleteSelection();
 
     if (ch !== '$') {
-      const cursorL = cursor[L];
+      var cursorL = cursor[L];
       if (!cursorL) new TextPiece(ch).createLeftOf(cursor);
       else if (cursorL instanceof TextPiece) cursorL.appendText(ch);
     } else if (this.isEmpty()) {
@@ -184,8 +196,8 @@ export class TextBlock extends MQNode {
     else if (!cursor[L]) cursor.insLeftOf(this);
     else {
       // split apart
-      const leftBlock = new TextBlock();
-      const leftPc = this.getEnd(L);
+      var leftBlock = new TextBlock();
+      var leftPc = this.getEnd(L);
       if (leftPc) {
         leftPc.disown().domFrag().detach();
         leftPc.adopt(leftBlock, 0, 0);
@@ -202,7 +214,7 @@ export class TextBlock extends MQNode {
     cursor.controller.aria.alert(ch);
   }
   writeLatex(cursor: Cursor, latex: string) {
-    const cursorL = cursor[L];
+    var cursorL = cursor[L];
     if (!cursorL) new TextPiece(latex).createLeftOf(cursor);
     else if (cursorL instanceof TextPiece) cursorL.appendText(latex);
     this.bubble(function (node) {
@@ -213,18 +225,18 @@ export class TextBlock extends MQNode {
 
   seek(clientX: number, cursor: Cursor) {
     cursor.hide();
-    const textPc = TextBlockFuseChildren(this);
+    var textPc = TextBlockFuseChildren(this);
     if (!textPc) return;
 
     // insert cursor at approx position in DOMTextNode
-    const textNode = this.domFrag().children().oneText();
-    const range = document.createRange();
+    var textNode = this.domFrag().children().oneText();
+    var range = document.createRange();
     range.selectNodeContents(textNode);
-    const rects = range.getClientRects();
+    var rects = range.getClientRects();
     if (rects.length === 1) {
-      const { width, left } = rects[0];
-      const avgChWidth = width / this.textContents().length;
-      const approxPosition = Math.round((clientX - left) / avgChWidth);
+      var { width, left } = rects[0];
+      var avgChWidth = width / this.textContents().length;
+      var approxPosition = Math.round((clientX - left) / avgChWidth);
       if (approxPosition <= 0) {
         cursor.insAtLeftEnd(this);
       } else if (approxPosition >= textPc.textStr.length) {
@@ -237,10 +249,10 @@ export class TextBlock extends MQNode {
     }
 
     // move towards mousedown (clientX)
-    let displ =
+    var displ =
       clientX - cursor.show().getBoundingClientRectWithoutMargin().left; // displacement
-    const dir = displ && displ < 0 ? L : R;
-    let prevDispl = dir as number;
+    var dir = displ && displ < 0 ? L : R;
+    var prevDispl = dir as number;
     // displ * prevDispl > 0 iff displacement direction === previous direction
     while (cursor[dir] && displ * prevDispl > 0) {
       (cursor[dir] as MQNode).moveTowards(dir, cursor);
@@ -255,25 +267,25 @@ export class TextBlock extends MQNode {
 
     if (!cursor.anticursor) {
       // about to start mouse-selecting, the anticursor is gonna get put here
-      const cursorL = cursor[L];
+      var cursorL = cursor[L];
       this.anticursorPosition =
         cursorL && (cursorL as TextPiece).textStr.length;
       // ^ get it? 'cos if there's no cursor[L], it's 0... I'm a terrible person.
     } else if (cursor.anticursor.parent === this) {
       // mouse-selecting within this TextBlock, re-insert the anticursor
-      const cursorL = cursor[L];
-      const cursorPosition = cursorL && (cursorL as TextPiece).textStr.length;
+      var cursorL = cursor[L];
+      var cursorPosition = cursorL && (cursorL as TextPiece).textStr.length;
       if (this.anticursorPosition === cursorPosition) {
         cursor.anticursor = Anticursor.fromCursor(cursor);
       } else {
-        let newTextPc;
+        var newTextPc;
         if (this.anticursorPosition! < cursorPosition!) {
           newTextPc = (cursorL as unknown as TextPiece).splitRight(
             this.anticursorPosition!
           );
           cursor[L] = newTextPc;
         } else {
-          const cursorR = cursor[R] as unknown as TextPiece;
+          var cursorR = cursor[R] as unknown as TextPiece;
           newTextPc = cursorR.splitRight(
             this.anticursorPosition! - cursorPosition!
           );
@@ -301,14 +313,14 @@ export class TextBlock extends MQNode {
 function TextBlockFuseChildren(self: TextBlock) {
   self.domFrag().oneElement().normalize();
 
-  const children = self.domFrag().children();
+  var children = self.domFrag().children();
   if (children.isEmpty()) return;
-  const textPcDom = children.oneText();
+  var textPcDom = children.oneText();
   pray('only node in TextBlock span is Text node', textPcDom.nodeType === 3);
   // nodeType === 3 has meant a Text node since ancient times:
   //   http://reference.sitepoint.com/javascript/Node/nodeType
 
-  const textPc = new TextPiece(textPcDom.data);
+  var textPc = new TextPiece(textPcDom.data);
   textPc.setDOM(textPcDom);
 
   self.children().disown();
@@ -331,7 +343,7 @@ class TextPiece extends MQNode {
     this.textStr = text;
   }
   html() {
-    const out = h.text(this.textStr);
+    var out = h.text(this.textStr);
     this.setDOM(out);
     return out;
   }
@@ -349,7 +361,7 @@ class TextPiece extends MQNode {
     else this.prependText(text);
   }
   splitRight(i: number) {
-    const newPc = new TextPiece(this.textStr.slice(i)).adopt(
+    var newPc = new TextPiece(this.textStr.slice(i)).adopt(
       this.parent,
       this,
       this[R]
@@ -366,9 +378,9 @@ class TextPiece extends MQNode {
   moveTowards(dir: Direction, cursor: Cursor) {
     prayDirection(dir);
 
-    const ch = this.endChar(-dir as Direction, this.textStr);
+    var ch = this.endChar(-dir as Direction, this.textStr);
 
-    const from = this[-dir as Direction];
+    var from = this[-dir as Direction];
     if (from instanceof TextPiece) from.insTextAtDirEnd(ch, dir);
     else new TextPiece(ch).createDir(-dir as Direction, cursor);
     return this.deleteTowards(dir, cursor);
@@ -385,7 +397,7 @@ class TextPiece extends MQNode {
 
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (this.textStr.length > 1) {
-      let deletedChar;
+      var deletedChar;
       if (dir === R) {
         this.domFrag().oneText().deleteData(0, 1);
         deletedChar = this.textStr[0];
@@ -409,21 +421,21 @@ class TextPiece extends MQNode {
 
   selectTowards(dir: Direction, cursor: Cursor) {
     prayDirection(dir);
-    const anticursor = cursor.anticursor;
+    var anticursor = cursor.anticursor;
     if (!anticursor) return;
 
-    const ch = this.endChar(-dir as Direction, this.textStr);
+    var ch = this.endChar(-dir as Direction, this.textStr);
 
     if (anticursor[dir] === this) {
-      const newPc = new TextPiece(ch).createDir(dir, cursor);
+      var newPc = new TextPiece(ch).createDir(dir, cursor);
       anticursor[dir] = newPc;
       cursor.insDirOf(dir, newPc);
     } else {
-      const from = this[-dir as Direction];
+      var from = this[-dir as Direction];
       if (from instanceof TextPiece) from.insTextAtDirEnd(ch, dir);
       else {
-        const newPc = new TextPiece(ch).createDir(-dir as Direction, cursor);
-        const selection = cursor.selection;
+        var newPc = new TextPiece(ch).createDir(-dir as Direction, cursor);
+        var selection = cursor.selection;
         if (selection) {
           newPc.domFrag().insDirOf(-dir as Direction, selection.domFrag());
         }
@@ -457,7 +469,7 @@ function makeTextBlock(
     ariaLabel = ariaLabel;
 
     html() {
-      const out = h(tagName, attrs, [h.text(this.textContents())]);
+      var out = h(tagName, attrs, [h.text(this.textContents())]);
       this.setDOM(out);
       NodeBase.linkElementByCmdNode(out, this);
       return out;
@@ -512,7 +524,7 @@ export class RootMathCommand extends MathCommand {
   );
   createBlocks() {
     super.createBlocks();
-    const endsL = this.getEnd(L) as RootMathCommand; // TODO - how do we know this is a RootMathCommand?
+    var endsL = this.getEnd(L) as RootMathCommand; // TODO - how do we know this is a RootMathCommand?
     endsL.cursor = this.cursor;
     endsL.write = function (cursor: Cursor, ch: string) {
       if (ch !== '$') MathBlock.prototype.write.call(this, cursor, ch);
@@ -543,7 +555,7 @@ export class RootTextBlock extends RootMathBlock {
     cursor.show().deleteSelection();
     if (ch === '$') new RootMathCommand(cursor).createLeftOf(cursor);
     else {
-      let html;
+      var html;
       if (ch === '<') html = h.entityText('&lt;');
       else if (ch === '>') html = h.entityText('&gt;');
       new VanillaSymbol(ch, html).createLeftOf(cursor);
@@ -565,7 +577,7 @@ API.TextField = function (APIClasses: APIClasses) {
         if (this.__controller.blurred)
           this.__controller.cursor.hide().parent.blur();
 
-        const _this: IBaseMathQuill = this; // just to help help TS out
+        var _this: IBaseMathQuill = this; // just to help help TS out
         return _this;
       }
       return this.__controller.exportLatex();

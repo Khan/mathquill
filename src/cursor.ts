@@ -2,17 +2,28 @@
  * Cursor and Selection "singleton" classes
  *******************************************/
 
-import { getBoundingClientRect } from './browser';
-import { MathBlock } from './commands/math';
-import { ControllerBase } from './controller';
-import { h } from './dom';
-import { domFrag, DOMFragment } from './domFragment';
-import { MQNode } from './services/keystroke';
-import { Controller } from './services/textarea';
-import { NodeRef, CursorOptions, JoinMethod } from './shared_types';
-import { Point, Fragment, Ends } from './tree';
-import { U_ZERO_WIDTH_SPACE } from './unicode';
-import { L, R, Direction, prayDirection, pray } from './utils';
+import {
+  Controller,
+  ControllerBase,
+  CursorOptions,
+  DOMFragment,
+  Direction,
+  Ends,
+  Fragment,
+  JoinMethod,
+  L,
+  MQNode,
+  MathBlock,
+  NodeRef,
+  Point,
+  R,
+  U_ZERO_WIDTH_SPACE,
+  domFrag,
+  getBoundingClientRect,
+  h,
+  pray,
+  prayDirection,
+} from './bundle';
 
 /* The main thing that manipulates the Math DOM. Makes sure to manipulate the
 HTML DOM to match. */
@@ -43,12 +54,10 @@ export class Cursor extends Point {
    */
   upDownCache: Record<number | string, Point | undefined> = {};
   blink: () => void;
-  private readonly cursorElement: HTMLElement = h(
-    'span',
-    { class: 'mq-cursor' },
-    [h.text(U_ZERO_WIDTH_SPACE)]
-  );
-  private _domFrag = domFrag();
+  readonly cursorElement: HTMLElement = h('span', { class: 'mq-cursor' }, [
+    h.text(U_ZERO_WIDTH_SPACE),
+  ]);
+  _domFrag = domFrag();
   selection: MQSelection | undefined;
   intervalId: number;
   anticursor: Anticursor | undefined;
@@ -87,9 +96,9 @@ export class Cursor extends Point {
       clearInterval(this.intervalId);
     else {
       //was hidden and detached, insert this.jQ back into HTML DOM
-      const right = this[R];
+      var right = this[R];
       if (right) {
-        const selection = this.selection;
+        var selection = this.selection;
         if (selection && selection.getEnd(L)[L] === this[L])
           this.domFrag().insertBefore(selection.domFrag());
         else this.domFrag().insertBefore(right.domFrag());
@@ -113,7 +122,7 @@ export class Cursor extends Point {
     withDir: NodeRef,
     oppDir: NodeRef
   ) {
-    const oldParent = this.parent;
+    var oldParent = this.parent;
     this.parent = parent;
     this[dir as Direction] = withDir;
     this[-dir as Direction] = oppDir;
@@ -161,18 +170,18 @@ export class Cursor extends Point {
    *     the cursor's current position
    */
   jumpUpDown(from: MQNode, to: MQNode) {
-    const self = this;
+    var self = this;
     self.upDownCache[from.id] = Point.copy(self);
-    const cached = self.upDownCache[to.id];
+    var cached = self.upDownCache[to.id];
     if (cached) {
-      const cachedR = cached[R];
+      var cachedR = cached[R];
       if (cachedR) {
         self.insLeftOf(cachedR);
       } else {
         self.insAtRightEnd(cached.parent);
       }
     } else {
-      const clientX = self.getBoundingClientRectWithoutMargin().left;
+      var clientX = self.getBoundingClientRectWithoutMargin().left;
       to.seek(clientX, self);
     }
     self.controller.aria.queue(to, true);
@@ -185,9 +194,9 @@ export class Cursor extends Point {
     //Opera bug DSK-360043
     //http://bugs.jquery.com/ticket/11523
     //https://github.com/jquery/jquery/pull/717
-    const frag = this.domFrag();
+    var frag = this.domFrag();
     frag.removeClass('mq-cursor');
-    const { left, right } = getBoundingClientRect(frag.oneElement());
+    var { left, right } = getBoundingClientRect(frag.oneElement());
     frag.addClass('mq-cursor');
     return {
       left,
@@ -195,12 +204,12 @@ export class Cursor extends Point {
     };
   }
   unwrapGramp() {
-    const gramp = this.parent.parent;
-    const greatgramp = gramp.parent;
-    const rightward = gramp[R];
-    const cursor = this;
+    var gramp = this.parent.parent;
+    var greatgramp = gramp.parent;
+    var rightward = gramp[R];
+    var cursor = this;
 
-    let leftward = gramp[L];
+    var leftward = gramp[L];
     gramp.disown().eachChild(function (uncle) {
       if (uncle.isEmpty()) return true;
 
@@ -218,11 +227,11 @@ export class Cursor extends Point {
 
     if (!this[R]) {
       //then find something to be rightward to insLeftOf
-      const thisL = this[L];
+      var thisL = this[L];
       if (thisL) this[R] = thisL[R];
       else {
         while (!this[R]) {
-          const newParent = this.parent[R];
+          var newParent = this.parent[R];
           if (newParent) {
             this.parent = newParent;
             this[R] = newParent.getEnd(L);
@@ -235,23 +244,23 @@ export class Cursor extends Point {
       }
     }
 
-    const thisR = this[R];
+    var thisR = this[R];
     if (thisR) this.insLeftOf(thisR);
     else this.insAtRightEnd(greatgramp);
 
     gramp.domFrag().remove();
 
-    const grampL = gramp[L];
-    const grampR = gramp[R];
+    var grampL = gramp[L];
+    var grampR = gramp[R];
     if (grampL) grampL.siblingDeleted(cursor.options, R);
     if (grampR) grampR.siblingDeleted(cursor.options, L);
   }
   startSelection() {
-    const anticursor = (this.anticursor = Anticursor.fromCursor(this));
-    const ancestors = anticursor.ancestors;
+    var anticursor = (this.anticursor = Anticursor.fromCursor(this));
+    var ancestors = anticursor.ancestors;
 
     for (
-      let ancestor: MQNode | Anticursor = anticursor;
+      var ancestor: MQNode | Anticursor = anticursor;
       ancestor.parent;
       ancestor = ancestor.parent
     ) {
@@ -262,15 +271,15 @@ export class Cursor extends Point {
     delete this.anticursor;
   }
   select() {
-    let _lca;
-    const anticursor = this.anticursor!;
+    var _lca;
+    var anticursor = this.anticursor!;
     if (this[L] === anticursor[L] && this.parent === anticursor.parent)
       return false;
 
     // Find the lowest common ancestor (`lca`), and the ancestor of the cursor
     // whose parent is the LCA (which'll be an end of the selection fragment).
     // for (
-    //   let ancestor: MQNode | Point | undefined = this;
+    //   var ancestor: MQNode | Point | undefined = this;
     //   ancestor.parent;
     //   ancestor = ancestor.parent
     // ) {
@@ -280,7 +289,7 @@ export class Cursor extends Point {
     //   }
     // }
 
-    let ancestor: MQNode | Point | undefined = this;
+    var ancestor: MQNode | Point | undefined = this;
 
     // Find the lowest common ancestor (`lca`), and the ancestor of the cursor
     // whose parent is the LCA (which'll be an end of the selection fragment).
@@ -293,7 +302,7 @@ export class Cursor extends Point {
     }
 
     pray('cursor and anticursor in the same tree', _lca);
-    const lca = _lca as MQNode;
+    var lca = _lca as MQNode;
 
     // The cursor and the anticursor should be in the same tree, because the
     // mousemove handler attached to the document, unlike the one attached to
@@ -303,13 +312,13 @@ export class Cursor extends Point {
 
     // The other end of the selection fragment, the ancestor of the anticursor
     // whose parent is the LCA.
-    const antiAncestor = anticursor.ancestors[lca.id] as MQNode;
+    var antiAncestor = anticursor.ancestors[lca.id] as MQNode;
 
     // Now we have two either Nodes or Points, guaranteed to have a common
     // parent and guaranteed that if both are Points, they are not the same,
     // and we have to figure out which is the left end and which the right end
     // of the selection.
-    let leftEnd,
+    var leftEnd,
       rightEnd,
       dir: Direction = R;
 
@@ -325,7 +334,7 @@ export class Cursor extends Point {
     // the right of `ancestor`.
     if (ancestor[L] !== antiAncestor) {
       for (
-        let rightward: NodeRef | Point | undefined = ancestor;
+        var rightward: NodeRef | Point | undefined = ancestor;
         rightward;
         rightward = rightward[R]
       ) {
@@ -351,14 +360,14 @@ export class Cursor extends Point {
       rightEnd as MQNode
     );
 
-    const insEl = this.selection!.getEnd(dir);
+    var insEl = this.selection!.getEnd(dir);
     this.insDirOf(dir, insEl);
     this.selectionChanged();
     return true;
   }
   resetToEnd(controller: ControllerBase) {
     this.clearSelection();
-    const root = controller.root;
+    var root = controller.root;
     this[R] = 0;
     this[L] = root.getEnd(R);
     this.parent = root;
@@ -372,7 +381,7 @@ export class Cursor extends Point {
     return this;
   }
   deleteSelection() {
-    const selection = this.selection;
+    var selection = this.selection;
     if (!selection) return;
 
     this[L] = selection.getEnd(L)[L];
@@ -382,7 +391,7 @@ export class Cursor extends Point {
     delete this.selection;
   }
   replaceSelection() {
-    const seln = this.selection;
+    var seln = this.selection;
     if (seln) {
       this[L] = seln.getEnd(L)[L];
       this[R] = seln.getEnd(R)[R];
@@ -391,8 +400,8 @@ export class Cursor extends Point {
     return seln;
   }
   depth() {
-    let node: MQNode | Point = this;
-    let depth = 0;
+    var node: MQNode | Point = this;
+    var depth = 0;
     while ((node = node.parent)) {
       depth += node instanceof MathBlock ? 1 : 0;
     }
@@ -410,8 +419,8 @@ export class Cursor extends Point {
   selectionChanged() {}
 }
 export class MQSelection extends Fragment {
-  protected ends: Ends<MQNode>;
-  private _el: HTMLElement | undefined;
+  ends: Ends<MQNode>;
+  _el: HTMLElement | undefined;
 
   constructor(withDir: MQNode, oppDir: MQNode, dir?: Direction) {
     super(withDir, oppDir, dir);
@@ -445,7 +454,7 @@ export class MQSelection extends Fragment {
     // child nodes (including Text nodes), and not just Element nodes.
     // This makes it more similar to the native DOM childNodes property
     // and jQuery's .collection() method than jQuery's .children() method
-    const childFrag = this.getDOMFragFromEnds();
+    var childFrag = this.getDOMFragFromEnds();
     this.domFrag().replaceWith(childFrag);
     this._el = undefined;
     return this;

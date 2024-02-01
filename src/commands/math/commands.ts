@@ -1,47 +1,64 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { MQNode } from 'src/services/keystroke';
-import { Parser } from 'src/services/parser.util';
-import { Controller } from 'src/services/textarea';
+// The above is for Class. Maybe we should remove it.
+
+// I can't get the blob pattern in eslint to work when the bundle is two levels down
+// eslint-disable-next-line no-restricted-imports
 import {
-  MathspeakOptions,
-  LatexContext,
-  NodeRef,
+  Anticursor,
+  BinaryOperator,
   BracketSide,
-  CursorOptions,
+  CharCmds,
+  Controller,
   ControllerRoot,
+  Cursor,
+  CursorOptions,
+  DOMFragment,
+  DOMView,
+  Digit,
+  Direction,
+  EMBEDS,
+  EmbedOptions,
+  Ends,
+  Equality,
+  Fragment,
+  HTMLTagName,
   InnerFields,
   InnerMathField,
-  EmbedOptions,
-} from 'src/shared_types';
-import { LatexCmds, Point, NodeBase, CharCmds, Fragment, Ends } from 'src/tree';
-import {
-  U_DOT_ABOVE,
-  U_ZERO_WIDTH_SPACE,
-  U_NARY_SUMMATION,
-  U_NARY_PRODUCT,
-  U_NARY_COPRODUCT,
-  U_INTEGRAL,
-} from 'src/unicode';
-import { pray, L, R, Direction, noop } from 'src/utils';
-import {
-  MathCommand,
-  MathBlock,
-  BinaryOperator,
+  L,
+  LatexCmds,
+  LatexContext,
+  Letter,
+  MQNode,
   MQSymbol,
-  DOMView,
+  MathBlock,
+  MathCommand,
+  MathspeakOptions,
+  NodeBase,
+  NodeRef,
+  Options,
+  Parser,
+  Point,
+  R,
+  RootBlockMixin,
   RootMathBlock,
-} from '../math';
-import { HTMLTagName, h, parseHTML } from 'src/dom';
-import { Anticursor, Cursor } from 'src/cursor';
-import { domFrag, DOMFragment } from 'src/domFragment';
-import { EMBEDS, Options, RootBlockMixin } from 'src/publicapi';
-import { Letter, Digit, Equality } from './basicSymbols';
-import { latexMathParser } from 'src/services/latex';
+  U_DOT_ABOVE,
+  U_INTEGRAL,
+  U_NARY_COPRODUCT,
+  U_NARY_PRODUCT,
+  U_NARY_SUMMATION,
+  U_ZERO_WIDTH_SPACE,
+  domFrag,
+  h,
+  latexMathParser,
+  noop,
+  parseHTML,
+  pray,
+} from '../../bundle';
 
 /***************************
  * Commands and Operators.
  **************************/
-const SVG_SYMBOLS = {
+var SVG_SYMBOLS = {
   sqrt: {
     width: '',
     html: () =>
@@ -272,16 +289,16 @@ LatexCmds.textcolor = class extends MathCommand {
   }
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
-    const blocks0 = this.blocks![0];
+    var blocks0 = this.blocks![0];
     ctx.latex += '\\textcolor{' + this.color + '}{';
     blocks0.latexRecursive(ctx);
     ctx.latex += '}';
     this.checkCursorContextClose(ctx);
   }
   parser() {
-    const optWhitespace = Parser.optWhitespace;
-    const string = Parser.string;
-    const regex = Parser.regex;
+    var optWhitespace = Parser.optWhitespace;
+    var string = Parser.string;
+    var regex = Parser.regex;
 
     return optWhitespace
       .then(string('{'))
@@ -302,11 +319,11 @@ LatexCmds.textcolor = class extends MathCommand {
 // Note regex that whitelists valid CSS classname characters:
 // https://github.com/mathquill/mathquill/pull/191#discussion_r4327442
 // @ts-expect-error Unused; Need more investigation before removing this
-const Class = (LatexCmds['class'] = class extends MathCommand {
+var Class = (LatexCmds['class'] = class extends MathCommand {
   cls: string | undefined;
 
   parser() {
-    const string = Parser.string,
+    var string = Parser.string,
       regex = Parser.regex;
     return Parser.optWhitespace
       .then(string('{'))
@@ -328,7 +345,7 @@ const Class = (LatexCmds['class'] = class extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    const blocks0 = this.blocks![0];
+    var blocks0 = this.blocks![0];
     ctx.latex += '\\class{' + this.cls + '}{';
     blocks0.latexRecursive(ctx);
     ctx.latex += '}';
@@ -342,7 +359,7 @@ const Class = (LatexCmds['class'] = class extends MathCommand {
 
 // This test is used to determine whether an item may be treated as a whole number
 // for shortening the verbalized (mathspeak) forms of some fractions and superscripts.
-const intRgx = /^[+-]?[\d]+$/;
+var intRgx = /^[+-]?[\d]+$/;
 
 // Traverses the top level of the passed block's children and returns the concatenation of their ctrlSeq properties.
 // Used in shortened mathspeak computations as a block's .text() method can be potentially expensive.
@@ -350,7 +367,7 @@ const intRgx = /^[+-]?[\d]+$/;
 function getCtrlSeqsFromBlock(block: NodeRef): string {
   if (!block) return '';
 
-  let chars = '';
+  var chars = '';
   block.eachChild((child) => {
     if (child.ctrlSeq !== undefined) chars += child.ctrlSeq;
   });
@@ -366,7 +383,7 @@ export class SupSub extends MathCommand {
   sup?: MathBlock;
   supsub: 'sup' | 'sub';
 
-  protected ends: Ends<MathBlock>;
+  ends: Ends<MathBlock>;
 
   setEnds(ends: Ends<MathBlock>) {
     pray(
@@ -401,20 +418,20 @@ export class SupSub extends MathCommand {
 
     // equiv. to [L, R].forEach(function(dir) { ... });
     for (
-      let dir: typeof L | typeof R | false = L;
+      var dir: typeof L | typeof R | false = L;
       dir;
       dir = dir === L ? R : false
     ) {
-      const thisDir = this[dir];
-      let pt;
+      var thisDir = this[dir];
+      var pt;
       if (thisDir instanceof SupSub) {
         // equiv. to 'sub sup'.split(' ').forEach(function(supsub) { ... });
         for (
-          let supsub: 'sub' | 'sup' | false = 'sub';
+          var supsub: 'sub' | 'sup' | false = 'sub';
           supsub;
           supsub = supsub === 'sub' ? 'sup' : false
         ) {
-          const src = this[supsub],
+          var src = this[supsub],
             dest = thisDir[supsub];
           if (!src) continue;
           if (!dest) thisDir.addBlock(src.disown());
@@ -424,7 +441,7 @@ export class SupSub extends MathCommand {
               .domFrag()
               .children()
               .insAtDirEnd(-dir as Direction, dest.domFrag().oneElement());
-            const children = src.children().disown();
+            var children = src.children().disown();
             pt = new Point(dest, children.getEnd(R), dest.getEnd(L));
             if (dir === L) children.adopt(dest, dest.getEnd(R), 0);
             else children.adopt(dest, 0, dest.getEnd(L));
@@ -453,14 +470,14 @@ export class SupSub extends MathCommand {
     }
   }
   finalizeTree() {
-    const endsL = this.getEnd(L);
+    var endsL = this.getEnd(L);
     endsL.write = function (cursor: Cursor, ch: string) {
       if (
         cursor.options.autoSubscriptNumerals &&
         this === (this.parent as SupSub).sub &&
         '0123456789'.indexOf(ch) >= 0
       ) {
-        const cmd = this.chToCmd(ch, cursor.options);
+        var cmd = this.chToCmd(ch, cursor.options);
         if (cmd instanceof MQSymbol) cursor.deleteSelection();
         else cursor.clearSelection().insRightOf(this.parent);
         cmd.createLeftOf(cursor.show());
@@ -488,7 +505,7 @@ export class SupSub extends MathCommand {
   }
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (cursor.options.autoSubscriptNumerals && this.sub) {
-      const cmd = this.sub.getEnd(-dir as Direction);
+      var cmd = this.sub.getEnd(-dir as Direction);
       if (cmd instanceof MQSymbol) cmd.remove();
       else if (cmd)
         cmd.deleteTowards(dir, cursor.insAtDirEnd(-dir as Direction, this.sub));
@@ -508,9 +525,9 @@ export class SupSub extends MathCommand {
 
     if (this.sub) {
       ctx.latex += '_{';
-      const beforeLength = ctx.latex.length;
+      var beforeLength = ctx.latex.length;
       this.sub.latexRecursive(ctx);
-      const afterLength = ctx.latex.length;
+      var afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
         ctx.latex += ' ';
@@ -521,9 +538,9 @@ export class SupSub extends MathCommand {
 
     if (this.sup) {
       ctx.latex += '^{';
-      const beforeLength = ctx.latex.length;
+      var beforeLength = ctx.latex.length;
       this.sup.latexRecursive(ctx);
-      const afterLength = ctx.latex.length;
+      var afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
         ctx.latex += ' ';
@@ -536,7 +553,7 @@ export class SupSub extends MathCommand {
   }
   text() {
     function text(prefix: string, block: NodeRef | undefined) {
-      const l = (block && block.text()) || '';
+      var l = (block && block.text()) || '';
       return block
         ? prefix + (l.length === 1 ? l : '(' + (l || ' ') + ')')
         : '';
@@ -575,18 +592,18 @@ export class SupSub extends MathCommand {
     }
 
     // like 'sub sup'.split(' ').forEach(function(supsub) { ... });
-    for (let i = 0; i < 2; i += 1)
+    for (var i = 0; i < 2; i += 1)
       (function (
         cmd: SupSub,
         supsub: 'sup' | 'sub',
         oppositeSupsub: 'sup' | 'sub',
         updown: 'up' | 'down'
       ) {
-        const cmdSubSub = cmd[supsub]!;
+        var cmdSubSub = cmd[supsub]!;
         cmdSubSub.deleteOutOf = function (dir: Direction, cursor: Cursor) {
           cursor.insDirOf(this[dir] ? (-dir as Direction) : dir, this.parent);
           if (!this.isEmpty()) {
-            const end = this.getEnd(dir);
+            var end = this.getEnd(dir);
             this.children()
               .disown()
               .withDirAdopt(
@@ -602,7 +619,7 @@ export class SupSub extends MathCommand {
           cmd.supsub = oppositeSupsub;
           delete cmd[supsub];
           delete cmd[`${updown}Into`];
-          const cmdOppositeSupsub = cmd[oppositeSupsub]!;
+          var cmdOppositeSupsub = cmd[oppositeSupsub]!;
           cmdOppositeSupsub[`${updown}OutOf`] = insLeftOfMeUnlessAtEnd;
           delete (cmdOppositeSupsub as any).deleteOutOf; // TODO - refactor so this method can be optional
           if (supsub === 'sub') {
@@ -622,8 +639,8 @@ export class SupSub extends MathCommand {
 function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
   // cursor.insLeftOf(cmd), unless cursor at the end of block, and every
   // ancestor cmd is at the end of every ancestor block
-  const cmd = this.parent;
-  let ancestorCmd: MQNode | Anticursor | Cursor = cursor;
+  var cmd = this.parent;
+  var ancestorCmd: MQNode | Anticursor | Cursor = cursor;
   do {
     if (ancestorCmd[R]) return cursor.insLeftOf(cmd);
     ancestorCmd = ancestorCmd.parent.parent;
@@ -673,12 +690,12 @@ LatexCmds.superscript =
       textTemplate = ['^(', ')'];
       mathspeak(opts?: MathspeakOptions) {
         // Simplify basic exponent speech for common whole numbers.
-        const child = this.upInto;
+        var child = this.upInto;
         if (child !== undefined) {
           // Calculate this item's inner text to determine whether to shorten the returned speech.
           // Do not calculate its inner mathspeak now until we know that the speech is to be truncated.
           // Since the mathspeak computation is recursive, we want to call it only once in this function to avoid performance bottlenecks.
-          const innerText = getCtrlSeqsFromBlock(child);
+          var innerText = getCtrlSeqsFromBlock(child);
           // If the superscript is a whole number, shorten the speech that is returned.
           if ((!opts || !opts.ignoreShorthand) && intRgx.test(innerText)) {
             // Simple cases
@@ -691,7 +708,7 @@ LatexCmds.superscript =
             }
 
             // More complex cases.
-            let suffix = '';
+            var suffix = '';
             // Limit suffix addition to exponents < 1000.
             if (/^[+-]?\d{1,3}$/.test(innerText)) {
               if (/(11|12|13|4|5|6|7|8|9|0)$/.test(innerText)) {
@@ -704,7 +721,7 @@ LatexCmds.superscript =
                 suffix = 'rd';
               }
             }
-            const innerMathspeak =
+            var innerMathspeak =
               typeof child === 'object' ? child.mathspeak() : innerText;
             return 'to the ' + innerMathspeak + suffix + ' power';
           }
@@ -726,7 +743,7 @@ export class SummationNotation extends MathCommand {
     super();
 
     this.ariaLabel = ariaLabel || ch.replace(/^\\/, '');
-    const domView = new DOMView(2, (blocks) =>
+    var domView = new DOMView(2, (blocks) =>
       h('span', { class: 'mq-large-operator mq-non-leaf' }, [
         h('span', { class: 'mq-to' }, [h.block('span', {}, blocks[1])]),
         h('big', {}, [h.text(symbol)]),
@@ -747,9 +764,9 @@ export class SummationNotation extends MathCommand {
     this.checkCursorContextOpen(ctx);
 
     ctx.latex += this.ctrlSeq + '_{';
-    let beforeLength = ctx.latex.length;
+    var beforeLength = ctx.latex.length;
     this.getEnd(L).latexRecursive(ctx);
-    let afterLength = ctx.latex.length;
+    var afterLength = ctx.latex.length;
     if (afterLength === beforeLength) {
       // nothing was written so we write a space
       ctx.latex += ' ';
@@ -781,21 +798,21 @@ export class SummationNotation extends MathCommand {
     );
   }
   parser() {
-    const string = Parser.string;
-    const optWhitespace = Parser.optWhitespace;
-    const succeed = Parser.succeed;
-    const block = latexMathParser.block;
+    var string = Parser.string;
+    var optWhitespace = Parser.optWhitespace;
+    var succeed = Parser.succeed;
+    var block = latexMathParser.block;
 
-    const self = this;
-    const blocks = (self.blocks = [new MathBlock(), new MathBlock()]);
-    for (let i = 0; i < blocks.length; i += 1) {
+    var self = this;
+    var blocks = (self.blocks = [new MathBlock(), new MathBlock()]);
+    for (var i = 0; i < blocks.length; i += 1) {
       blocks[i].adopt(self, self.getEnd(R), 0);
     }
 
     return optWhitespace
       .then(string('_').or(string('^')))
       .then(function (supOrSub) {
-        const child = blocks[supOrSub === '_' ? 0 : 1];
+        var child = blocks[supOrSub === '_' ? 0 : 1];
         return block.then(function (block) {
           block.children().adopt(child, child.getEnd(R), 0);
           return succeed(self);
@@ -805,8 +822,8 @@ export class SummationNotation extends MathCommand {
       .result(self);
   }
   finalizeTree() {
-    const endsL = this.getEnd(L);
-    const endsR = this.getEnd(R);
+    var endsL = this.getEnd(L);
+    var endsR = this.getEnd(R);
 
     endsL.ariaLabel = 'lower bound';
     endsR.ariaLabel = 'upper bound';
@@ -859,7 +876,7 @@ LatexCmds['∫'] =
         MathCommand.prototype.createLeftOf.call(this, cursor);
       }
     };
-const Fraction =
+var Fraction =
   (LatexCmds.frac =
   LatexCmds.dfrac =
   LatexCmds.cfrac =
@@ -877,8 +894,8 @@ const Fraction =
       );
       textTemplate = ['(', ')/(', ')'];
       finalizeTree() {
-        const endsL = this.getEnd(L);
-        const endsR = this.getEnd(R);
+        var endsL = this.getEnd(L);
+        var endsR = this.getEnd(R);
         this.upInto = endsR.upOutOf = endsL;
         this.downInto = endsL.downOutOf = endsR;
         endsL.ariaLabel = 'numerator';
@@ -896,12 +913,12 @@ const Fraction =
 
       mathspeak(opts?: MathspeakOptions) {
         if (opts && opts.createdLeftOf) {
-          const cursor = opts.createdLeftOf;
+          var cursor = opts.createdLeftOf;
           return cursor.parent.mathspeak();
         }
 
-        const numText = getCtrlSeqsFromBlock(this.getEnd(L));
-        const denText = getCtrlSeqsFromBlock(this.getEnd(R));
+        var numText = getCtrlSeqsFromBlock(this.getEnd(L));
+        var denText = getCtrlSeqsFromBlock(this.getEnd(R));
 
         // Shorten mathspeak value for whole number fractions whose denominator is less than 10.
         if (
@@ -909,8 +926,8 @@ const Fraction =
           intRgx.test(numText) &&
           intRgx.test(denText)
         ) {
-          const isSingular = numText === '1' || numText === '-1';
-          let newDenSpeech = '';
+          var isSingular = numText === '1' || numText === '-1';
+          var newDenSpeech = '';
           if (denText === '2') {
             newDenSpeech = isSingular ? 'half' : 'halves';
           } else if (denText === '3') {
@@ -929,13 +946,13 @@ const Fraction =
             newDenSpeech = isSingular ? 'ninth' : 'ninths';
           }
           if (newDenSpeech !== '') {
-            let output = '';
+            var output = '';
             // Handle the case of an integer followed by a simplified fraction such as 1\frac{1}{2}.
             // Such combinations should be spoken aloud as "1 and 1 half."
             // Start at the left sibling of the fraction and continue leftward until something other than a digit or whitespace is found.
-            let precededByInteger = false;
+            var precededByInteger = false;
             for (
-              let sibling: NodeRef | undefined = this[L];
+              var sibling: NodeRef | undefined = this[L];
               sibling && sibling[L] !== undefined;
               sibling = sibling[L]
             ) {
@@ -961,8 +978,8 @@ const Fraction =
       }
 
       getFracDepth() {
-        const level = 0;
-        const walkUp = function (item: NodeRef, level: number): number {
+        var level = 0;
+        var walkUp = function (item: NodeRef, level: number): number {
           if (
             item instanceof MQNode &&
             item.ctrlSeq &&
@@ -976,13 +993,13 @@ const Fraction =
       }
     });
 
-const LiveFraction =
+var LiveFraction =
   (LatexCmds.over =
   CharCmds['/'] =
     class extends Fraction {
       createLeftOf(cursor: Cursor) {
         if (!this.replacedFragment) {
-          let leftward = cursor[L];
+          var leftward = cursor[L];
 
           if (!cursor.options.typingSlashCreatesNewFraction) {
             while (
@@ -1024,7 +1041,7 @@ const LiveFraction =
       }
     });
 
-export const AnsBuilder = () =>
+export var AnsBuilder = () =>
   new MQSymbol(
     '\\operatorname{ans}',
     h('span', { class: 'mq-ans' }, [h.text('ans')]),
@@ -1032,7 +1049,7 @@ export const AnsBuilder = () =>
   );
 LatexCmds.ans = AnsBuilder;
 
-export const PercentOfBuilder = () =>
+export var PercentOfBuilder = () =>
   new MQSymbol(
     '\\%\\operatorname{of}',
     h('span', { class: 'mq-nonSymbola mq-operator-name' }, [h.text('% of ')]),
@@ -1064,7 +1081,7 @@ class Token extends MQSymbol {
   ariaLabel = 'token';
 
   html(): Element | DocumentFragment {
-    const out = h('span', {
+    var out = h('span', {
       class: 'mq-token mq-ignore-mousedown',
       'data-mq-token': this.tokenId,
     });
@@ -1083,12 +1100,12 @@ class Token extends MQSymbol {
 
   mathspeak() {
     // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
-    const ariaLabelArray: string[] = [];
+    var ariaLabelArray: string[] = [];
 
     this.domFrag()
       .children()
       .eachElement((el) => {
-        const label = el.getAttribute('aria-label');
+        var label = el.getAttribute('aria-label');
         if (typeof label === 'string' && label !== '')
           ariaLabelArray.push(label);
       });
@@ -1098,9 +1115,9 @@ class Token extends MQSymbol {
   }
 
   parser() {
-    const self = this;
+    var self = this;
     return latexMathParser.block.map(function (block) {
-      let digit = block.getEnd(L);
+      var digit = block.getEnd(L);
       if (digit) {
         self.tokenId += (digit as Digit).ctrlSeq;
         while ((digit = digit[R])) {
@@ -1131,7 +1148,7 @@ class SquareRoot extends MathCommand {
     return latexMathParser.optBlock
       .then(function (optBlock) {
         return latexMathParser.block.map(function (block) {
-          const nthroot = new NthRoot();
+          var nthroot = new NthRoot();
           nthroot.blocks = [optBlock, block];
           optBlock.adopt(nthroot, 0, 0);
           block.adopt(nthroot, optBlock, 0);
@@ -1181,8 +1198,8 @@ class NthRoot extends SquareRoot {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
-    const indexMathspeak = this.getEnd(L).mathspeak();
-    const radicandMathspeak = this.getEnd(R).mathspeak();
+    var indexMathspeak = this.getEnd(L).mathspeak();
+    var radicandMathspeak = this.getEnd(R).mathspeak();
     this.getEnd(L).ariaLabel = 'Index';
     this.getEnd(R).ariaLabel = 'Radicand';
     if (indexMathspeak === '3') {
@@ -1211,7 +1228,7 @@ LatexCmds.cbrt = class extends NthRoot {
 
 class DiacriticAbove extends MathCommand {
   constructor(ctrlSeq: string, html: ChildNode, textTemplate?: string[]) {
-    const domView = new DOMView(1, (blocks) =>
+    var domView = new DOMView(1, (blocks) =>
       h('span', { class: 'mq-non-leaf' }, [
         h('span', { class: 'mq-diacritic-above' }, [html]),
         h.block('span', { class: 'mq-diacritic-stem' }, blocks[0]),
@@ -1230,7 +1247,7 @@ class DelimsNode extends MathCommand {
 
   setDOM(el: Element | undefined) {
     super.setDOM(el);
-    const children = this.domFrag().children();
+    var children = this.domFrag().children();
     if (!children.isEmpty()) {
       this.delimFrags = {
         [L]: children.first(),
@@ -1268,8 +1285,8 @@ export class Bracket extends DelimsNode {
     return 1 as const;
   }
   html() {
-    const leftSymbol = this.getSymbol(L);
-    const rightSymbol = this.getSymbol(R);
+    var leftSymbol = this.getSymbol(L);
+    var rightSymbol = this.getSymbol(R);
 
     // wait until now so that .side may
     this.domView = new DOMView(1, (blocks) =>
@@ -1316,7 +1333,7 @@ export class Bracket extends DelimsNode {
     return super.html();
   }
   getSymbol(side: BracketSide) {
-    const ch = this.sides[side || R].ch as keyof typeof SVG_SYMBOLS;
+    var ch = this.sides[side || R].ch as keyof typeof SVG_SYMBOLS;
     return SVG_SYMBOLS[ch] || { width: '0', html: '' };
   }
   latexRecursive(ctx: LatexContext) {
@@ -1329,13 +1346,13 @@ export class Bracket extends DelimsNode {
     this.checkCursorContextClose(ctx);
   }
   mathspeak(opts?: MathspeakOptions) {
-    const open = this.sides[L].ch,
+    var open = this.sides[L].ch,
       close = this.sides[R].ch;
     if (open === '|' && close === '|') {
       this.mathspeakTemplate = ['StartAbsoluteValue,', ', EndAbsoluteValue'];
       this.ariaLabel = 'absolute value';
     } else if (opts && opts.createdLeftOf && this.side) {
-      let ch = '';
+      var ch = '';
       if (this.side === L) ch = this.textTemplate[0];
       else if (this.side === R) ch = this.textTemplate[1];
       return (
@@ -1373,17 +1390,17 @@ export class Bracket extends DelimsNode {
   closeOpposing(brack: Bracket) {
     brack.side = 0;
     brack.sides[this.side as Direction] = this.sides[this.side as Direction]; // copy over my info (may be
-    const brackFrag = brack.delimFrags[this.side === L ? L : R] // mismatched, like [a, b))
+    var brackFrag = brack.delimFrags[this.side === L ? L : R] // mismatched, like [a, b))
       .removeClass('mq-ghost');
     this.replaceBracket(brackFrag, this.side);
   }
   createLeftOf(cursor: Cursor) {
-    let brack;
-    let side;
+    var brack;
+    var side;
     if (!this.replacedFragment) {
       // unless wrapping seln in brackets,
       // check if next to or inside an opposing one-sided bracket
-      const opts = cursor.options;
+      var opts = cursor.options;
       if (this.sides[L].ch === '|') {
         // check both sides if I'm a pipe
         brack =
@@ -1459,7 +1476,7 @@ export class Bracket extends DelimsNode {
     this.remove();
   }
   deleteSide(side: Direction, outward: boolean, cursor: Cursor) {
-    const parent = this.parent,
+    var parent = this.parent,
       sib = this[side],
       farEnd = parent.getEnd(side);
 
@@ -1472,7 +1489,7 @@ export class Bracket extends DelimsNode {
       return;
     }
 
-    const opts = cursor.options,
+    var opts = cursor.options,
       wasSolid = !this.side;
     this.side = -side as Direction;
     // if deleting like, outer close-brace of [(1+2)+3} where inner open-paren
@@ -1481,7 +1498,7 @@ export class Bracket extends DelimsNode {
       this.closeOpposing(
         this.getEnd(L).getEnd(this.side as Direction) as Bracket
       ); // then become [1+2)+3
-      const origEnd = this.getEnd(L).getEnd(side);
+      var origEnd = this.getEnd(L).getEnd(side);
       this.unwrap();
       if (origEnd) origEnd.siblingCreated(cursor.options, side);
       if (sib) {
@@ -1509,13 +1526,13 @@ export class Bracket extends DelimsNode {
         this.sides[side] = getOppBracketSide(this);
         this.delimFrags[L].removeClass('mq-ghost');
         this.delimFrags[R].removeClass('mq-ghost');
-        const brackFrag = this.delimFrags[side].addClass('mq-ghost');
+        var brackFrag = this.delimFrags[side].addClass('mq-ghost');
         this.replaceBracket(brackFrag, side);
       }
       if (sib) {
         // auto-expand so ghost is at far end
-        const leftEnd = this.getEnd(L);
-        const origEnd = leftEnd.getEnd(side);
+        var leftEnd = this.getEnd(L);
+        var origEnd = leftEnd.getEnd(side);
         leftEnd.domFrag().removeClass('mq-empty');
         new Fragment(sib, farEnd, -side as Direction)
           .disown()
@@ -1532,17 +1549,17 @@ export class Bracket extends DelimsNode {
     }
   }
   replaceBracket(brackFrag: DOMFragment, side: BracketSide) {
-    const symbol = this.getSymbol(side);
+    var symbol = this.getSymbol(side);
     brackFrag.children().replaceWith(domFrag(symbol.html()));
     brackFrag.oneElement().style.width = symbol.width;
 
     if (side === L) {
-      const next = brackFrag.next();
+      var next = brackFrag.next();
       if (!next.isEmpty()) {
         next.oneElement().style.marginLeft = symbol.width;
       }
     } else {
-      const prev = brackFrag.prev();
+      var prev = brackFrag.prev();
       if (!prev.isEmpty()) {
         prev.oneElement().style.marginRight = symbol.width;
       }
@@ -1569,15 +1586,15 @@ export class Bracket extends DelimsNode {
 }
 
 function getOppBracketSide(bracket: Bracket) {
-  const side = bracket.side as Direction;
-  const data = bracket.sides[side];
+  var side = bracket.side as Direction;
+  var data = bracket.sides[side];
   return {
     ch: OPP_BRACKS[data.ch as keyof typeof OPP_BRACKS],
     ctrlSeq: OPP_BRACKS[data.ctrlSeq as keyof typeof OPP_BRACKS],
   };
 }
 
-const OPP_BRACKS = {
+var OPP_BRACKS = {
   '(': ')',
   ')': '(',
   '[': ']',
@@ -1595,7 +1612,7 @@ const OPP_BRACKS = {
   '\\rVert ': '\\lVert ',
 };
 
-const BRACKET_NAMES = {
+var BRACKET_NAMES = {
   '&lang;': 'angle-bracket',
   '&rang;': 'angle-bracket',
   '|': 'pipe',
@@ -1607,8 +1624,8 @@ function bindCharBracketPair(
   name: string
 ) {
   ctrlSeq = ctrlSeq || open;
-  const close = OPP_BRACKS[open];
-  const end = OPP_BRACKS[ctrlSeq as keyof typeof OPP_BRACKS];
+  var close = OPP_BRACKS[open];
+  var end = OPP_BRACKS[ctrlSeq as keyof typeof OPP_BRACKS];
   CharCmds[open] = () => new Bracket(L, open, close, ctrlSeq, end);
   CharCmds[close] = () => new Bracket(R, open, close, ctrlSeq, end);
   BRACKET_NAMES[open as keyof typeof BRACKET_NAMES] = BRACKET_NAMES[
@@ -1630,14 +1647,14 @@ LatexCmds.rVert = () =>
 
 LatexCmds.left = class extends MathCommand {
   parser() {
-    const regex = Parser.regex;
-    const string = Parser.string;
-    const optWhitespace = Parser.optWhitespace;
+    var regex = Parser.regex;
+    var string = Parser.string;
+    var optWhitespace = Parser.optWhitespace;
 
     return optWhitespace
       .then(regex(/^(?:[([|]|\\\{|\\langle(?![a-zA-Z])|\\lVert(?![a-zA-Z]))/))
       .then(function (ctrlSeq) {
-        let open = ctrlSeq.replace(/^\\/, '');
+        var open = ctrlSeq.replace(/^\\/, '');
         if (ctrlSeq == '\\langle') {
           open = '&lang;';
           ctrlSeq = ctrlSeq + ' ';
@@ -1653,7 +1670,7 @@ LatexCmds.left = class extends MathCommand {
               regex(/^(?:[\])|]|\\\}|\\rangle(?![a-zA-Z])|\\rVert(?![a-zA-Z]))/)
             )
             .map(function (end) {
-              let close = end.replace(/^\\/, '');
+              var close = end.replace(/^\\/, '');
               if (end == '\\rangle') {
                 close = '&rang;';
                 end = end + ' ';
@@ -1662,7 +1679,7 @@ LatexCmds.left = class extends MathCommand {
                 close = '&#8741;';
                 end = end + ' ';
               }
-              const cmd = new Bracket(0, open, close, ctrlSeq, end);
+              var cmd = new Bracket(0, open, close, ctrlSeq, end);
               cmd.blocks = [block];
               block.adopt(cmd, 0, 0);
               return cmd;
@@ -1678,8 +1695,8 @@ LatexCmds.right = class extends MathCommand {
   }
 };
 
-const leftBinomialSymbol = SVG_SYMBOLS['('];
-const rightBinomialSymbol = SVG_SYMBOLS[')'];
+var leftBinomialSymbol = SVG_SYMBOLS['('];
+var rightBinomialSymbol = SVG_SYMBOLS[')'];
 class Binomial extends DelimsNode {
   ctrlSeq = '\\binom';
   domView = new DOMView(2, (blocks) =>
@@ -1746,7 +1763,7 @@ class MathFieldNode extends MathCommand {
     ]);
   });
   parser() {
-    const self = this,
+    var self = this,
       string = Parser.string,
       regex = Parser.regex,
       succeed = Parser.succeed;
@@ -1760,7 +1777,7 @@ class MathFieldNode extends MathCommand {
       .then(super.parser());
   }
   finalizeTree(options: CursorOptions) {
-    const ctrlr = new Controller(
+    var ctrlr = new Controller(
       this.getEnd(L) as ControllerRoot,
       this.domFrag().oneElement(),
       options
@@ -1796,7 +1813,7 @@ class MathFieldNode extends MathCommand {
         pushDownAriaHidden(node.parentNode);
       }
       if (node.nodeType === Node.ELEMENT_NODE) {
-        const element = node as Element;
+        var element = node as Element;
         if (element.getAttribute('aria-hidden') === 'true') {
           element.removeAttribute('aria-hidden');
           domFrag(node)
@@ -1812,8 +1829,8 @@ class MathFieldNode extends MathCommand {
     this.domFrag().oneElement().removeAttribute('aria-hidden');
   }
   registerInnerField(innerFields: InnerFields, MathField: InnerMathField) {
-    const controller = (this.getEnd(L) as RootMathBlock).controller;
-    const newField = new MathField(controller);
+    var controller = (this.getEnd(L) as RootMathBlock).controller;
+    var newField = new MathField(controller);
     innerFields[this.name] = newField;
     innerFields.push(newField);
   }
@@ -1857,7 +1874,7 @@ export class EmbedNode extends MQSymbol {
     this.checkCursorContextClose(ctx);
   }
   parser() {
-    const self = this,
+    var self = this,
       string = Parser.string,
       regex = Parser.regex,
       succeed = Parser.succeed;

@@ -23,10 +23,10 @@
  * to keep its implementation simple because it isn't used very widely
  * in the project.
  */
-export const animate = (function () {
+export var animate = (function () {
   // IIFE exists just to hang on to configured rafShim and cancelShim
   // functions
-  let rafShim: (cb: () => void) => number, cancelShim: (token: number) => void;
+  var rafShim: (cb: () => void) => number, cancelShim: (token: number) => void;
   if (
     typeof requestAnimationFrame === 'function' &&
     typeof cancelAnimationFrame === 'function'
@@ -42,11 +42,11 @@ export const animate = (function () {
     duration: number,
     cb: (progress: number, scheduleNext: () => void, cancel: () => void) => void
   ) {
-    const start = Date.now();
-    let cancelToken: number | undefined;
-    let progress = 0;
+    var start = Date.now();
+    var cancelToken: number | undefined;
+    var progress = 0;
     function step() {
-      const proposedProgress = (Date.now() - start) / duration;
+      var proposedProgress = (Date.now() - start) / duration;
 
       // Enforce that progress is strictly monotonic
       if (proposedProgress <= progress) {

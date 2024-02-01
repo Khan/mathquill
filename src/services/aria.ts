@@ -11,13 +11,17 @@
  * Chrome 54+ on Android works reliably with Talkback.
  ****************************************/
 
-import { NodeRef } from 'src/shared_types';
-import { Fragment } from 'src/tree';
-import { Direction, prayDirection, L } from 'src/utils';
-import { MQNode } from './keystroke';
-import { Controller } from './textarea';
-import { h } from 'src/dom';
-import { domFrag } from 'src/domFragment';
+import {
+  Controller,
+  Direction,
+  Fragment,
+  L,
+  MQNode,
+  NodeRef,
+  domFrag,
+  h,
+  prayDirection,
+} from '../bundle';
 
 type AriaQueueItem = NodeRef | Fragment | string;
 
@@ -36,19 +40,19 @@ export class Aria {
   }
 
   attach() {
-    const container = this.controller.container;
+    var container = this.controller.container;
     if (this.span.parentNode !== container) {
       domFrag(container).prepend(domFrag(this.span));
     }
   }
 
   queue(item: AriaQueueItem, shouldDescribe: boolean = false) {
-    let output: Fragment | string = '';
+    var output: Fragment | string = '';
     if (item instanceof MQNode) {
       // Some constructs include verbal shorthand (such as simple fractions and exponents).
       // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
       // since doing so may be ambiguous or confusing.
-      const itemMathspeak = item.mathspeak({ ignoreShorthand: true });
+      var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
       if (shouldDescribe) {
         // used to ensure item is described when cursor reaches block boundaries
         if (

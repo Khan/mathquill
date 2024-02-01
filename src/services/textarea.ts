@@ -1,10 +1,12 @@
-import { noop } from 'src/utils';
-import { Controller_scrollHoriz } from './scrollHoriz';
-import { h } from 'src/dom';
-import { domFrag } from 'src/domFragment';
-import { Options } from 'src/publicapi';
-import { MQNode } from './keystroke';
-import { saneKeyboardEvents } from './saneKeyboardEvents.util';
+import {
+  Controller_scrollHoriz,
+  MQNode,
+  Options,
+  domFrag,
+  h,
+  noop,
+  saneKeyboardEvents,
+} from '../bundle';
 
 /*********************************************
  * Manage the MathQuill instance's textarea
@@ -32,7 +34,7 @@ export class Controller extends Controller_scrollHoriz {
 
   createTextarea() {
     this.textareaSpan = h('span', { class: 'mq-textarea' });
-    const textarea = this.options.substituteTextarea();
+    var textarea = this.options.substituteTextarea();
     if (!textarea.nodeType) {
       throw 'substituteTextarea() must return a DOM element, got ' + textarea;
     }
@@ -40,14 +42,14 @@ export class Controller extends Controller_scrollHoriz {
       .appendTo(this.textareaSpan)
       .oneElement() as HTMLTextAreaElement;
 
-    const ctrlr = this;
+    var ctrlr = this;
     ctrlr.cursor.selectionChanged = function () {
       ctrlr.selectionChanged();
     };
   }
 
   selectionChanged() {
-    const ctrlr = this;
+    var ctrlr = this;
 
     // throttle calls to setTextareaSelection(), because setting textarea.value
     // and/or calling textarea.select() can have anomalously bad performance:
@@ -63,7 +65,7 @@ export class Controller extends Controller_scrollHoriz {
 
   setTextareaSelection() {
     this.textareaSelectionTimeout = 0;
-    let latex = '';
+    var latex = '';
     if (this.cursor.selection) {
       //cleanLatex prunes unnecessary spaces. defined in latex.js
       latex = this.cleanLatex(this.cursor.selection.join('latex'));
@@ -76,7 +78,7 @@ export class Controller extends Controller_scrollHoriz {
   }
 
   staticMathTextareaEvents() {
-    const ctrlr = this;
+    var ctrlr = this;
     this.removeTextareaEventListener('cut');
     this.removeTextareaEventListener('paste');
     if (ctrlr.options.disableCopyPaste) {
@@ -92,7 +94,7 @@ export class Controller extends Controller_scrollHoriz {
     this.addStaticFocusBlurListeners();
 
     ctrlr.selectFn = function (text: string) {
-      const textarea = ctrlr.getTextareaOrThrow();
+      var textarea = ctrlr.getTextareaOrThrow();
       if (!(textarea instanceof HTMLTextAreaElement)) return;
       textarea.value = text;
       if (text) textarea.select();
@@ -100,13 +102,13 @@ export class Controller extends Controller_scrollHoriz {
   }
 
   editablesTextareaEvents() {
-    const ctrlr = this;
-    const textarea = ctrlr.getTextareaOrThrow();
-    const textareaSpan = ctrlr.getTextareaSpanOrThrow();
+    var ctrlr = this;
+    var textarea = ctrlr.getTextareaOrThrow();
+    var textareaSpan = ctrlr.getTextareaSpanOrThrow();
 
     if (this.options.version < 3) {
-      const $ = this.options.assertJquery();
-      const keyboardEventsShim = this.options.substituteKeyboardEvents(
+      var $ = this.options.assertJquery();
+      var keyboardEventsShim = this.options.substituteKeyboardEvents(
         $(textarea),
         this
       );
@@ -114,7 +116,7 @@ export class Controller extends Controller_scrollHoriz {
         keyboardEventsShim.select(text);
       };
     } else {
-      const { select } = saneKeyboardEvents(textarea, this);
+      var { select } = saneKeyboardEvents(textarea, this);
       this.selectFn = select;
     }
 
@@ -123,9 +125,9 @@ export class Controller extends Controller_scrollHoriz {
     this.updateMathspeak();
   }
   unbindEditablesEvents() {
-    const ctrlr = this;
-    const textarea = ctrlr.getTextareaOrThrow();
-    const textareaSpan = ctrlr.getTextareaSpanOrThrow();
+    var ctrlr = this;
+    var textarea = ctrlr.getTextareaOrThrow();
+    var textareaSpan = ctrlr.getTextareaSpanOrThrow();
 
     this.selectFn = function (text: string) {
       if (!(textarea instanceof HTMLTextAreaElement)) return;
@@ -143,12 +145,12 @@ export class Controller extends Controller_scrollHoriz {
   }
   typedText(ch: string) {
     if (ch === '\n') return this.handle('enter');
-    const cursor = this.notify(undefined).cursor;
+    var cursor = this.notify(undefined).cursor;
     cursor.parent.write(cursor, ch);
     this.scrollHoriz();
   }
   cut() {
-    const ctrlr = this,
+    var ctrlr = this,
       cursor = ctrlr.cursor;
     if (cursor.selection) {
       setTimeout(function () {
@@ -197,16 +199,16 @@ export class Controller extends Controller_scrollHoriz {
   }
 
   updateMathspeak() {
-    const ctrlr = this;
+    var ctrlr = this;
     // If the controller's ARIA label doesn't end with a punctuation mark, add a colon by default to better separate it from mathspeak.
-    const ariaLabel = ctrlr.getAriaLabel();
-    const labelWithSuffix = /[A-Za-z0-9]$/.test(ariaLabel)
+    var ariaLabel = ctrlr.getAriaLabel();
+    var labelWithSuffix = /[A-Za-z0-9]$/.test(ariaLabel)
       ? ariaLabel + ':'
       : ariaLabel;
-    const mathspeak = ctrlr.root.mathspeak().trim();
+    var mathspeak = ctrlr.root.mathspeak().trim();
     this.aria.clear();
 
-    const textarea = ctrlr.getTextareaOrThrow();
+    var textarea = ctrlr.getTextareaOrThrow();
     // For static math, provide mathspeak in a visually hidden span to allow screen readers and other AT to traverse the content.
     // For editable math, assign the mathspeak to the textarea's ARIA label (AT can use text navigation to interrogate the content).
     // Be certain to include the mathspeak for only one of these, though, as we don't want to include outdated labels if a field's editable state changes.

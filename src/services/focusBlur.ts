@@ -1,11 +1,9 @@
-import { ControllerBase } from 'src/controller';
-import { Controller_exportText } from './exportText';
-import { domFrag } from 'src/domFragment';
+import { ControllerBase, Controller_exportText, domFrag } from '../bundle';
 
 ControllerBase.onNotify(function (cursor, e) {
   // these try to cover all ways that mathquill can be modified
   if (e === 'edit' || e === 'replace' || e === undefined) {
-    const controller = cursor.controller;
+    var controller = cursor.controller;
     if (!controller) return;
     if (!controller.options.enableDigitGrouping) return;
 
@@ -36,10 +34,10 @@ export class Controller_focusBlur extends Controller_exportText {
     }
   }
 
-  private blurTimeout: number;
+  blurTimeout: number;
 
-  private handleTextareaFocusEditable = () => {
-    const cursor = this.cursor;
+  handleTextareaFocusEditable = () => {
+    var cursor = this.cursor;
     this.updateMathspeak();
     this.blurred = false;
     clearTimeout(this.blurTimeout);
@@ -54,7 +52,7 @@ export class Controller_focusBlur extends Controller_exportText {
     this.setOverflowClasses();
   };
 
-  private handleTextareaBlurEditable = () => {
+  handleTextareaBlurEditable = () => {
     if (this.textareaSelectionTimeout) {
       clearTimeout(this.textareaSelectionTimeout);
       this.textareaSelectionTimeout = 0;
@@ -74,11 +72,11 @@ export class Controller_focusBlur extends Controller_exportText {
     window.addEventListener('blur', this.handleWindowBlur);
   };
 
-  private handleTextareaFocusStatic = () => {
+  handleTextareaFocusStatic = () => {
     this.blurred = false;
   };
 
-  private handleTextareaBlurStatic = () => {
+  handleTextareaBlurStatic = () => {
     if (this.cursor.selection) {
       this.cursor.selection.clear();
     }
@@ -89,7 +87,7 @@ export class Controller_focusBlur extends Controller_exportText {
     });
   };
 
-  private handleWindowBlur = () => {
+  handleWindowBlur = () => {
     // blur event also fired on window, just switching
     clearTimeout(this.blurTimeout); // tabs/windows, not intentional blur
     if (this.cursor.selection)
@@ -98,7 +96,7 @@ export class Controller_focusBlur extends Controller_exportText {
     this.updateMathspeak();
   };
 
-  private blur() {
+  blur() {
     // not directly in the textarea blur handler so as to be
     this.cursor.hide().parent.blur(this.cursor); // synchronous with/in the same frame as
     domFrag(this.container).removeClass('mq-focused'); // clearing/blurring selection
@@ -110,7 +108,7 @@ export class Controller_focusBlur extends Controller_exportText {
   }
 
   addEditableFocusBlurListeners() {
-    const ctrlr = this,
+    var ctrlr = this,
       cursor = ctrlr.cursor;
     this.addTextareaEventListeners({
       focus: this.handleTextareaFocusEditable,

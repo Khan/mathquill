@@ -1,38 +1,46 @@
-import { AutoDict, Options, baseOptionProcessors } from 'src/publicapi';
-import { MQNode } from 'src/services/keystroke';
-import { TempSingleCharNode, latexMathParser } from 'src/services/latex';
-import { Parser } from 'src/services/parser.util';
+// I can't get the blob pattern in eslint to work when the bundle is two levels down
+// eslint-disable-next-line no-restricted-imports
 import {
-  CursorOptions,
-  NodeRef,
-  MathspeakOptions,
-  LatexCmdsAny,
-  InequalityData,
-} from 'src/shared_types';
-import { LatexCmds, Fragment, isMQNodeClass, CharCmds } from 'src/tree';
-import { U_NO_BREAK_SPACE } from 'src/unicode';
-import { L, R, max, min, type Direction } from '../../utils';
-import {
+  AnsBuilder,
+  AutoDict,
   BinaryOperator,
+  Bracket,
+  CharCmds,
+  Cursor,
+  CursorOptions,
   DOMView,
+  Direction,
+  Fragment,
+  InequalityData,
+  L,
+  LatexCmds,
+  LatexCmdsAny,
+  MQNode,
   MQSymbol,
   MathBlock,
   MathCommand,
-  VanillaSymbol,
-  bindBinaryOperator,
-  bindVanillaSymbol,
-} from '../math';
-import {
-  AnsBuilder,
-  Bracket,
+  MathspeakOptions,
+  NodeRef,
+  Options,
+  Parser,
   PercentOfBuilder,
+  R,
   SubscriptCommand,
   SummationNotation,
   SupSub,
-} from './commands';
-import { domFrag } from 'src/domFragment';
-import { h } from 'src/dom';
-import { Cursor } from 'src/cursor';
+  TempSingleCharNode,
+  U_NO_BREAK_SPACE,
+  VanillaSymbol,
+  baseOptionProcessors,
+  bindBinaryOperator,
+  bindVanillaSymbol,
+  domFrag,
+  h,
+  isMQNodeClass,
+  latexMathParser,
+  max,
+  min,
+} from '../../bundle';
 
 /*********************************
  * Symbols for Basic Mathematics
@@ -58,17 +66,17 @@ class DigitGroupingChar extends MQSymbol {
   fixDigitGrouping(opts: CursorOptions) {
     if (!opts.enableDigitGrouping) return;
 
-    let left: NodeRef = this;
-    let right: NodeRef = this;
+    var left: NodeRef = this;
+    var right: NodeRef = this;
 
-    let spacesFound = 0;
-    const dots = [];
+    var spacesFound = 0;
+    var dots = [];
 
-    const SPACE = '\\ ';
-    const DOT = '.';
+    var SPACE = '\\ ';
+    var DOT = '.';
 
     // traverse left as far as possible (starting at this char)
-    let node: NodeRef = left;
+    var node: NodeRef = left;
     do {
       if (/^[0-9]$/.test(node.ctrlSeq!)) {
         left = node;
@@ -113,7 +121,7 @@ class DigitGroupingChar extends MQSymbol {
     // happens when you only have a space
     if (left === right && left && left.ctrlSeq === SPACE) return;
 
-    const disableFormatting = spacesFound > 0 || dots.length > 1;
+    var disableFormatting = spacesFound > 0 || dots.length > 1;
     if (disableFormatting) {
       this.removeGroupingBetween(left, right);
     } else if (dots[0]) {
@@ -130,7 +138,7 @@ class DigitGroupingChar extends MQSymbol {
   }
 
   removeGroupingBetween(left: NodeRef, right: NodeRef) {
-    let node = left;
+    var node = left;
     do {
       if (node instanceof DigitGroupingChar) {
         node.setGroupingClass(undefined);
@@ -140,10 +148,10 @@ class DigitGroupingChar extends MQSymbol {
   }
 
   addGroupingBetween(start: NodeRef, end: NodeRef) {
-    let node = start;
-    let count = 0;
+    var node = start;
+    var count = 0;
 
-    let totalDigits = 0;
+    var totalDigits = 0;
     while (node) {
       totalDigits += 1;
 
@@ -151,14 +159,14 @@ class DigitGroupingChar extends MQSymbol {
       node = node[L];
     }
 
-    let numDigitsInFirstGroup = totalDigits % 3;
+    var numDigitsInFirstGroup = totalDigits % 3;
     if (numDigitsInFirstGroup === 0) numDigitsInFirstGroup = 3;
 
     node = start;
     while (node) {
       count += 1;
 
-      let cls = undefined;
+      var cls = undefined;
 
       // only do grouping if we have at least 4 numbers
       if (totalDigits >= 4) {
@@ -211,9 +219,9 @@ export class Digit extends DigitGroupingChar {
   }
 
   createLeftOf(cursor: Cursor) {
-    const cursorL = cursor[L];
-    const cursorLL = cursorL && cursorL[L];
-    const cursorParentParentSub =
+    var cursorL = cursor[L];
+    var cursorLL = cursorL && cursorL[L];
+    var cursorParentParentSub =
       cursor.parent.parent instanceof SupSub
         ? cursor.parent.parent.sub
         : undefined;
@@ -233,10 +241,10 @@ export class Digit extends DigitGroupingChar {
   }
   mathspeak(opts: MathspeakOptions) {
     if (opts && opts.createdLeftOf) {
-      const cursor = opts.createdLeftOf;
-      const cursorL = cursor[L];
-      const cursorLL = cursorL && cursorL[L];
-      const cursorParentParentSub =
+      var cursor = opts.createdLeftOf;
+      var cursorL = cursor[L];
+      var cursorLL = cursorL && cursorL[L];
+      var cursorParentParentSub =
         cursor.parent.parent instanceof SupSub
           ? cursor.parent.parent.sub
           : undefined;
@@ -260,10 +268,10 @@ class letiable extends MQSymbol {
   isItalic?: boolean;
 
   constructor(chOrCtrlSeq: string, html?: ChildNode) {
-    super(chOrCtrlSeq, h('let', {}, [html || h.text(chOrCtrlSeq)]));
+    super(chOrCtrlSeq, h('var', {}, [html || h.text(chOrCtrlSeq)]));
   }
   text() {
-    let text = this.ctrlSeq || '';
+    var text = this.ctrlSeq || '';
     if (this.isPartOfOperator) {
       if (text[0] == '\\') {
         text = text.slice(1, text.length);
@@ -288,7 +296,7 @@ class letiable extends MQSymbol {
     return text;
   }
   mathspeak() {
-    const text = this.ctrlSeq || '';
+    var text = this.ctrlSeq || '';
     if (
       this.isPartOfOperator ||
       text.length > 1 ||
@@ -320,12 +328,12 @@ baseOptionProcessors.autoCommands = function (cmds: string | undefined) {
   if (typeof cmds !== 'string' || !/^[a-z]+(?: [a-z]+)*$/i.test(cmds)) {
     throw '"' + cmds + '" not a space-delimited list of only letters';
   }
-  const list = cmds.split(' ');
-  const dict: AutoDict = {};
-  let maxLength = 0;
+  var list = cmds.split(' ');
+  var dict: AutoDict = {};
+  var maxLength = 0;
 
-  for (let i = 0; i < list.length; i += 1) {
-    const cmd = list[i];
+  for (var i = 0; i < list.length; i += 1) {
+    var cmd = list[i];
     if (cmd.length < 2) {
       throw 'autocommand "' + cmd + '" not minimum length of 2';
     }
@@ -342,10 +350,10 @@ baseOptionProcessors.autoCommands = function (cmds: string | undefined) {
 
 Options.prototype.quietEmptyDelimiters = {};
 baseOptionProcessors.quietEmptyDelimiters = function (dlms: string = '') {
-  const list = dlms.split(' ');
-  const dict: { [id: string]: any } = {};
-  for (let i = 0; i < list.length; i += 1) {
-    const dlm = list[i];
+  var list = dlms.split(' ');
+  var dict: { [id: string]: any } = {};
+  for (var i = 0; i < list.length; i += 1) {
+    var dlm = list[i];
     dict[dlm] = 1;
   }
   return dict;
@@ -356,11 +364,11 @@ baseOptionProcessors.autoParenthesizedFunctions = function (cmds) {
   if (typeof cmds !== 'string' || !/^[a-z]+(?: [a-z]+)*$/i.test(cmds)) {
     throw '"' + cmds + '" not a space-delimited list of only letters';
   }
-  const list = cmds.split(' ');
-  const dict: AutoDict = {};
-  let maxLength = 0;
-  for (let i = 0; i < list.length; i += 1) {
-    const cmd = list[i];
+  var list = cmds.split(' ');
+  var dict: AutoDict = {};
+  var maxLength = 0;
+  for (var i = 0; i < list.length; i += 1) {
+    var cmd = list[i];
     if (cmd.length < 2) {
       throw 'autocommand "' + cmd + '" not minimum length of 2';
     }
@@ -385,14 +393,14 @@ export class Letter extends letiable {
     }
 
     //handle autoCommands
-    const autoCmds = cursor.options.autoCommands;
-    const maxLength = autoCmds._maxLength || 0;
+    var autoCmds = cursor.options.autoCommands;
+    var maxLength = autoCmds._maxLength || 0;
     if (maxLength > 0) {
       // want longest possible autocommand, so join together longest
       // sequence of letters
-      let str = '';
-      let l: NodeRef = this;
-      let i = 0;
+      var str = '';
+      var l: NodeRef = this;
+      var i = 0;
       // FIXME: l.ctrlSeq === l.letter checks if first or last in an operator name
       while (l instanceof Letter && l.ctrlSeq === l.letter && i < maxLength) {
         str = l.letter + str;
@@ -408,8 +416,8 @@ export class Letter extends letiable {
           new Fragment(l, this).remove();
           cursor[L] = (l as MQNode)[L];
 
-          const cmd = LatexCmds[str];
-          let node;
+          var cmd = LatexCmds[str];
+          var node;
           if (isMQNodeClass(cmd)) {
             node = new (cmd as typeof TempSingleCharNode)(str); // TODO - How do we know that this class expects a single str input?
           } else {
@@ -425,7 +433,7 @@ export class Letter extends letiable {
 
   autoParenthesize(cursor: Cursor) {
     //exit early if already parenthesized
-    const right = cursor.parent.getEnd(R);
+    var right = cursor.parent.getEnd(R);
     if (right && right instanceof Bracket && right.ctrlSeq === '\\left(') {
       return;
     }
@@ -436,14 +444,13 @@ export class Letter extends letiable {
     }
 
     //handle autoParenthesized functions
-    let str = '';
-    let l: NodeRef = this;
-    let i = 0;
+    var str = '';
+    var l: NodeRef = this;
+    var i = 0;
 
-    const autoParenthesizedFunctions =
-      cursor.options.autoParenthesizedFunctions;
-    const maxLength = autoParenthesizedFunctions._maxLength || 0;
-    const autoOperatorNames = cursor.options.autoOperatorNames;
+    var autoParenthesizedFunctions = cursor.options.autoParenthesizedFunctions;
+    var maxLength = autoParenthesizedFunctions._maxLength || 0;
+    var autoOperatorNames = cursor.options.autoOperatorNames;
     while (l instanceof Letter && i < maxLength) {
       (str = l.letter + str), (l = l[L]), (i += 1);
     }
@@ -490,7 +497,7 @@ export class Letter extends letiable {
   }
 
   autoUnItalicize(opts: CursorOptions) {
-    const autoOps = opts.autoOperatorNames;
+    var autoOps = opts.autoOperatorNames;
     if (autoOps._maxLength === 0) return;
 
     //exit early if in simple subscript and disableAutoSubstitutionInSubscripts is set.
@@ -500,16 +507,16 @@ export class Letter extends letiable {
 
     // want longest possible operator names, so join together entire contiguous
     // sequence of letters
-    let str = this.letter;
-    let l;
-    let r;
-    for (let l = this[L]; l instanceof Letter; l = l[L]) str = l.letter + str;
-    for (let r = this[R]; r instanceof Letter; r = r[R]) str += r.letter;
+    var str = this.letter;
+    var l;
+    var r;
+    for (l = this[L]; l instanceof Letter; l = l[L]) str = l.letter + str;
+    for (r = this[R]; r instanceof Letter; r = r[R]) str += r.letter;
 
     // removeClass and delete flags from all letters before figuring out
     // which, if any, are part of an operator name
-    const lR = l && l[R];
-    const rL = r && r[L];
+    var lR = l && l[R];
+    var rL = r && r[L];
 
     new Fragment(lR || this.parent.getEnd(L), rL || this.parent.getEnd(R)).each(
       function (el) {
@@ -523,22 +530,22 @@ export class Letter extends letiable {
       }
     );
 
-    const autoOpsLength = autoOps._maxLength || 0;
+    var autoOpsLength = autoOps._maxLength || 0;
 
     // check for operator names: at each position from left to right, check
     // substrings from longest to shortest
     outer: for (
-      let i = 0, first = (l as unknown as MQNode)[R] || this.parent.getEnd(L);
+      var i = 0, first = (l as unknown as MQNode)[R] || this.parent.getEnd(L);
       first && i < str.length;
       i += 1, first = (first as MQNode)[R]
     ) {
-      for (let len = min(autoOpsLength, str.length - i); len > 0; len -= 1) {
-        const word = str.slice(i, i + len);
-        let last: MQNode = undefined!; // TODO - TS complaining that we use last before assigning to it
+      for (var len = min(autoOpsLength, str.length - i); len > 0; len -= 1) {
+        var word = str.slice(i, i + len);
+        var last: MQNode = undefined!; // TODO - TS complaining that we use last before assigning to it
 
         if (autoOps.hasOwnProperty(word)) {
           for (
-            let j = 0, letter: NodeRef = first;
+            var j = 0, letter: NodeRef = first;
             j < len;
             j += 1, letter = (letter as MQNode)[R]
           ) {
@@ -548,15 +555,15 @@ export class Letter extends letiable {
             }
           }
 
-          const isBuiltIn = BuiltInOpNames.hasOwnProperty(word);
+          var isBuiltIn = BuiltInOpNames.hasOwnProperty(word);
           first.ctrlSeq =
             (isBuiltIn ? '\\' : '\\operatorname{') + first.ctrlSeq;
           last.ctrlSeq += isBuiltIn ? ' ' : '}';
 
           if (TwoWordOpNames.hasOwnProperty(word)) {
-            const lastL = last[L];
-            const lastLL = lastL && lastL[L];
-            const lastLLL = (lastLL && lastLL[L]) as MQNode;
+            var lastL = last[L];
+            var lastLL = lastL && lastL[L];
+            var lastLLL = (lastLL && lastLL[L]) as MQNode;
             lastLLL.domFrag().addClass('mq-last');
           }
 
@@ -564,10 +571,10 @@ export class Letter extends letiable {
             first.domFrag().addClass('mq-first');
           if (!this.shouldOmitPadding(last[R])) {
             if (last[R] instanceof SupSub) {
-              const supsub = last[R] as MQNode; // XXX monkey-patching, but what's the right thing here?
+              var supsub = last[R] as MQNode; // XXX monkey-patching, but what's the right thing here?
               // Have operatorname-specific code in SupSub? A CSS-like language to style the
               // math tree, but which ignores cursor and selection (which CSS can't)?
-              const respace =
+              var respace =
                 (supsub.siblingCreated =
                 supsub.siblingDeleted =
                   function () {
@@ -609,7 +616,7 @@ export class Letter extends letiable {
     return false;
   }
 }
-const BuiltInOpNames: AutoDict = {}; // the set of operator names like \sin, \cos, etc that
+var BuiltInOpNames: AutoDict = {}; // the set of operator names like \sin, \cos, etc that
 // are built-into LaTeX, see Section 3.17 of the Short Math Guide: http://tinyurl.com/jm9okjc
 // MathQuill auto-unitalicizes some operator names not in that set, like 'hcf'
 // and 'arsinh', which must be exported as \operatorname{hcf} and
@@ -619,31 +626,31 @@ const BuiltInOpNames: AutoDict = {}; // the set of operator names like \sin, \co
 // the set of operator names that MathQuill auto-unitalicizes by default; overridable
 Options.prototype.autoOperatorNames = defaultAutoOpNames();
 
-const TwoWordOpNames = { limsup: 1, liminf: 1, projlim: 1, injlim: 1 };
+var TwoWordOpNames = { limsup: 1, liminf: 1, projlim: 1, injlim: 1 };
 
 function defaultAutoOpNames() {
-  const AutoOpNames: AutoDict = {
+  var AutoOpNames: AutoDict = {
     _maxLength: 9,
   };
-  const mostOps = (
+  var mostOps = (
     'arg deg det dim exp gcd hom inf ker lg lim ln log max min sup' +
     ' limsup liminf injlim projlim Pr'
   ).split(' ');
-  for (let i = 0; i < mostOps.length; i += 1) {
+  for (var i = 0; i < mostOps.length; i += 1) {
     BuiltInOpNames[mostOps[i]] = AutoOpNames[mostOps[i]] = 1;
   }
 
-  const builtInTrigs =
+  var builtInTrigs =
     'sin cos tan arcsin arccos arctan sinh cosh tanh sec csc cot coth'.split(
       // why coth but not sech and csch, LaTeX?
       ' '
     );
-  for (let i = 0; i < builtInTrigs.length; i += 1) {
+  for (var i = 0; i < builtInTrigs.length; i += 1) {
     BuiltInOpNames[builtInTrigs[i]] = 1;
   }
 
-  const autoTrigs = 'sin cos tan sec cosec csc cotan cot ctg'.split(' ');
-  for (let i = 0; i < autoTrigs.length; i += 1) {
+  var autoTrigs = 'sin cos tan sec cosec csc cotan cot ctg'.split(' ');
+  for (var i = 0; i < autoTrigs.length; i += 1) {
     AutoOpNames[autoTrigs[i]] =
       AutoOpNames['arc' + autoTrigs[i]] =
       AutoOpNames[autoTrigs[i] + 'h'] =
@@ -654,8 +661,8 @@ function defaultAutoOpNames() {
 
   // compat with some of the nonstandard LaTeX exported by MathQuill
   // before #247. None of these are real LaTeX commands so, seems safe
-  const moreNonstandardOps = 'gcf hcf lcm proj span'.split(' ');
-  for (let i = 0; i < moreNonstandardOps.length; i += 1) {
+  var moreNonstandardOps = 'gcf hcf lcm proj span'.split(' ');
+  for (var i = 0; i < moreNonstandardOps.length; i += 1) {
     AutoOpNames[moreNonstandardOps[i]] = 1;
   }
   return AutoOpNames;
@@ -668,11 +675,11 @@ baseOptionProcessors.autoOperatorNames = function (cmds) {
   if (!/^[a-z|-]+(?: [a-z|-]+)*$/i.test(cmds)) {
     throw '"' + cmds + '" not a space-delimited list of letters or "|"';
   }
-  const list = cmds.split(' ');
-  const dict: AutoDict = {};
-  let maxLength = 0;
-  for (let i = 0; i < list.length; i += 1) {
-    const cmd = list[i];
+  var list = cmds.split(' ');
+  var dict: AutoDict = {};
+  var maxLength = 0;
+  for (var i = 0; i < list.length; i += 1) {
+    var cmd = list[i];
     if (cmd.length < 2) {
       throw '"' + cmd + '" not minimum length of 2';
     }
@@ -682,7 +689,7 @@ baseOptionProcessors.autoOperatorNames = function (cmds) {
       maxLength = max(maxLength, cmd.length);
     } else {
       // this item has a speech-friendly alternative
-      const cmdArray = cmd.split('|');
+      var cmdArray = cmd.split('|');
       if (cmdArray.length > 2) {
         throw '"' + cmd + '" has more than 1 mathspeak delimiter';
       }
@@ -702,22 +709,22 @@ class OperatorName extends MQSymbol {
     super(fn || '');
   }
   createLeftOf(cursor: Cursor) {
-    const fn = this.ctrlSeq;
-    for (let i = 0; i < fn.length; i += 1) {
+    var fn = this.ctrlSeq;
+    for (var i = 0; i < fn.length; i += 1) {
       new Letter(fn.charAt(i)).createLeftOf(cursor);
     }
   }
   parser() {
-    const fn = this.ctrlSeq;
-    const block = new MathBlock();
-    for (let i = 0; i < fn.length; i += 1) {
+    var fn = this.ctrlSeq;
+    var block = new MathBlock();
+    for (var i = 0; i < fn.length; i += 1) {
       new Letter(fn.charAt(i)).adopt(block, block.getEnd(R), 0);
     }
     return Parser.succeed(block.children());
   }
 }
 
-for (const fn in Options.prototype.autoOperatorNames)
+for (var fn in Options.prototype.autoOperatorNames)
   if (Options.prototype.autoOperatorNames.hasOwnProperty(fn)) {
     (LatexCmds as LatexCmdsAny)[fn as string] = OperatorName;
   }
@@ -731,9 +738,9 @@ LatexCmds.operatorname = class extends MathCommand {
     return latexMathParser.block.map(function (b) {
       // Check for the special case of \operatorname{ans}, which has
       // a special html representation
-      let isAllLetters = true;
-      let str = '';
-      const children = b.children();
+      var isAllLetters = true;
+      var str = '';
+      var children = b.children();
       children.each(function (child) {
         if (child instanceof Letter) {
           str += child.letter;
@@ -754,12 +761,12 @@ LatexCmds.operatorname = class extends MathCommand {
 LatexCmds.f = class extends Letter {
   letter: string;
   constructor() {
-    const letter = 'f';
+    var letter = 'f';
     super(letter);
 
     this.letter = letter;
     this.domView = new DOMView(0, () =>
-      h('let', { class: 'mq-f' }, [h.text('f')])
+      h('var', { class: 'mq-f' }, [h.text('f')])
     );
   }
   italicize(bool: boolean) {
@@ -812,8 +819,8 @@ LatexCmds['%'] = class extends NonSymbolaSymbol {
     super('\\%', h.text('%'), 'percent');
   }
   parser() {
-    const optWhitespace = Parser.optWhitespace;
-    const string = Parser.string;
+    var optWhitespace = Parser.optWhitespace;
+    var string = Parser.string;
 
     // Parse `\%\operatorname{of}` as special `percentof` node so that
     // it will be serialized properly and deleted as a unit.
@@ -932,7 +939,7 @@ LatexCmds.Upsilon = //LaTeX
     () =>
       new MQSymbol(
         '\\Upsilon ',
-        h('let', { style: 'font-family: serif' }, [h.entityText('&upsih;')]),
+        h('var', { style: 'font-family: serif' }, [h.entityText('&upsih;')]),
         'capital upsilon'
       ); //Symbola's 'upsilon with a hook' is a capital Y without hooks :(
 
@@ -962,18 +969,18 @@ export class LatexFragment extends MathCommand {
   }
 
   createLeftOf(cursor: Cursor) {
-    const block = latexMathParser.parse(this.latexStr);
+    var block = latexMathParser.parse(this.latexStr);
     block
       .children()
       .adopt(cursor.parent, cursor[L] as MQNode, cursor[R] as MQNode);
     cursor[L] = block.getEnd(R);
     domFrag(block.html()).insertBefore(cursor.domFrag());
     block.finalizeInsert(cursor.options, cursor);
-    const blockEndsR = block.getEnd(R);
-    const blockEndsRR = blockEndsR && blockEndsR[R];
+    var blockEndsR = block.getEnd(R);
+    var blockEndsRR = blockEndsR && blockEndsR[R];
     if (blockEndsRR) blockEndsRR.siblingCreated(cursor.options, L);
-    const blockEndsL = block.getEnd(L);
-    const blockEndsLL = blockEndsL && blockEndsL[L];
+    var blockEndsL = block.getEnd(L);
+    var blockEndsLL = blockEndsL && blockEndsL[L];
     if (blockEndsLL) blockEndsLL.siblingCreated(cursor.options, R);
     cursor.parent.bubble(function (node) {
       node.reflow();
@@ -984,7 +991,7 @@ export class LatexFragment extends MathCommand {
     return latexMathParser.parse(this.latexStr).mathspeak();
   }
   parser() {
-    const frag = latexMathParser.parse(this.latexStr).children();
+    var frag = latexMathParser.parse(this.latexStr).children();
     return Parser.succeed(frag);
   }
 }
@@ -1057,7 +1064,7 @@ LatexCmds['√'] = () => new LatexFragment('\\sqrt{}');
 function isBinaryOperator(node: NodeRef): boolean {
   if (!node) return false;
 
-  const nodeL = node[L];
+  var nodeL = node[L];
 
   if (nodeL) {
     // If the left sibling is a binary operator or a separator (comma, semicolon, colon, space)
@@ -1085,7 +1092,7 @@ function isBinaryOperator(node: NodeRef): boolean {
   return true;
 }
 
-export const PlusMinus = class extends BinaryOperator {
+export var PlusMinus = class extends BinaryOperator {
   constructor(ch?: string, html?: ChildNode, mathspeak?: string) {
     super(ch, html, undefined, mathspeak, true);
   }
@@ -1151,7 +1158,7 @@ class To extends BinaryOperator {
   }
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (dir === L) {
-      const l = cursor[L] as MQNode;
+      var l = cursor[L] as MQNode;
       new Fragment(l, this).remove();
       cursor[L] = l[L];
       new MinusNode().createLeftOf(cursor);
@@ -1172,7 +1179,7 @@ class Inequality extends BinaryOperator {
   data: InequalityData;
 
   constructor(data: InequalityData, strict: boolean) {
-    const strictness: '' | 'Strict' = strict ? 'Strict' : '';
+    var strictness: '' | 'Strict' = strict ? 'Strict' : '';
     super(
       data[`ctrlSeq${strictness}`],
       h.entityText(data[`htmlEntity${strictness}`]),
@@ -1186,7 +1193,7 @@ class Inequality extends BinaryOperator {
 
   swap(strict: boolean) {
     this.strict = strict;
-    const strictness: '' | 'Strict' = strict ? 'Strict' : '';
+    var strictness: '' | 'Strict' = strict ? 'Strict' : '';
     this.ctrlSeq = this.data[`ctrlSeq${strictness}`];
     this.domFrag()
       .children()
@@ -1207,7 +1214,7 @@ class Inequality extends BinaryOperator {
   }
 }
 
-const less: InequalityData = {
+var less: InequalityData = {
   ctrlSeq: '\\le ',
   htmlEntity: '&le;',
   text: '≤',
@@ -1217,7 +1224,7 @@ const less: InequalityData = {
   textStrict: '<',
   mathspeakStrict: 'less than',
 };
-const greater: InequalityData = {
+var greater: InequalityData = {
   ctrlSeq: '\\ge ',
   htmlEntity: '&ge;',
   text: '≥',
@@ -1233,9 +1240,9 @@ class Greater extends Inequality {
     super(greater, true);
   }
   createLeftOf(cursor: Cursor) {
-    const cursorL = cursor[L];
+    var cursorL = cursor[L];
     if (cursorL instanceof BinaryOperator && cursorL.ctrlSeq === '-') {
-      const l = cursorL;
+      var l = cursorL;
       cursor[L] = l[L];
       l.remove();
       new To().createLeftOf(cursor);
@@ -1273,7 +1280,7 @@ export class Equality extends BinaryOperator {
     super('=', h.text('='), '=', 'equals');
   }
   createLeftOf(cursor: Cursor) {
-    const cursorL = cursor[L];
+    var cursorL = cursor[L];
     if (cursorL instanceof Inequality && cursorL.strict) {
       cursorL.swap(false);
       cursorL.bubble(function (node) {
@@ -1304,7 +1311,7 @@ class Sim extends BinaryOperator {
   }
   createLeftOf(cursor: Cursor) {
     if (cursor[L] instanceof Sim) {
-      const l = cursor[L] as MQNode;
+      var l = cursor[L] as MQNode;
       cursor[L] = l[L];
       l.remove();
       new Approx().createLeftOf(cursor);
@@ -1324,7 +1331,7 @@ class Approx extends BinaryOperator {
   }
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (dir === L) {
-      const l = cursor[L] as MQNode;
+      var l = cursor[L] as MQNode;
       new Fragment(l, this).remove();
       cursor[L] = l[L];
       new Sim().createLeftOf(cursor);
@@ -1348,7 +1355,7 @@ LatexCmds['≈'] = LatexCmds.approx = Approx;
 CharCmds['~'] = LatexCmds.sim;
 LatexCmds['~'] = LatexCmds.tildeNbsp;
 baseOptionProcessors.interpretTildeAsSim = function (val: boolean | undefined) {
-  const interpretAsSim = !!val;
+  var interpretAsSim = !!val;
   if (interpretAsSim) {
     LatexCmds['~'] = LatexCmds.sim;
   } else {

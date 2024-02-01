@@ -2,37 +2,46 @@
  * Abstract classes of math blocks and commands.
  ************************************************/
 
-import { getBoundingClientRect } from 'src/browser';
-import { Cursor, Anticursor, MQSelection } from 'src/cursor';
-import { h } from 'src/dom';
-import { domFrag } from 'src/domFragment';
 import {
-  API,
-  IBaseMathQuill,
-  Options,
-  RootBlockMixin,
   APIClasses,
-} from 'src/publicapi';
-import { MQNode } from 'src/services/keystroke';
-import { Parser } from 'src/services/parser.util';
-import { Controller } from 'src/services/textarea';
-import {
+  API,
+  Anticursor,
+  CharCmds,
   CharCmdsAny,
   ConfigOptions,
+  Controller,
+  Cursor,
   CursorOptions,
+  Digit,
+  Direction,
+  Ends,
+  Fragment,
+  IBaseMathQuill,
   InnerFields,
   JoinMethod,
+  L,
+  LatexCmds,
   LatexCmdsAny,
   LatexCmdsSingleCharBuilder,
   LatexContext,
+  Letter,
+  MQNode,
+  MQSelection,
+  MathQuill,
   MathspeakOptions,
+  NodeBase,
   NodeRef,
-} from 'src/shared_types';
-import { Fragment, NodeBase, LatexCmds, CharCmds, Ends } from 'src/tree';
-import { R, L, pray, Direction, noop } from 'src/utils';
-import { Letter, Digit } from './math/basicSymbols';
-import { latexMathParser } from 'src/services/latex';
-import MathQuill = require('src/mathquill');
+  Options,
+  Parser,
+  R,
+  RootBlockMixin,
+  domFrag,
+  getBoundingClientRect,
+  h,
+  latexMathParser,
+  noop,
+  pray,
+} from '../bundle';
 
 /**
  * Math tree node base class.
@@ -41,7 +50,7 @@ import MathQuill = require('src/mathquill');
  */
 export class MathElement extends MQNode {
   finalizeInsert(options: CursorOptions, cursor: Cursor) {
-    const self = this;
+    var self = this;
     self.postOrder(function (node) {
       node.finalizeTree(options);
     });
@@ -60,8 +69,8 @@ export class MathElement extends MQNode {
     self.postOrder(function (node) {
       node.reflow();
     });
-    const selfR = self[R];
-    const selfL = self[L];
+    var selfR = self[R];
+    var selfL = self[L];
     if (selfR) selfR.siblingCreated(options, L);
     if (selfL) selfL.siblingCreated(options, R);
     self.bubble(function (node) {
@@ -73,9 +82,9 @@ export class MathElement extends MQNode {
   // deeply nested content is truncated. Just return
   // false if the cursor is already too deep.
   prepareInsertionAt(cursor: Cursor) {
-    const maxDepth = cursor.options.maxDepth;
+    var maxDepth = cursor.options.maxDepth;
     if (maxDepth !== undefined) {
-      const cursorDepth = cursor.depth();
+      var cursorDepth = cursor.depth();
       if (cursorDepth > maxDepth) {
         return false;
       }
@@ -86,16 +95,16 @@ export class MathElement extends MQNode {
   // Remove nodes that are more than `cutoff`
   // blocks deep from this node.
   removeNodesDeeperThan(cutoff: number) {
-    let depth = 0;
-    const queue: [[MQNode, number]] = [[this, depth]];
-    let current: [MQNode, number] | undefined;
+    var depth = 0;
+    var queue: [[MQNode, number]] = [[this, depth]];
+    var current: [MQNode, number] | undefined;
 
     // Do a breadth-first search of this node's descendants
     // down to cutoff, removing anything deeper.
     while ((current = queue.shift())) {
-      const c = current;
+      var c = current;
       c[0].children().each(function (child) {
-        const i = child instanceof MathBlock ? 1 : 0;
+        var i = child instanceof MathBlock ? 1 : 0;
         depth = c[1] + i;
 
         if (depth <= cutoff) {
@@ -122,8 +131,8 @@ export class DOMView {
  */
 export class MathCommand extends MathElement {
   replacedFragment: Fragment | undefined;
-  protected domView: DOMView;
-  protected ends: Ends<MQNode>;
+  domView: DOMView;
+  ends: Ends<MQNode>;
 
   constructor(ctrlSeq?: string, domView?: DOMView, textTemplate?: string[]) {
     super();
@@ -161,12 +170,12 @@ export class MathCommand extends MathElement {
   }
 
   parser(): Parser<MQNode | Fragment> {
-    const block = latexMathParser.block;
+    var block = latexMathParser.block;
 
     return block.times(this.numBlocks()).map((blocks) => {
       this.blocks = blocks;
 
-      for (let i = 0; i < blocks.length; i += 1) {
+      for (var i = 0; i < blocks.length; i += 1) {
         blocks[i].adopt(this, this.getEnd(R), 0);
       }
 
@@ -176,13 +185,13 @@ export class MathCommand extends MathElement {
 
   // createLeftOf(cursor) and the methods it calls
   createLeftOf(cursor: Cursor) {
-    const cmd = this;
-    const replacedFragment = cmd.replacedFragment;
+    var cmd = this;
+    var replacedFragment = cmd.replacedFragment;
 
     cmd.createBlocks();
     super.createLeftOf(cursor);
     if (replacedFragment) {
-      const cmdEndsL = cmd.getEnd(L);
+      var cmdEndsL = cmd.getEnd(L);
       replacedFragment.adopt(cmdEndsL, 0, 0);
       replacedFragment.domFrag().appendTo(cmdEndsL.domFrag().oneElement());
       cmd.placeCursor(cursor);
@@ -192,12 +201,12 @@ export class MathCommand extends MathElement {
     cmd.placeCursor(cursor);
   }
   createBlocks() {
-    const cmd = this,
+    var cmd = this,
       numBlocks = cmd.numBlocks(),
       blocks = (cmd.blocks = Array(numBlocks));
 
-    for (let i = 0; i < numBlocks; i += 1) {
-      const newBlock = (blocks[i] = new MathBlock());
+    for (var i = 0; i < numBlocks; i += 1) {
+      var newBlock = (blocks[i] = new MathBlock());
       newBlock.adopt(cmd, cmd.getEnd(R), 0);
     }
   }
@@ -215,14 +224,14 @@ export class MathCommand extends MathElement {
   // and selection of the MathQuill tree, these all take in a direction and
   // the cursor
   moveTowards(dir: Direction, cursor: Cursor, updown?: 'up' | 'down') {
-    let updownInto: NodeRef | undefined;
+    var updownInto: NodeRef | undefined;
     if (updown === 'up') {
       updownInto = this.upInto;
     } else if (updown === 'down') {
       updownInto = this.downInto;
     }
 
-    const el = updownInto || this.getEnd(-dir as Direction);
+    var el = updownInto || this.getEnd(-dir as Direction);
     cursor.insAtDirEnd(-dir as Direction, el);
     cursor.controller.aria
       .queueDirEndOf(-dir as Direction)
@@ -240,30 +249,30 @@ export class MathCommand extends MathElement {
     return new MQSelection(this, this);
   }
   unselectInto(dir: Direction, cursor: Cursor) {
-    const antiCursor = cursor.anticursor as Anticursor;
-    const ancestor = antiCursor.ancestors[this.id] as MQNode;
+    var antiCursor = cursor.anticursor as Anticursor;
+    var ancestor = antiCursor.ancestors[this.id] as MQNode;
     cursor.insAtDirEnd(-dir as Direction, ancestor);
   }
   seek(clientX: number, cursor: Cursor) {
     function getBounds(node: MQNode) {
-      const el = node.domFrag().oneElement();
-      const l = getBoundingClientRect(el).left;
-      const r: number = l + el.offsetWidth;
+      var el = node.domFrag().oneElement();
+      var l = getBoundingClientRect(el).left;
+      var r: number = l + el.offsetWidth;
       return {
         [L]: l,
         [R]: r,
       };
     }
 
-    const cmd = this;
-    const cmdBounds = getBounds(cmd);
+    var cmd = this;
+    var cmdBounds = getBounds(cmd);
 
     if (clientX < cmdBounds[L]) return cursor.insLeftOf(cmd);
     if (clientX > cmdBounds[R]) return cursor.insRightOf(cmd);
 
-    let leftLeftBound = cmdBounds[L];
+    var leftLeftBound = cmdBounds[L];
     cmd.eachChild(function (block) {
-      const blockBounds = getBounds(block);
+      var blockBounds = getBounds(block);
       if (clientX < blockBounds[L]) {
         // closer to this block's left bound, or the bound left of that?
         if (clientX - leftLeftBound < blockBounds[L] - clientX) {
@@ -301,10 +310,10 @@ export class MathCommand extends MathElement {
    * See dom.test.js for example templates and intended outputs.
    */
   html(): Element | DocumentFragment {
-    const blocks = this.blocks;
+    var blocks = this.blocks;
     pray('domView is defined', this.domView);
-    const template = this.domView;
-    const dom = template.render(blocks || []);
+    var template = this.domView;
+    var dom = template.render(blocks || []);
     this.setDOM(dom);
     NodeBase.linkElementByCmdNode(dom, this);
     return dom;
@@ -318,9 +327,9 @@ export class MathCommand extends MathElement {
     this.eachChild((child) => {
       ctx.latex += '{';
 
-      const beforeLength = ctx.latex.length;
+      var beforeLength = ctx.latex.length;
       child.latexRecursive(ctx);
-      const afterLength = ctx.latex.length;
+      var afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written so we write a space
         ctx.latex += ' ';
@@ -333,11 +342,11 @@ export class MathCommand extends MathElement {
   }
   textTemplate = [''];
   text() {
-    const cmd = this;
-    let i = 0;
+    var cmd = this;
+    var i = 0;
     return cmd.foldChildren(cmd.textTemplate[i], function (text, child) {
       i += 1;
-      const child_text = child.text();
+      var child_text = child.text();
       if (
         text &&
         cmd.textTemplate[i] === '(' &&
@@ -350,10 +359,8 @@ export class MathCommand extends MathElement {
   }
   mathspeakTemplate = [''];
   mathspeak() {
-    console.log('latex', this.latex());
-    console.log('text', this.text());
-    const cmd = this;
-    let i = 0;
+    var cmd = this;
+    var i = 0;
     return cmd.foldChildren(
       cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ',
       function (speech, block) {
@@ -429,8 +436,8 @@ export class MQSymbol extends MathCommand {
   }
   seek(clientX: number, cursor: Cursor) {
     // insert at whichever side the click was closer to
-    const el = this.domFrag().oneElement();
-    const left = getBoundingClientRect(el).left;
+    var el = this.domFrag().oneElement();
+    var left = getBoundingClientRect(el).left;
     if (clientX - left < el.offsetWidth / 2) cursor.insLeftOf(this);
     else cursor.insRightOf(this);
 
@@ -446,7 +453,6 @@ export class MQSymbol extends MathCommand {
     return this.textTemplate.join('');
   }
   mathspeak(_opts?: MathspeakOptions) {
-    console.log({ mathspeakName: this.mathspeakName });
     return this.mathspeakName || '';
   }
   placeCursor() {}
@@ -526,9 +532,9 @@ export class MathBlock extends MathElement {
     });
   }
   html() {
-    const fragment = document.createDocumentFragment();
+    var fragment = document.createDocumentFragment();
     this.eachChild((el) => {
-      const childHtml = el.html();
+      var childHtml = el.html();
       fragment.appendChild(childHtml);
       return undefined;
     });
@@ -540,13 +546,13 @@ export class MathBlock extends MathElement {
     this.checkCursorContextClose(ctx);
   }
   text() {
-    const endsL = this.getEnd(L);
-    const endsR = this.getEnd(R);
+    var endsL = this.getEnd(L);
+    var endsR = this.getEnd(R);
     return endsL === endsR && endsL !== 0 ? endsL.text() : this.join('text');
   }
   mathspeak() {
-    let tempOp = '';
-    let autoOps: CursorOptions['autoOperatorNames'] = {};
+    var tempOp = '';
+    var autoOps: CursorOptions['autoOperatorNames'] = {};
     if (this.controller) autoOps = this.controller.options.autoOperatorNames;
     return (
       this.foldChildren<string[]>([], function (speechArray, cmd) {
@@ -555,14 +561,14 @@ export class MathBlock extends MathElement {
         } else {
           if (tempOp !== '') {
             if (autoOps._maxLength! > 0) {
-              const x = autoOps[tempOp.toLowerCase()];
+              var x = autoOps[tempOp.toLowerCase()];
               if (typeof x === 'string') tempOp = x;
             }
             speechArray.push(tempOp + ' ');
             tempOp = '';
           }
-          let mathspeakText = cmd.mathspeak();
-          const cmdText = cmd.ctrlSeq;
+          var mathspeakText = cmd.mathspeak();
+          var cmdText = cmd.ctrlSeq;
           if (
             isNaN(cmdText as any) && // TODO - revisit this to improve the isNumber() check
             cmdText !== '.' &&
@@ -605,7 +611,7 @@ export class MathBlock extends MathElement {
   // and selection of the MathQuill tree, these all take in a direction and
   // the cursor
   moveOutOf(dir: Direction, cursor: Cursor, updown?: 'up' | 'down') {
-    let updownInto: NodeRef | undefined;
+    var updownInto: NodeRef | undefined;
     if (updown === 'up') {
       updownInto = this.parent.upInto;
     } else if (updown === 'down') {
@@ -613,7 +619,7 @@ export class MathBlock extends MathElement {
     }
 
     if (!updownInto && this[dir]) {
-      const otherDir = -dir as Direction;
+      var otherDir = -dir as Direction;
       cursor.insAtDirEnd(otherDir, this[dir] as MQNode);
       cursor.controller.aria.queueDirEndOf(otherDir).queue(cursor.parent, true);
     } else {
@@ -628,15 +634,15 @@ export class MathBlock extends MathElement {
     cursor.unwrapGramp();
   }
   seek(clientX: number, cursor: Cursor) {
-    let node = this.getEnd(R);
+    var node = this.getEnd(R);
     if (!node) return cursor.insAtRightEnd(this);
-    const el = node.domFrag().oneElement();
-    const left = getBoundingClientRect(el).left;
+    var el = node.domFrag().oneElement();
+    var left = getBoundingClientRect(el).left;
     if (left + el.offsetWidth < clientX) {
       return cursor.insAtRightEnd(this);
     }
 
-    const endsL = this.getEnd(L) as MQNode;
+    var endsL = this.getEnd(L) as MQNode;
     if (clientX < getBoundingClientRect(endsL.domFrag().oneElement()).left)
       return cursor.insAtLeftEnd(this);
     while (clientX < getBoundingClientRect(node.domFrag().oneElement()).left)
@@ -644,7 +650,7 @@ export class MathBlock extends MathElement {
     return node.seek(clientX, cursor);
   }
   chToCmd(ch: string, options: CursorOptions) {
-    let cons;
+    var cons;
     // exclude f because it gets a dedicated command with more spacing
     if (ch.match(/^[a-eg-zA-Z]$/)) return new Letter(ch);
     else if (/^\d$/.test(ch)) return new Digit(ch);
@@ -665,7 +671,7 @@ export class MathBlock extends MathElement {
     } else return new VanillaSymbol(ch);
   }
   write(cursor: Cursor, ch: string) {
-    const cmd = this.chToCmd(ch, cursor.options);
+    var cmd = this.chToCmd(ch, cursor.options);
     if (cursor.selection) cmd.replaces(cursor.replaceSelection());
     if (!cursor.isTooDeep()) {
       cmd.createLeftOf(cursor.show());
@@ -679,10 +685,10 @@ export class MathBlock extends MathElement {
   }
 
   writeLatex(cursor: Cursor, latex: string) {
-    const all = Parser.all;
-    const eof = Parser.eof;
+    var all = Parser.all;
+    var eof = Parser.eof;
 
-    const block = latexMathParser
+    var block = latexMathParser
       .skip(eof)
       .or(all.result<false>(false))
       .parse(latex);
@@ -694,10 +700,10 @@ export class MathBlock extends MathElement {
       domFrag(block.html()).insertBefore(cursor.domFrag());
       cursor[L] = block.getEnd(R);
       block.finalizeInsert(cursor.options, cursor);
-      const blockEndsR = block.getEnd(R);
-      const blockEndsL = block.getEnd(L);
-      const blockEndsRR = (blockEndsR as MQNode)[R];
-      const blockEndsLL = (blockEndsL as MQNode)[L];
+      var blockEndsR = block.getEnd(R);
+      var blockEndsL = block.getEnd(L);
+      var blockEndsRR = (blockEndsR as MQNode)[R];
+      var blockEndsLL = (blockEndsL as MQNode)[L];
       if (blockEndsRR) blockEndsRR.siblingCreated(cursor.options, L);
       if (blockEndsLL) blockEndsLL.siblingCreated(cursor.options, R);
       cursor.parent.bubble(function (node) {
@@ -746,7 +752,7 @@ API.StaticMath = function (APIClasses: APIClasses) {
     }
     constructor(el: Controller) {
       super(el);
-      const innerFields = (this.innerFields = []);
+      var innerFields = (this.innerFields = []);
       this.__controller.root.postOrder(function (node: MQNode) {
         node.registerInnerField(innerFields, APIClasses.InnerMathField);
       });
@@ -754,9 +760,9 @@ API.StaticMath = function (APIClasses: APIClasses) {
     latex(s: string): IBaseMathQuill;
     latex(): string;
     latex(_latex?: string, ...args: any): string | IBaseMathQuill {
-      const returned = super.latex.apply(this, args as any);
+      var returned = super.latex.apply(this, args as any);
       if (args.length > 0) {
-        const innerFields = (this.innerFields = []);
+        var innerFields = (this.innerFields = []);
         this.__controller.root.postOrder(function (node: MQNode) {
           node.registerInnerField(innerFields, APIClasses.InnerMathField);
         });

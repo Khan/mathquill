@@ -2,17 +2,20 @@
  * Symbols for Advanced Mathematics
  ***********************************/
 
-import { LatexCmds, isMQNodeClass } from 'src/tree';
+// I can't get the blob pattern in eslint to work when the bundle is two levels down
+// eslint-disable-next-line no-restricted-imports
 import {
   BinaryOperator,
+  Cursor,
+  LatexCmds,
+  MQNodeBuilderNoParam,
   MathCommand,
+  Parser,
   bindBinaryOperator,
   bindVanillaSymbol,
-} from '../math';
-import { Cursor } from 'src/cursor';
-import { h } from 'src/dom';
-import { Parser } from 'src/services/parser.util';
-import { MQNodeBuilderNoParam } from 'src/shared_types';
+  h,
+  isMQNodeClass,
+} from '../../bundle';
 
 LatexCmds.notin =
   LatexCmds.cong =
@@ -144,9 +147,9 @@ LatexCmds.mathbb = class extends MathCommand {
     return 1 as const;
   }
   parser() {
-    const string = Parser.string;
-    const regex = Parser.regex;
-    const optWhitespace = Parser.optWhitespace;
+    var string = Parser.string;
+    var regex = Parser.regex;
+    var optWhitespace = Parser.optWhitespace;
     return optWhitespace
       .then(string('{'))
       .then(optWhitespace)
@@ -155,7 +158,7 @@ LatexCmds.mathbb = class extends MathCommand {
       .skip(string('}'))
       .map(function (c) {
         // instantiate the class for the matching char
-        const cmd = LatexCmds[c];
+        var cmd = LatexCmds[c];
         if (isMQNodeClass(cmd)) {
           return new cmd();
         } else {

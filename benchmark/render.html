@@ -60,8 +60,8 @@
     </div>
 
     <script type="text/javascript">
-      const MQ = MathQuill.getInterface(MathQuill.getInterface.MAX);
-      const params = new URLSearchParams(window.location.search);
+      var MQ = MathQuill.getInterface(MathQuill.getInterface.MAX);
+      var params = new URLSearchParams(window.location.search);
       if (!params.has('seed')) {
         params.append('seed', Math.random().toString(16).slice(2, 10));
         window.location.href = window.location.href + '?' + params.toString();
@@ -71,21 +71,21 @@
         return params.has(key) ? parseFloat(params.get(key)) : defaultValue;
       }
 
-      const MAX_DEPTH = getNumericParam('maxDepth', 6);
-      const MAX_LENGTH = getNumericParam('maxLength', 2048);
-      const NUM_EXPRESSIONS = getNumericParam('expressions', 1);
-      const NUM_SAMPLES = getNumericParam('samples', 30);
-      const random = new Math.seedrandom(params.get('seed'));
+      var MAX_DEPTH = getNumericParam('maxDepth', 6);
+      var MAX_LENGTH = getNumericParam('maxLength', 2048);
+      var NUM_EXPRESSIONS = getNumericParam('expressions', 1);
+      var NUM_SAMPLES = getNumericParam('samples', 30);
+      var random = new Math.seedrandom(params.get('seed'));
 
       window.results = [];
-      for (let i = 0; i < NUM_EXPRESSIONS; i++) {
-        let latex = '';
-        for (let depth = 0; depth <= MAX_DEPTH; depth++) {
-          const trialLatex = randomLatex(depth);
+      for (var i = 0; i < NUM_EXPRESSIONS; i++) {
+        var latex = '';
+        for (var depth = 0; depth <= MAX_DEPTH; depth++) {
+          var trialLatex = randomLatex(depth);
           if (trialLatex.length > MAX_LENGTH) break;
           latex = trialLatex;
         }
-        for (let s = 0; s < NUM_SAMPLES; s++) {
+        for (var s = 0; s < NUM_SAMPLES; s++) {
           run(latex);
         }
       }
@@ -99,7 +99,7 @@
         });
 
       function run(latex) {
-        const div = document.createElement('div');
+        var div = document.createElement('div');
         div.classList.add('test-case');
         div.innerHTML = `
             <div class="test-case-render">
@@ -111,23 +111,23 @@
             `;
         document.querySelector('#results').appendChild(div);
 
-        const mqElement = div.querySelector('.mathquill-math-field');
-        const htmlElement = div.querySelector('.html-only');
+        var mqElement = div.querySelector('.mathquill-math-field');
+        var htmlElement = div.querySelector('.html-only');
 
         mqElement.innerText = latex;
 
-        let start = performance.now();
+        var start = performance.now();
         MQ.MathField(mqElement);
         // Force syncronous layout
         document.body.getBoundingClientRect();
-        const mqDuration = performance.now() - start;
+        var mqDuration = performance.now() - start;
 
-        const html = mqElement.innerHTML;
+        var html = mqElement.innerHTML;
         start = performance.now();
         htmlElement.innerHTML = html;
         // Force syncronous layout
         document.body.getBoundingClientRect();
-        const htmlDuration = performance.now() - start;
+        var htmlDuration = performance.now() - start;
         results.push({ latex, mqDuration, htmlDuration });
 
         div.querySelector('.mq-result').innerText = `MQ: ${mqDuration.toFixed(
@@ -149,7 +149,7 @@
           return randomInteger(randomInteger(1));
         }
 
-        const randomLatexTemplates = [
+        var randomLatexTemplates = [
           [(a, b) => `\\frac{${a}}{${b}}`, 2],
           [(a, b) => `${a}+${b}`, 2],
           [(a) => `\\sqrt{${a}}`, 1],
@@ -159,20 +159,20 @@
           [(a) => `\\left(${a}\\right)`, 1],
         ];
 
-        let [fn, arity] =
+        var [fn, arity] =
           randomLatexTemplates[
             Math.floor(random() * randomLatexTemplates.length)
           ];
-        const args = [];
+        var args = [];
         if (arity < 0) {
           arity = randomInteger(2);
         }
-        let length = 0;
-        for (let i = 0; i < arity; i++) {
+        var length = 0;
+        for (var i = 0; i < arity; i++) {
           // If we've already exceeded MAX_LENGTH, this sample is going
           // to be rejected by an outer loop. In that case, just append
           // something simple ('1') and move on to save time.
-          const arg = length > MAX_LENGTH ? '1' : randomLatex(depth - 1);
+          var arg = length > MAX_LENGTH ? '1' : randomLatex(depth - 1);
           args.push(arg);
           length += arg.length;
         }

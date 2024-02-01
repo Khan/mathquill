@@ -138,7 +138,7 @@ var mathField = MQ.MathField($('#mathfield')[0], {
 
 `.moveOutOf(direction, mathField)`, `.deleteOutOf(direction, mathField)`, `.selectOutOf(direction, mathField)`, `.upOutOf(mathField)`, `.downOutOf(mathField)`
 
-The `*OutOf` handlers are called when a cursor movement would cause the cursor to leave the MathQuill mathField. These let you integrate cursor movement seamlessly between your code and MathQuill. For example, when the cursor is at the right edge, pressing the Right key causes the `moveOutOf` handler to be called with `MQ.R` and the math field API object. Pressing Backspace causes `deleteOutOf` to be called with `MQ.L` and the API object.
+The `*OutOf` handlers are called when a cursor movement would cause the cursor to leave the MathQuill mathField. These var you integrate cursor movement seamlessly between your code and MathQuill. For example, when the cursor is at the right edge, pressing the Right key causes the `moveOutOf` handler to be called with `MQ.R` and the math field API object. Pressing Backspace causes `deleteOutOf` to be called with `MQ.L` and the API object.
 
 ## enter(mathField)
 

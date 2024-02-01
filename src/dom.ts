@@ -1,6 +1,4 @@
-import { MathBlock } from './commands/math';
-import { NodeBase } from './tree';
-import { pray } from './utils';
+import { MathBlock, NodeBase, pray } from './bundle';
 
 export type HTMLTagName =
   | 'span'
@@ -11,7 +9,7 @@ export type HTMLTagName =
   | 'sup'
   | 'var'
   | 'br'
-  | 'let';
+  | 'var';
 type SVGTagName = 'svg' | 'path';
 
 interface CreateElementAttributes {
@@ -22,10 +20,10 @@ interface CreateElementAttributes {
 
 export function parseHTML(s: string) {
   // https://youmightnotneedjquery.com/#parse_html
-  const tmp = document.implementation.createHTMLDocument('');
+  var tmp = document.implementation.createHTMLDocument('');
   tmp.body.innerHTML = s;
   if (tmp.body.children.length === 1) return tmp.body.children[0];
-  const frag = document.createDocumentFragment();
+  var frag = document.createDocumentFragment();
   while (tmp.body.firstChild) {
     frag.appendChild(tmp.body.firstChild);
   }
@@ -58,12 +56,12 @@ interface HtmlBuilder {
   entityText(s: string): Text;
 }
 
-export const h = function h(
+export var h = function h(
   type: HTMLTagName | SVGTagName,
   attributes?: CreateElementAttributes,
   children?: (ChildNode | DocumentFragment)[]
 ): HTMLElement | SVGElement {
-  let el: HTMLElement | SVGElement;
+  var el: HTMLElement | SVGElement;
   switch (type) {
     case 'svg':
     case 'path':
@@ -72,14 +70,14 @@ export const h = function h(
     default:
       el = document.createElement(type);
   }
-  for (const key in attributes) {
-    const value = attributes[key];
+  for (var key in attributes) {
+    var value = attributes[key];
     if (value === undefined) continue;
     el.setAttribute(key, typeof value === 'string' ? value : String(value));
   }
 
   if (children) {
-    for (let i = 0; i < children.length; i++) {
+    for (var i = 0; i < children.length; i++) {
       el.appendChild(children[i]);
     }
   }
@@ -94,7 +92,7 @@ h.block = (
   attributes: CreateElementAttributes | undefined,
   block: MathBlock
 ) => {
-  const out = h(type, attributes, [block.html()]);
+  var out = h(type, attributes, [block.html()]);
   block.setDOM(out);
   NodeBase.linkElementByBlockNode(out, block);
   return out;
@@ -102,7 +100,7 @@ h.block = (
 
 h.entityText = (s: string) => {
   // TODO: replace with h.text(U_BLAHBLAH) or maybe a named entity->unicode lookup
-  const val = parseHTML(s);
+  var val = parseHTML(s);
   pray(
     'entity parses to a single text node',
     val instanceof DocumentFragment &&
@@ -120,12 +118,12 @@ export function closest(el: unknown | null, s: string) {
   if (!(el instanceof HTMLElement)) return null;
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Element/closest#polyfill
-  const matches =
+  var matches =
     Element.prototype.matches ||
     (Element.prototype as any).msMatchesSelector ||
     Element.prototype.webkitMatchesSelector;
 
-  let match: ParentNode | null = el;
+  var match: ParentNode | null = el;
   do {
     if (matches.call(match, s)) return match;
     match = match?.parentElement ?? match?.parentNode ?? null;

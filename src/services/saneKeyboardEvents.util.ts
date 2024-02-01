@@ -1,10 +1,9 @@
-import { noop } from 'src/utils';
-import { Controller } from './textarea';
+import { noop, Controller } from '../bundle';
 
 /** Poller that fires once every tick. */
 class EveryTick<Args extends unknown[] = []> {
-  private timeoutId: number;
-  private fn: (...args: Args | []) => void = noop;
+  timeoutId: number;
+  fn: (...args: Args | []) => void = noop;
   constructor() {}
 
   listen(fn: (...args: Args | []) => void) {
@@ -44,7 +43,7 @@ class EveryTick<Args extends unknown[] = []> {
  * cross-browser issues that arise must be dealt
  * with here, and if necessary, the API updated.
  ************************************************/
-export const saneKeyboardEvents = (function () {
+export var saneKeyboardEvents = (function () {
   // The following [key values][1] map was compiled from the
   // [DOM3 Events appendix section on key codes][2] and
   // [a widely cited report on cross-browser tests of key codes][3],
@@ -54,7 +53,7 @@ export const saneKeyboardEvents = (function () {
   // [1]: http://www.w3.org/TR/2012/WD-DOM-Level-3-Events-20120614/#keys-keyvalues
   // [2]: http://www.w3.org/TR/2012/WD-DOM-Level-3-Events-20120614/#fixed-virtual-key-codes
   // [3]: http://unixpapa.com/js/key.html
-  const WHICH_TO_MQ_KEY_STEM: Record<number, string | undefined> = {
+  var WHICH_TO_MQ_KEY_STEM: Record<number, string | undefined> = {
     8: 'Backspace',
     9: 'Tab',
 
@@ -88,7 +87,7 @@ export const saneKeyboardEvents = (function () {
     144: 'NumLock',
   };
 
-  const KEY_TO_MQ_KEY_STEM: Record<string, string | undefined> = {
+  var KEY_TO_MQ_KEY_STEM: Record<string, string | undefined> = {
     ArrowRight: 'Right',
     ArrowLeft: 'Left',
     ArrowDown: 'Down',
@@ -120,7 +119,7 @@ export const saneKeyboardEvents = (function () {
     //
     // Ref: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
     if (evt.key === undefined) {
-      const which = evt.which || evt.keyCode;
+      var which = evt.which || evt.keyCode;
       return WHICH_TO_MQ_KEY_STEM[which] || String.fromCharCode(which);
     }
     if (isLowercaseAlphaCharacter(evt.key)) return evt.key.toUpperCase();
@@ -130,8 +129,8 @@ export const saneKeyboardEvents = (function () {
   /** To the extent possible, create a normalized string representation
    * of the key combo (i.e., key code and modifier keys). */
   function getMQKeyName(evt: KeyboardEvent) {
-    const key = getMQKeyStem(evt);
-    const modifiers = [];
+    var key = getMQKeyStem(evt);
+    var modifiers = [];
 
     if (evt.ctrlKey) modifiers.push('Ctrl');
     if (evt.metaKey) modifiers.push('Meta');
@@ -151,8 +150,8 @@ export const saneKeyboardEvents = (function () {
     textarea: HTMLElement,
     controller: Controller
   ) {
-    let keydown: KeyboardEvent | null = null;
-    let keypress: KeyboardEvent | null = null;
+    var keydown: KeyboardEvent | null = null;
+    var keypress: KeyboardEvent | null = null;
 
     // everyTick.listen() is called after key or clipboard events to
     // say "Hey, I think something was just typed" or "pasted" etc,
@@ -162,7 +161,7 @@ export const saneKeyboardEvents = (function () {
     // after selecting something and then typing, the textarea is
     // incorrectly reported as selected during the input event (but not
     // subsequently).
-    const everyTick = new EveryTick<[Event]>();
+    var everyTick = new EveryTick<[Event]>();
 
     function guardedTextareaSelect() {
       try {
@@ -189,7 +188,7 @@ export const saneKeyboardEvents = (function () {
       if (text) guardedTextareaSelect();
       shouldBeSelected = !!text;
     }
-    let shouldBeSelected = false;
+    var shouldBeSelected = false;
 
     // -*- helper subroutines -*- //
 
@@ -288,7 +287,7 @@ export const saneKeyboardEvents = (function () {
       // b1318e5349160b665003e36d4eedd64101ceacd8
       if (hasSelection()) return;
       if (!(textarea instanceof HTMLTextAreaElement)) return;
-      const text = textarea.value;
+      var text = textarea.value;
 
       // In Linux and Chrome or Chrome OS, users may issue the Ctrl-Shift-U command to input a Unicode character.
       // Unfortunately, when the system is in this state, Chrome sends a keydown of "Ctrl-Shift-Unidentified" in Linux, "Ctrl-Shift-U" on Windows/Mac, or "Ctrl-Shift-Process" in the latest Chrome OS.
@@ -355,7 +354,7 @@ export const saneKeyboardEvents = (function () {
 
       everyTick.listen(function pastedText() {
         if (!(textarea instanceof HTMLTextAreaElement)) return;
-        const text = textarea.value;
+        var text = textarea.value;
         textarea.value = '';
         if (text) controller.paste(text);
       });
