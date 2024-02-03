@@ -62,6 +62,12 @@ class Controller_mouse extends Controller_latex {
       return;
     }
 
+    // triple click should select all mathQuill content
+    if (e.detail === 3) {
+      ctrlr.selectAll();
+      return;
+    }
+
     var lastMousemoveTarget: HTMLElement | null = null;
     function mousemove(e: Event) {
       lastMousemoveTarget = e.target as HTMLElement | null;
