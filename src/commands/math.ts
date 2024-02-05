@@ -318,6 +318,12 @@ class MathCommand extends MathElement {
   }
   mathspeakTemplate = [''];
   mathspeak() {
+    // this one runs before a full latex symbol has been formed;
+    //   check if there is more than backslashes in the latex
+    const tex = this.latex().trim();
+    if (this.mathSpeakCallback && !/^(\\)+$/.test(tex)) {
+      return this.mathSpeakCallback(tex);
+    }
     var cmd = this,
       i = 0;
     return cmd.foldChildren(
@@ -412,6 +418,9 @@ class MQSymbol extends MathCommand {
     return this.textTemplate.join('');
   }
   mathspeak(_opts?: MathspeakOptions) {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
     return this.mathspeakName || '';
   }
   placeCursor() {}

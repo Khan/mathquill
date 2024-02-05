@@ -49,8 +49,14 @@ class Aria {
           item.ariaLabel === 'block'
         ) {
           output = item.parent.ariaLabel + ' ' + itemMathspeak;
+          if (item.mathSpeakCallback) {
+            output = item.parent.mathspeak();
+          }
         } else if (item.ariaLabel) {
           output = item.ariaLabel + ' ' + itemMathspeak;
+          if (item.mathSpeakCallback) {
+            output = item.mathspeak();
+          }
         }
       }
       if (output === '') {

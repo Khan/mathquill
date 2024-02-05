@@ -572,6 +572,12 @@ class SupSub extends MathCommand {
         'down up'.split(' ')[i] as 'up' | 'down'
       );
   }
+  mathspeak() {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
+    return super.mathspeak();
+  }
 }
 
 function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
@@ -627,6 +633,10 @@ LatexCmds.superscript =
 
       textTemplate = ['^(', ')'];
       mathspeak(opts?: MathspeakOptions) {
+        if (this.mathSpeakCallback) {
+          return super.mathspeak();
+        }
+
         // Simplify basic exponent speech for common whole numbers.
         var child = this.upInto;
         if (child !== undefined) {
@@ -723,6 +733,9 @@ class SummationNotation extends MathCommand {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
     return (
       'Start ' +
       this.ariaLabel +
@@ -853,6 +866,10 @@ var Fraction =
         if (opts && opts.createdLeftOf) {
           var cursor = opts.createdLeftOf;
           return cursor.parent.mathspeak();
+        }
+
+        if (this.mathSpeakCallback) {
+          return this.mathSpeakCallback(this.latex());
         }
 
         var numText = getCtrlSeqsFromBlock(this.getEnd(L));
@@ -1037,6 +1054,10 @@ class Token extends MQSymbol {
   }
 
   mathspeak() {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
+
     // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
     let ariaLabelArray: string[] = [];
 
@@ -1136,6 +1157,10 @@ class NthRoot extends SquareRoot {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
+
     var indexMathspeak = this.getEnd(L).mathspeak();
     var radicandMathspeak = this.getEnd(R).mathspeak();
     this.getEnd(L).ariaLabel = 'Index';
@@ -1284,6 +1309,12 @@ class Bracket extends DelimsNode {
     this.checkCursorContextClose(ctx);
   }
   mathspeak(opts?: MathspeakOptions) {
+    if (!opts?.createdLeftOf && this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    } else if (opts?.createdLeftOf && this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.sides[this.side as Direction].ch);
+    }
+
     var open = this.sides[L].ch,
       close = this.sides[R].ch;
     if (open === '|' && close === '|') {

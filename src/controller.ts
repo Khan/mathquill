@@ -22,6 +22,7 @@ class ControllerBase {
   aria: Aria;
   ariaLabel: string;
   ariaPostLabel: string;
+  mathSpeakCallback: ((latex: string) => string) | undefined;
   readonly cursor: Cursor;
   editable: boolean | undefined;
   _ariaAlertTimeout: number;
@@ -50,6 +51,7 @@ class ControllerBase {
     this.aria = new Aria(this.getControllerSelf());
     this.ariaLabel = 'Math Input';
     this.ariaPostLabel = '';
+    this.mathSpeakCallback = undefined;
 
     root.controller = this.getControllerSelf();
 

@@ -477,6 +477,16 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
       this.__controller.cursor.options.ignoreNextMousedown = fn;
       return this;
     }
+    /**
+     * Provide a function to replace the default mathspeak generation with one that
+     * translates TeX to a readable string.
+     * @param callback - A function that takes TeX and returns a readable string.
+     */
+    setMathSpeakCallback = (fn: (latex: string) => string) => {
+      // override function on node class
+      NodeBase.prototype.mathSpeakCallback = fn;
+      return this;
+    };
   }
 
   var APIClasses: APIClasses = {

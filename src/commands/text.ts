@@ -106,6 +106,9 @@ class TextBlock extends MQNode {
   mathspeakTemplate = ['StartText', 'EndText'];
   mathspeak(opts?: MathspeakOptions) {
     if (opts && opts.ignoreShorthand) {
+      if (this.mathSpeakCallback) {
+        return this.mathSpeakCallback(this.latex());
+      }
       return (
         this.mathspeakTemplate[0] +
         ', ' +

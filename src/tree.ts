@@ -164,6 +164,8 @@ class NodeBase {
 
   isPartOfOperator: boolean | undefined;
 
+  mathSpeakCallback: ((latex: string) => string) | undefined;
+
   toString() {
     return '{{ MathQuill Node #' + this.id + ' }}';
   }

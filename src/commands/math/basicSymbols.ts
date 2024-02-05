@@ -943,6 +943,9 @@ class LatexFragment extends MathCommand {
     });
   }
   mathspeak() {
+    if (this.mathSpeakCallback) {
+      return this.mathSpeakCallback(this.latex());
+    }
     return latexMathParser.parse(this.latexStr).mathspeak();
   }
   parser() {
