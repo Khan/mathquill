@@ -9,8 +9,8 @@
     "noUnusedParameters": true,
     "strictPropertyInitialization": false,
     "strict": true,
-    "target": "ES6",
-    "lib": ["ES6", "ScriptHost", "DOM"],
+    "target": "ES5",
+    "lib": ["ES5", "ScriptHost", "DOM", "ES2015.Collection"],
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
