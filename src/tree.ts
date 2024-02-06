@@ -164,7 +164,7 @@ class NodeBase {
 
   isPartOfOperator: boolean | undefined;
 
-  mathSpeakCallback: ((latex: string) => string) | undefined;
+  mathspeakOverride: ((latex: string) => string) | undefined;
 
   toString() {
     return '{{ MathQuill Node #' + this.id + ' }}';
@@ -361,6 +361,9 @@ class NodeBase {
     pray('Abstract chToCmd() method is never called', false);
   }
   mathspeak(_options?: MathspeakOptions) {
+    if (this.mathspeakOverride) {
+      return this.mathspeakOverride(this.latex());
+    }
     return '';
   }
   seek(_clientX: number, _cursor: Cursor) {}

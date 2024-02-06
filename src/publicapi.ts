@@ -482,9 +482,9 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
      * translates TeX to a readable string.
      * @param callback - A function that takes TeX and returns a readable string.
      */
-    setMathSpeakCallback = (fn: (latex: string) => string) => {
+    setMathspeakOverride = (fn: (latex: string) => string) => {
       // override function on node class
-      NodeBase.prototype.mathSpeakCallback = fn;
+      NodeBase.prototype.mathspeakOverride = fn;
       return this;
     };
   }

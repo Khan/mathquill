@@ -56,7 +56,7 @@ declare namespace MathQuill {
       focus: () => EditableMathQuill;
       getAriaPostLabel: () => string;
       setAriaPostLabel: (str: string, timeout?: number) => EditableMathQuill;
-      setMathSpeakCallback: (
+      setMathspeakOverride: (
         fn: (latex: string) => string
       ) => EditableMathQuill;
       ignoreNextMousedown: (fn: () => boolean) => EditableMathQuill;

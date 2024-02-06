@@ -572,12 +572,6 @@ class SupSub extends MathCommand {
         'down up'.split(' ')[i] as 'up' | 'down'
       );
   }
-  mathspeak() {
-    if (this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.latex());
-    }
-    return super.mathspeak();
-  }
 }
 
 function insLeftOfMeUnlessAtEnd(this: MQNode, cursor: Cursor) {
@@ -633,7 +627,7 @@ LatexCmds.superscript =
 
       textTemplate = ['^(', ')'];
       mathspeak(opts?: MathspeakOptions) {
-        if (this.mathSpeakCallback) {
+        if (this.mathspeakOverride) {
           return super.mathspeak();
         }
 
@@ -733,8 +727,8 @@ class SummationNotation extends MathCommand {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
-    if (this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.latex());
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
     }
     return (
       'Start ' +
@@ -868,8 +862,8 @@ var Fraction =
           return cursor.parent.mathspeak();
         }
 
-        if (this.mathSpeakCallback) {
-          return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+          return super.mathspeak();
         }
 
         var numText = getCtrlSeqsFromBlock(this.getEnd(L));
@@ -1054,8 +1048,8 @@ class Token extends MQSymbol {
   }
 
   mathspeak() {
-    if (this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.latex());
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
     }
 
     // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
@@ -1157,8 +1151,8 @@ class NthRoot extends SquareRoot {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
-    if (this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.latex());
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
     }
 
     var indexMathspeak = this.getEnd(L).mathspeak();
@@ -1309,10 +1303,10 @@ class Bracket extends DelimsNode {
     this.checkCursorContextClose(ctx);
   }
   mathspeak(opts?: MathspeakOptions) {
-    if (!opts?.createdLeftOf && this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.latex());
-    } else if (opts?.createdLeftOf && this.mathSpeakCallback) {
-      return this.mathSpeakCallback(this.sides[this.side as Direction].ch);
+    if (this.mathspeakOverride) {
+      return opts?.createdLeftOf
+        ? this.mathspeakOverride(this.sides[this.side as Direction].ch)
+        : super.mathspeak();
     }
 
     var open = this.sides[L].ch,
