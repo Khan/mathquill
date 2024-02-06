@@ -39,17 +39,17 @@ class MQNode extends NodeBase {
       // End -> move to the end of the current block.
       case 'End':
         ctrlr.notify('move').cursor.insAtRightEnd(cursor.parent);
-        ctrlr.aria.queue('end of').queue(cursor.parent, true);
+        ctrlr.aria.queueDirEndOf(R, cursor.parent, true);
         break;
 
       // Ctrl-End -> move all the way to the end of the root block.
       case 'Ctrl-End':
         ctrlr.notify('move').cursor.insAtRightEnd(ctrlr.root);
-        ctrlr.aria
-          .queue('end of')
-          .queue(ctrlr.ariaLabel)
-          .queue(ctrlr.root)
-          .queue(ctrlr.ariaPostLabel);
+        ctrlr.aria.queueDirEndOf(R, [
+          ctrlr.ariaLabel,
+          ctrlr.root,
+          ctrlr.ariaPostLabel,
+        ]);
         break;
 
       // Shift-End -> select to the end of the current block.
@@ -65,17 +65,17 @@ class MQNode extends NodeBase {
       // Home -> move to the start of the current block.
       case 'Home':
         ctrlr.notify('move').cursor.insAtLeftEnd(cursor.parent);
-        ctrlr.aria.queue('beginning of').queue(cursor.parent, true);
+        ctrlr.aria.queueDirEndOf(L, cursor.parent, true);
         break;
 
       // Ctrl-Home -> move all the way to the start of the root block.
       case 'Ctrl-Home':
         ctrlr.notify('move').cursor.insAtLeftEnd(ctrlr.root);
-        ctrlr.aria
-          .queue('beginning of')
-          .queue(ctrlr.ariaLabel)
-          .queue(ctrlr.root)
-          .queue(ctrlr.ariaPostLabel);
+        ctrlr.aria.queueDirEndOf(L, [
+          ctrlr.ariaLabel,
+          ctrlr.root,
+          ctrlr.ariaPostLabel,
+        ]);
         break;
 
       // Shift-Home -> select to the start of the current block.
@@ -157,20 +157,39 @@ class MQNode extends NodeBase {
       case 'Ctrl-Alt-Up': // speak parent block that has focus
         if (cursor.parent.parent && cursor.parent.parent instanceof MQNode)
           ctrlr.aria.queue(cursor.parent.parent);
-        else ctrlr.aria.queue('nothing above');
+        else {
+          const str = 'nothing above';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
+        }
         break;
 
       case 'Ctrl-Alt-Down': // speak current block that has focus
         if (cursor.parent && cursor.parent instanceof MQNode)
           ctrlr.aria.queue(cursor.parent);
-        else ctrlr.aria.queue('block is empty');
+        else {
+          const str = 'block is empty';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
+        }
         break;
 
       case 'Ctrl-Alt-Left': // speak left-adjacent block
         if (cursor.parent.parent && cursor.parent.parent.getEnd(L)) {
           ctrlr.aria.queue(cursor.parent.parent.getEnd(L));
         } else {
-          ctrlr.aria.queue('nothing to the left');
+          const str = 'nothing to the left';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
         }
         break;
 
@@ -178,7 +197,12 @@ class MQNode extends NodeBase {
         if (cursor.parent.parent && cursor.parent.parent.getEnd(R)) {
           ctrlr.aria.queue(cursor.parent.parent.getEnd(R));
         } else {
-          ctrlr.aria.queue('nothing to the right');
+          const str = 'nothing to the right';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
         }
         break;
 
@@ -187,13 +211,27 @@ class MQNode extends NodeBase {
           ctrlr.aria.queue(
             cursor.selection.join('mathspeak', ' ').trim() + ' selected'
           );
-        else ctrlr.aria.queue('nothing selected');
+        else {
+          const str = 'nothing selected';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
+        }
         break;
 
       case 'Ctrl-Alt-=':
       case 'Ctrl-Alt-Shift-Right': // speak ARIA post label (evaluation or error)
         if (ctrlr.ariaPostLabel.length) ctrlr.aria.queue(ctrlr.ariaPostLabel);
-        else ctrlr.aria.queue('no answer');
+        else {
+          const str = 'no answer';
+          ctrlr.aria.queue(
+            ctrlr.ariaStringsOverrideMap?.[str]
+              ? ctrlr.ariaStringsOverrideMap[str]
+              : str
+          );
+        }
         break;
 
       default:
@@ -513,8 +551,9 @@ class Controller_keystroke extends Controller_focusBlur {
     var selection = cursor.selection;
     if (selection) {
       cursor.controller.aria
+        // clearing first because selection fires several times, and we don't want repeated speech.
         .clear()
-        .queue(selection.join('mathspeak', ' ').trim() + ' selected'); // clearing first because selection fires several times, and we don't want repeated speech.
+        .queueSelected(selection.join('mathspeak', ' ').trim());
     }
     INCREMENTAL_SELECTION_OPEN = false;
   }

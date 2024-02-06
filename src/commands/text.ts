@@ -129,13 +129,15 @@ class TextBlock extends MQNode {
   // the cursor
   moveTowards(dir: Direction, cursor: Cursor) {
     cursor.insAtDirEnd(-dir as Direction, this);
-    cursor.controller.aria
-      .queueDirEndOf(-dir as Direction)
-      .queue(cursor.parent, true);
+    cursor.controller.aria.queueDirEndOf(
+      -dir as Direction,
+      cursor.parent,
+      true
+    );
   }
   moveOutOf(dir: Direction, cursor: Cursor) {
     cursor.insDirOf(dir, this);
-    cursor.controller.aria.queueDirOf(dir).queue(this);
+    cursor.controller.aria.queueDirOf(dir, this);
   }
   unselectInto(dir: Direction, cursor: Cursor) {
     this.moveTowards(dir, cursor);

@@ -352,6 +352,11 @@ function getInterface(v: number): MathQuill.v3.API | MathQuill.v1.API {
     controller() {
       return this.__controller;
     }
+
+    setAriaStringsOverrideMap(map: AriaStaticStringsMap) {
+      this.__controller.setAriaStringsOverrideMap(map);
+      return this;
+    }
   }
 
   abstract class EditableField

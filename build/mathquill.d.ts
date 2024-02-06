@@ -31,6 +31,29 @@ declare namespace MathQuill {
       handlers?: HandlerOptions;
     };
 
+    interface AriaStaticStringsMap {
+      // ("before %(obj)s", { obj })
+      before: (obj: string) => string;
+      // ("after %(obj)s", { obj })
+      after: (obj: string) => string;
+      // ("beginning of %(obj)s", { obj })
+      'beginning of': (obj: string) => string;
+      // ("end of %(obj)s", { obj })
+      'end of': (obj: string) => string;
+      Baseline: string;
+      Superscript: string;
+      // ("%(obj)s selected", { obj })
+      selected: (obj: string) => string;
+      'no answer': string;
+      'nothing selected': string;
+      'nothing to the right': string;
+      'nothing to the left': string;
+      'block is empty': string;
+      'nothing above': string;
+      // ("%{label}s: %{value}s", { label, value }) as in "Math Input: mathspeak"
+      labelValue: (label: string, value: string) => string;
+    }
+
     interface BaseMathQuill {
       id: number;
       data: { [key: string]: any };
@@ -45,6 +68,8 @@ declare namespace MathQuill {
       html: () => string;
       mathspeak: () => string;
       text(): string;
+
+      setAriaStringsOverrideMap(map: AriaStaticStringsMap): BaseMathQuill;
     }
 
     interface EditableMathQuill extends BaseMathQuill {

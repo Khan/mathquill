@@ -11,6 +11,9 @@
  * Chrome 54+ on Android works reliably with Talkback.
  ****************************************/
 
+// it doesn't make any sense to accept Fragment here as it's not handled
+// or turned into a string in any way, but one is passed as an arg in
+// keystroke.ts, so we'll just leave it as is for now
 type AriaQueueItem = NodeRef | Fragment | string;
 
 class Aria {
@@ -34,47 +37,98 @@ class Aria {
     }
   }
 
-  queue(item: AriaQueueItem, shouldDescribe: boolean = false) {
-    var output: Fragment | string = '';
-    if (item instanceof MQNode) {
-      // Some constructs include verbal shorthand (such as simple fractions and exponents).
-      // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
-      // since doing so may be ambiguous or confusing.
-      var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
-      if (shouldDescribe) {
-        // used to ensure item is described when cursor reaches block boundaries
-        if (
-          item.parent &&
-          item.parent.ariaLabel &&
-          item.ariaLabel === 'block'
-        ) {
-          output = item.parent.ariaLabel + ' ' + itemMathspeak;
-          if (item.mathspeakOverride) {
-            output = item.parent.mathspeak();
-          }
-        } else if (item.ariaLabel) {
-          output = item.ariaLabel + ' ' + itemMathspeak;
-          if (item.mathspeakOverride) {
-            output = item.mathspeak();
-          }
-        }
-      }
-      if (output === '') {
-        output = itemMathspeak;
-      }
-    } else {
-      output = item || '';
-    }
-    this.items.push(output);
+  queue(
+    item: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ) {
+    this.items.push(this.processQueueItems(item, shouldDescribe));
     return this;
   }
-  queueDirOf(dir: Direction) {
-    prayDirection(dir);
-    return this.queue(dir === L ? 'before' : 'after');
+
+  private processQueueItems(
+    item: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ): string {
+    const items = Array.isArray(item) ? item : [item];
+    const processedItems = items.map((item) => {
+      if (item instanceof MQNode) {
+        // Some constructs include verbal shorthand (such as simple fractions and exponents).
+        // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
+        // since doing so may be ambiguous or confusing.
+        var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
+        if (shouldDescribe) {
+          // used to ensure item is described when cursor reaches block boundaries
+          if (
+            item.parent &&
+            item.parent.ariaLabel &&
+            item.ariaLabel === 'block'
+          ) {
+            return item.parent.ariaLabel + ' ' + itemMathspeak;
+          } else if (item.ariaLabel) {
+            return item.ariaLabel + ' ' + itemMathspeak;
+          }
+        }
+        return itemMathspeak;
+      }
+      return item || '';
+    });
+    return processedItems.join(' ');
   }
-  queueDirEndOf(dir: Direction) {
+
+  queueDirOf(
+    dir: Direction,
+    items: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ) {
     prayDirection(dir);
-    return this.queue(dir === L ? 'beginning of' : 'end of');
+    const str = dir === L ? 'before' : 'after';
+    return this.queueDir(str, items, shouldDescribe);
+  }
+
+  queueDirEndOf(
+    dir: Direction,
+    items: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ) {
+    prayDirection(dir);
+    const str = dir === L ? 'beginning of' : 'end of';
+    return this.queueDir(str, items, shouldDescribe);
+  }
+
+  private queueDir(
+    dirStr: 'before' | 'after' | 'beginning of' | 'end of',
+    items: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ) {
+    if (
+      this.controller.ariaStringsOverrideMap &&
+      this.controller.ariaStringsOverrideMap[dirStr]
+    ) {
+      return this.queue(
+        this.controller.ariaStringsOverrideMap[dirStr](
+          this.processQueueItems(items, shouldDescribe)
+        )
+      );
+    }
+    return this.queue(dirStr).queue(items, shouldDescribe);
+  }
+
+  queueSelected(
+    items: AriaQueueItem | AriaQueueItem[],
+    shouldDescribe: boolean = false
+  ) {
+    if (
+      this.controller.ariaStringsOverrideMap &&
+      this.controller.ariaStringsOverrideMap.selected
+    ) {
+      return this.queue(
+        this.controller.ariaStringsOverrideMap.selected(
+          this.processQueueItems(items, shouldDescribe)
+        ),
+        shouldDescribe
+      );
+    }
+    return this.queue(items, shouldDescribe).queue(' selected');
   }
 
   alert(t?: AriaQueueItem) {

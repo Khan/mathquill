@@ -195,7 +195,12 @@ class Controller extends Controller_scrollHoriz {
     var mathspeak = ctrlr.root.mathspeak().trim();
     this.aria.clear();
 
+    const newLabel = ctrlr.ariaStringsOverrideMap?.labelValue
+      ? ctrlr.ariaStringsOverrideMap.labelValue(ariaLabel, mathspeak)
+      : labelWithSuffix + ' ' + mathspeak;
+
     const textarea = ctrlr.getTextareaOrThrow();
+
     // For static math, provide mathspeak in a visually hidden span to allow screen readers and other AT to traverse the content.
     // For editable math, assign the mathspeak to the textarea's ARIA label (AT can use text navigation to interrogate the content).
     // Be certain to include the mathspeak for only one of these, though, as we don't want to include outdated labels if a field's editable state changes.
@@ -204,15 +209,12 @@ class Controller extends Controller_scrollHoriz {
     // The mathspeakSpan should exist only for static math, so we use its presence to decide which approach to take.
     if (!!ctrlr.mathspeakSpan) {
       textarea.setAttribute('aria-label', '');
-      ctrlr.mathspeakSpan.textContent = (
-        labelWithSuffix +
-        ' ' +
-        mathspeak
-      ).trim();
+
+      ctrlr.mathspeakSpan.textContent = newLabel.trim();
     } else {
       textarea.setAttribute(
         'aria-label',
-        (labelWithSuffix + ' ' + mathspeak + ' ' + ctrlr.ariaPostLabel).trim()
+        [newLabel, ctrlr.ariaPostLabel].join(' ').trim()
       );
     }
   }
