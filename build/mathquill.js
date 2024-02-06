@@ -318,13 +318,13 @@ var Aria = /** @class */ (function () {
                     item.parent.ariaLabel &&
                     item.ariaLabel === 'block') {
                     output = item.parent.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathSpeakCallback) {
+                    if (item.mathspeakOverride) {
                         output = item.parent.mathspeak();
                     }
                 }
                 else if (item.ariaLabel) {
                     output = item.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathSpeakCallback) {
+                    if (item.mathspeakOverride) {
                         output = item.mathspeak();
                     }
                 }
@@ -1350,6 +1350,9 @@ var NodeBase = /** @class */ (function () {
         pray('Abstract chToCmd() method is never called', false);
     };
     NodeBase.prototype.mathspeak = function (_options) {
+        if (this.mathspeakOverride) {
+            return this.mathspeakOverride(this.latex());
+        }
         return '';
     };
     NodeBase.prototype.seek = function (_clientX, _cursor) { };
@@ -2339,9 +2342,9 @@ function getInterface(v) {
              * translates TeX to a readable string.
              * @param callback - A function that takes TeX and returns a readable string.
              */
-            _this_1.setMathSpeakCallback = function (fn) {
+            _this_1.setMathspeakOverride = function (fn) {
                 // override function on node class
-                NodeBase.prototype.mathSpeakCallback = fn;
+                NodeBase.prototype.mathspeakOverride = fn;
                 return _this_1;
             };
             return _this_1;
@@ -5080,8 +5083,8 @@ var MathCommand = /** @class */ (function (_super) {
         // this one runs before a full latex symbol has been formed;
         //   check if there is more than backslashes in the latex
         var tex = this.latex().trim();
-        if (this.mathSpeakCallback && !/^(\\)+$/.test(tex)) {
-            return this.mathSpeakCallback(tex);
+        if (this.mathspeakOverride && !/^(\\)+$/.test(tex)) {
+            return this.mathspeakOverride(tex);
         }
         var cmd = this, i = 0;
         return cmd.foldChildren(cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ', function (speech, block) {
@@ -5152,8 +5155,8 @@ var MQSymbol = /** @class */ (function (_super) {
         return this.textTemplate.join('');
     };
     MQSymbol.prototype.mathspeak = function (_opts) {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+            return _super.prototype.mathspeak.call(this);
         }
         return this.mathspeakName || '';
     };
@@ -6717,8 +6720,8 @@ var LatexFragment = /** @class */ (function (_super) {
         });
     };
     LatexFragment.prototype.mathspeak = function () {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+            return _super.prototype.mathspeak.call(this);
         }
         return latexMathParser.parse(this.latexStr).mathspeak();
     };
@@ -7591,12 +7594,6 @@ var SupSub = /** @class */ (function (_super) {
                 };
             })(this, 'sub sup'.split(' ')[i], 'sup sub'.split(' ')[i], 'down up'.split(' ')[i]);
     };
-    SupSub.prototype.mathspeak = function () {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
-        }
-        return _super.prototype.mathspeak.call(this);
-    };
     return SupSub;
 }(MathCommand));
 function insLeftOfMeUnlessAtEnd(cursor) {
@@ -7656,7 +7653,7 @@ LatexCmds.superscript =
                 return _this_1;
             }
             SuperscriptCommand.prototype.mathspeak = function (opts) {
-                if (this.mathSpeakCallback) {
+                if (this.mathspeakOverride) {
                     return _super.prototype.mathspeak.call(this);
                 }
                 // Simplify basic exponent speech for common whole numbers.
@@ -7752,8 +7749,8 @@ var SummationNotation = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     SummationNotation.prototype.mathspeak = function () {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+            return _super.prototype.mathspeak.call(this);
         }
         return ('Start ' +
             this.ariaLabel +
@@ -7882,8 +7879,8 @@ var Fraction = (LatexCmds.frac =
                         var cursor = opts.createdLeftOf;
                         return cursor.parent.mathspeak();
                     }
-                    if (this.mathSpeakCallback) {
-                        return this.mathSpeakCallback(this.latex());
+                    if (this.mathspeakOverride) {
+                        return _super.prototype.mathspeak.call(this);
                     }
                     var numText = getCtrlSeqsFromBlock(this.getEnd(L));
                     var denText = getCtrlSeqsFromBlock(this.getEnd(R));
@@ -8049,8 +8046,8 @@ var Token = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     Token.prototype.mathspeak = function () {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+            return _super.prototype.mathspeak.call(this);
         }
         // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
         var ariaLabelArray = [];
@@ -8159,8 +8156,8 @@ var NthRoot = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     NthRoot.prototype.mathspeak = function () {
-        if (this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
+        if (this.mathspeakOverride) {
+            return _super.prototype.mathspeak.call(this);
         }
         var indexMathspeak = this.getEnd(L).mathspeak();
         var radicandMathspeak = this.getEnd(R).mathspeak();
@@ -8293,11 +8290,10 @@ var Bracket = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     Bracket.prototype.mathspeak = function (opts) {
-        if (!(opts === null || opts === void 0 ? void 0 : opts.createdLeftOf) && this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.latex());
-        }
-        else if ((opts === null || opts === void 0 ? void 0 : opts.createdLeftOf) && this.mathSpeakCallback) {
-            return this.mathSpeakCallback(this.sides[this.side].ch);
+        if (this.mathspeakOverride) {
+            return (opts === null || opts === void 0 ? void 0 : opts.createdLeftOf)
+                ? this.mathspeakOverride(this.sides[this.side].ch)
+                : _super.prototype.mathspeak.call(this);
         }
         var open = this.sides[L].ch, close = this.sides[R].ch;
         if (open === '|' && close === '|') {
@@ -8902,8 +8898,8 @@ var TextBlock = /** @class */ (function (_super) {
     };
     TextBlock.prototype.mathspeak = function (opts) {
         if (opts && opts.ignoreShorthand) {
-            if (this.mathSpeakCallback) {
-                return this.mathSpeakCallback(this.latex());
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
             }
             return (this.mathspeakTemplate[0] +
                 ', ' +
