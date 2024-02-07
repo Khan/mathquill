@@ -1,14 +1,3 @@
-/**
- * @license
- * MathQuill v0.10.1, by Han, Jeanine, and Mary
- * http://mathquill.com | maintainers@mathquill.com
- *
- * This Source Code Form is subject to the terms of the
- * Mozilla Public License, v. 2.0. If a copy of the MPL
- * was not distributed with this file, You can obtain
- * one at http://mozilla.org/MPL/2.0/.
- */
-
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -318,13 +307,13 @@ var Aria = /** @class */ (function () {
                     item.parent.ariaLabel &&
                     item.ariaLabel === 'block') {
                     output = item.parent.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathspeakOverride) {
+                    if (item.mathSpeakCallback) {
                         output = item.parent.mathspeak();
                     }
                 }
                 else if (item.ariaLabel) {
                     output = item.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathspeakOverride) {
+                    if (item.mathSpeakCallback) {
                         output = item.mathspeak();
                     }
                 }
@@ -1350,9 +1339,6 @@ var NodeBase = /** @class */ (function () {
         pray('Abstract chToCmd() method is never called', false);
     };
     NodeBase.prototype.mathspeak = function (_options) {
-        if (this.mathspeakOverride) {
-            return this.mathspeakOverride(this.latex());
-        }
         return '';
     };
     NodeBase.prototype.seek = function (_clientX, _cursor) { };
@@ -1602,9 +1588,9 @@ JS environment could actually contain many instances. */
 var Anticursor = /** @class */ (function (_super) {
     __extends(Anticursor, _super);
     function Anticursor(parent, leftward, rightward) {
-        var _this_1 = _super.call(this, parent, leftward, rightward) || this;
-        _this_1.ancestors = {};
-        return _this_1;
+        var _this = _super.call(this, parent, leftward, rightward) || this;
+        _this.ancestors = {};
+        return _this;
     }
     Anticursor.fromCursor = function (cursor) {
         return new Anticursor(cursor.parent, cursor[L], cursor[R]);
@@ -1614,21 +1600,21 @@ var Anticursor = /** @class */ (function (_super) {
 var Cursor = /** @class */ (function (_super) {
     __extends(Cursor, _super);
     function Cursor(initParent, options, controller) {
-        var _this_1 = _super.call(this, initParent, 0, 0) || this;
+        var _this = _super.call(this, initParent, 0, 0) || this;
         /** Slightly more than just a "cache", this remembers the cursor's position in each block node, so that we can return to the right
          * point in that node when moving up and down among blocks.
          */
-        _this_1.upDownCache = {};
-        _this_1.cursorElement = h('span', { class: 'mq-cursor' }, [h.text(U_ZERO_WIDTH_SPACE)]);
-        _this_1._domFrag = domFrag();
-        _this_1.controller = controller;
-        _this_1.options = options;
-        _this_1.setDOMFrag(domFrag(_this_1.cursorElement));
+        _this.upDownCache = {};
+        _this.cursorElement = h('span', { class: 'mq-cursor' }, [h.text(U_ZERO_WIDTH_SPACE)]);
+        _this._domFrag = domFrag();
+        _this.controller = controller;
+        _this.options = options;
+        _this.setDOMFrag(domFrag(_this.cursorElement));
         //closured for setInterval
-        _this_1.blink = function () {
-            domFrag(_this_1.cursorElement).toggleClass('mq-blink');
+        _this.blink = function () {
+            domFrag(_this.cursorElement).toggleClass('mq-blink');
         };
-        return _this_1;
+        return _this;
     }
     Cursor.prototype.setDOMFrag = function (frag) {
         this._domFrag = frag;
@@ -1933,10 +1919,10 @@ var Cursor = /** @class */ (function (_super) {
 var MQSelection = /** @class */ (function (_super) {
     __extends(MQSelection, _super);
     function MQSelection(withDir, oppDir, dir) {
-        var _this_1 = _super.call(this, withDir, oppDir, dir) || this;
-        _this_1._el = h('span', { class: 'mq-selection' });
-        _this_1.getDOMFragFromEnds().wrapAll(_this_1._el);
-        return _this_1;
+        var _this = _super.call(this, withDir, oppDir, dir) || this;
+        _this._el = h('span', { class: 'mq-selection' });
+        _this.getDOMFragFromEnds().wrapAll(_this._el);
+        return _this;
     }
     MQSelection.prototype.isCleared = function () {
         return this._el === undefined;
@@ -2048,7 +2034,7 @@ var ControllerBase = /** @class */ (function () {
         }
     };
     ControllerBase.prototype.setAriaPostLabel = function (ariaPostLabel, timeout) {
-        var _this_1 = this;
+        var _this = this;
         if (ariaPostLabel &&
             typeof ariaPostLabel === 'string' &&
             ariaPostLabel !== '') {
@@ -2056,13 +2042,13 @@ var ControllerBase = /** @class */ (function () {
                 if (this._ariaAlertTimeout)
                     clearTimeout(this._ariaAlertTimeout);
                 this._ariaAlertTimeout = setTimeout(function () {
-                    if (_this_1.containerHasFocus()) {
+                    if (_this.containerHasFocus()) {
                         // Voice the new label, but do not update content mathspeak to prevent double-speech.
-                        _this_1.aria.alert(_this_1.root.mathspeak().trim() + ' ' + ariaPostLabel.trim());
+                        _this.aria.alert(_this.root.mathspeak().trim() + ' ' + ariaPostLabel.trim());
                     }
                     else {
                         // This mathquill does not have focus, so update its mathspeak.
-                        _this_1.updateMathspeak();
+                        _this.updateMathspeak();
                     }
                 }, timeout);
             }
@@ -2251,12 +2237,12 @@ function getInterface(v) {
     var AbstractMathQuill = /** @class */ (function (_super) {
         __extends(AbstractMathQuill, _super);
         function AbstractMathQuill(ctrlr) {
-            var _this_1 = _super.call(this) || this;
-            _this_1.__controller = ctrlr;
-            _this_1.__options = ctrlr.options;
-            _this_1.id = ctrlr.id;
-            _this_1.data = ctrlr.data;
-            return _this_1;
+            var _this = _super.call(this) || this;
+            _this.__controller = ctrlr;
+            _this.__options = ctrlr.options;
+            _this.id = ctrlr.id;
+            _this.data = ctrlr.data;
+            return _this;
         }
         AbstractMathQuill.prototype.mathquillify = function (classNames) {
             var ctrlr = this.__controller, root = ctrlr.root, el = ctrlr.container;
@@ -2336,18 +2322,18 @@ function getInterface(v) {
     var EditableField = /** @class */ (function (_super) {
         __extends(EditableField, _super);
         function EditableField() {
-            var _this_1 = _super !== null && _super.apply(this, arguments) || this;
+            var _this = _super !== null && _super.apply(this, arguments) || this;
             /**
              * Provide a function to replace the default mathspeak generation with one that
              * translates TeX to a readable string.
              * @param callback - A function that takes TeX and returns a readable string.
              */
-            _this_1.setMathspeakOverride = function (fn) {
+            _this.setMathSpeakCallback = function (fn) {
                 // override function on node class
-                NodeBase.prototype.mathspeakOverride = fn;
-                return _this_1;
+                NodeBase.prototype.mathSpeakCallback = fn;
+                return _this;
             };
-            return _this_1;
+            return _this;
         }
         EditableField.prototype.mathquillify = function (classNames) {
             _super.prototype.mathquillify.call(this, classNames);
@@ -2785,13 +2771,13 @@ var EveryTick = /** @class */ (function () {
         this.timeoutId = setTimeout(this.fn);
     };
     EveryTick.prototype.listenOnce = function (fn) {
-        var _this_1 = this;
+        var _this = this;
         this.listen(function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            _this_1.clearListener();
+            _this.clearListener();
             fn.apply(void 0, args);
         });
     };
@@ -3203,68 +3189,68 @@ ControllerBase.onNotify(function (cursor, e) {
 var Controller_focusBlur = /** @class */ (function (_super) {
     __extends(Controller_focusBlur, _super);
     function Controller_focusBlur() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.handleTextareaFocusEditable = function () {
-            var cursor = _this_1.cursor;
-            _this_1.updateMathspeak();
-            _this_1.blurred = false;
-            clearTimeout(_this_1.blurTimeout);
-            domFrag(_this_1.container).addClass('mq-focused');
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.handleTextareaFocusEditable = function () {
+            var cursor = _this.cursor;
+            _this.updateMathspeak();
+            _this.blurred = false;
+            clearTimeout(_this.blurTimeout);
+            domFrag(_this.container).addClass('mq-focused');
             if (!cursor.parent)
-                cursor.insAtRightEnd(_this_1.root);
+                cursor.insAtRightEnd(_this.root);
             if (cursor.selection) {
                 cursor.selection.domFrag().removeClass('mq-blur');
-                _this_1.selectionChanged(); //re-select textarea contents after tabbing away and back
+                _this.selectionChanged(); //re-select textarea contents after tabbing away and back
             }
             else {
                 cursor.show();
             }
-            _this_1.setOverflowClasses();
+            _this.setOverflowClasses();
         };
-        _this_1.handleTextareaBlurEditable = function () {
-            if (_this_1.textareaSelectionTimeout) {
-                clearTimeout(_this_1.textareaSelectionTimeout);
-                _this_1.textareaSelectionTimeout = 0;
+        _this.handleTextareaBlurEditable = function () {
+            if (_this.textareaSelectionTimeout) {
+                clearTimeout(_this.textareaSelectionTimeout);
+                _this.textareaSelectionTimeout = 0;
             }
-            _this_1.disableGroupingForSeconds(0);
-            _this_1.blurred = true;
-            _this_1.blurTimeout = setTimeout(function () {
+            _this.disableGroupingForSeconds(0);
+            _this.blurred = true;
+            _this.blurTimeout = setTimeout(function () {
                 // wait for blur on window; if
-                _this_1.root.postOrder(function (node) {
+                _this.root.postOrder(function (node) {
                     node.intentionalBlur();
                 }); // none, intentional blur: #264
-                _this_1.cursor.clearSelection().endSelection();
-                _this_1.blur();
-                _this_1.updateMathspeak();
-                _this_1.scrollHoriz();
+                _this.cursor.clearSelection().endSelection();
+                _this.blur();
+                _this.updateMathspeak();
+                _this.scrollHoriz();
             });
-            window.addEventListener('blur', _this_1.handleWindowBlur);
+            window.addEventListener('blur', _this.handleWindowBlur);
         };
-        _this_1.handleTextareaFocusStatic = function () {
-            _this_1.blurred = false;
+        _this.handleTextareaFocusStatic = function () {
+            _this.blurred = false;
         };
-        _this_1.handleTextareaBlurStatic = function () {
-            if (_this_1.cursor.selection) {
-                _this_1.cursor.selection.clear();
+        _this.handleTextareaBlurStatic = function () {
+            if (_this.cursor.selection) {
+                _this.cursor.selection.clear();
             }
             //detaching during blur explodes in WebKit
             setTimeout(function () {
-                domFrag(_this_1.getTextareaSpanOrThrow()).detach();
-                _this_1.blurred = true;
+                domFrag(_this.getTextareaSpanOrThrow()).detach();
+                _this.blurred = true;
             });
         };
-        _this_1.handleWindowBlur = function () {
+        _this.handleWindowBlur = function () {
             // blur event also fired on window, just switching
-            clearTimeout(_this_1.blurTimeout); // tabs/windows, not intentional blur
-            if (_this_1.cursor.selection)
-                _this_1.cursor.selection.domFrag().addClass('mq-blur');
-            _this_1.blur();
-            _this_1.updateMathspeak();
+            clearTimeout(_this.blurTimeout); // tabs/windows, not intentional blur
+            if (_this.cursor.selection)
+                _this.cursor.selection.domFrag().addClass('mq-blur');
+            _this.blur();
+            _this.updateMathspeak();
         };
-        return _this_1;
+        return _this;
     }
     Controller_focusBlur.prototype.disableGroupingForSeconds = function (seconds) {
-        var _this_1 = this;
+        var _this = this;
         clearTimeout(this.__disableGroupingTimeout);
         if (seconds === 0) {
             this.root.domFrag().removeClass('mq-suppress-grouping');
@@ -3272,7 +3258,7 @@ var Controller_focusBlur = /** @class */ (function (_super) {
         else {
             this.root.domFrag().addClass('mq-suppress-grouping');
             this.__disableGroupingTimeout = setTimeout(function () {
-                _this_1.root.domFrag().removeClass('mq-suppress-grouping');
+                _this.root.domFrag().removeClass('mq-suppress-grouping');
             }, seconds * 1000);
         }
     };
@@ -3823,11 +3809,11 @@ var Controller_keystroke = /** @class */ (function (_super) {
      * with extra error handling and invariant enforcement
      */
     Controller_keystroke.prototype.withIncrementalSelection = function (cb) {
-        var _this_1 = this;
+        var _this = this;
         try {
             this.startIncrementalSelection();
             try {
-                cb(function (dir) { return _this_1.selectDirIncremental(dir); });
+                cb(function (dir) { return _this.selectDirIncremental(dir); });
             }
             finally {
                 // Since we have started a selection, attempt to finish it even
@@ -3874,10 +3860,10 @@ var Controller_keystroke = /** @class */ (function (_super) {
         });
     };
     Controller_keystroke.prototype.selectToRootEndInDir = function (dir) {
-        var _this_1 = this;
+        var _this = this;
         var cursor = this.cursor;
         this.withIncrementalSelection(function (selectDir) {
-            while (cursor[dir] || cursor.parent !== _this_1.root) {
+            while (cursor[dir] || cursor.parent !== _this.root) {
                 selectDir(dir);
             }
         });
@@ -4312,11 +4298,11 @@ var cancelSelectionOnEdit;
 var Controller_mouse = /** @class */ (function (_super) {
     __extends(Controller_mouse, _super);
     function Controller_mouse() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.handleMouseDown = function (e) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.handleMouseDown = function (e) {
             var rootElement = closest(e.target, '.mq-root-block');
             var root = ((rootElement && NodeBase.getNodeOfElement(rootElement)) ||
-                NodeBase.getNodeOfElement(_this_1.root.domFrag().oneElement()));
+                NodeBase.getNodeOfElement(_this.root.domFrag().oneElement()));
             var ownerDocument = root.domFrag().firstNode().ownerDocument;
             var ctrlr = root.controller, cursor = ctrlr.cursor, blink = cursor.blink;
             var textareaSpan = ctrlr.getTextareaSpanOrThrow();
@@ -4411,7 +4397,7 @@ var Controller_mouse = /** @class */ (function (_super) {
             // listen on document not just body to not only hear about mousemove and
             // mouseup on page outside field, but even outside page, except iframes: https://github.com/mathquill/mathquill/commit/8c50028afcffcace655d8ae2049f6e02482346c5#commitcomment-6175800
         };
-        return _this_1;
+        return _this;
     }
     Controller_mouse.prototype.addMouseEventListener = function () {
         //drag-to-select event handling
@@ -4477,7 +4463,7 @@ var Controller_scrollHoriz = /** @class */ (function (_super) {
             root.classList.toggle('mq-editing-overflow-left');
     };
     Controller_scrollHoriz.prototype.scrollHoriz = function () {
-        var _this_1 = this;
+        var _this = this;
         var cursor = this.cursor, seln = cursor.selection;
         var rootRect = getBoundingClientRect(this.root.domFrag().oneElement());
         if (cursor.domFrag().isEmpty() && !seln) {
@@ -4489,12 +4475,12 @@ var Controller_scrollHoriz = /** @class */ (function (_super) {
             var start_1 = rootElt_1.scrollLeft;
             animate(this.getScrollAnimationDuration(), function (progress, scheduleNext, cancel) {
                 if (progress >= 1) {
-                    _this_1.cancelScrollHoriz = undefined;
+                    _this.cancelScrollHoriz = undefined;
                     rootElt_1.scrollLeft = 0;
-                    _this_1.setOverflowClasses();
+                    _this.setOverflowClasses();
                 }
                 else {
-                    _this_1.cancelScrollHoriz = cancel;
+                    _this.cancelScrollHoriz = cancel;
                     scheduleNext();
                     rootElt_1.scrollLeft = Math.round((1 - progress) * start_1);
                 }
@@ -4552,12 +4538,12 @@ var Controller_scrollHoriz = /** @class */ (function (_super) {
         var start = rootElt.scrollLeft;
         animate(this.getScrollAnimationDuration(), function (progress, scheduleNext, cancel) {
             if (progress >= 1) {
-                _this_1.cancelScrollHoriz = undefined;
+                _this.cancelScrollHoriz = undefined;
                 rootElt.scrollLeft = Math.round(start + scrollBy);
-                _this_1.setOverflowClasses();
+                _this.setOverflowClasses();
             }
             else {
-                _this_1.cancelScrollHoriz = cancel;
+                _this.cancelScrollHoriz = cancel;
                 scheduleNext();
                 rootElt.scrollLeft = Math.round(start + progress * scrollBy);
             }
@@ -4589,9 +4575,9 @@ Options.prototype.substituteKeyboardEvents = defaultSubstituteKeyboardEvents;
 var Controller = /** @class */ (function (_super) {
     __extends(Controller, _super);
     function Controller() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.selectFn = noop;
-        return _this_1;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.selectFn = noop;
+        return _this;
     }
     Controller.prototype.createTextarea = function () {
         this.textareaSpan = h('span', { class: 'mq-textarea' });
@@ -4871,11 +4857,11 @@ var DOMView = /** @class */ (function () {
 var MathCommand = /** @class */ (function (_super) {
     __extends(MathCommand, _super);
     function MathCommand(ctrlSeq, domView, textTemplate) {
-        var _this_1 = _super.call(this) || this;
-        _this_1.textTemplate = [''];
-        _this_1.mathspeakTemplate = [''];
-        _this_1.setCtrlSeqHtmlAndText(ctrlSeq, domView, textTemplate);
-        return _this_1;
+        var _this = _super.call(this) || this;
+        _this.textTemplate = [''];
+        _this.mathspeakTemplate = [''];
+        _this.setCtrlSeqHtmlAndText(ctrlSeq, domView, textTemplate);
+        return _this;
     }
     MathCommand.prototype.setEnds = function (ends) {
         pray('MathCommand ends are never empty', ends[L] && ends[R]);
@@ -4903,14 +4889,14 @@ var MathCommand = /** @class */ (function (_super) {
         });
     };
     MathCommand.prototype.parser = function () {
-        var _this_1 = this;
+        var _this = this;
         var block = latexMathParser.block;
         return block.times(this.numBlocks()).map(function (blocks) {
-            _this_1.blocks = blocks;
+            _this.blocks = blocks;
             for (var i = 0; i < blocks.length; i += 1) {
-                blocks[i].adopt(_this_1, _this_1.getEnd(R), 0);
+                blocks[i].adopt(_this, _this.getEnd(R), 0);
             }
-            return _this_1;
+            return _this;
         });
     };
     // createLeftOf(cursor) and the methods it calls
@@ -5083,8 +5069,8 @@ var MathCommand = /** @class */ (function (_super) {
         // this one runs before a full latex symbol has been formed;
         //   check if there is more than backslashes in the latex
         var tex = this.latex().trim();
-        if (this.mathspeakOverride && !/^(\\)+$/.test(tex)) {
-            return this.mathspeakOverride(tex);
+        if (this.mathSpeakCallback && !/^(\\)+$/.test(tex)) {
+            return this.mathSpeakCallback(tex);
         }
         var cmd = this, i = 0;
         return cmd.foldChildren(cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ', function (speech, block) {
@@ -5104,11 +5090,11 @@ var MathCommand = /** @class */ (function (_super) {
 var MQSymbol = /** @class */ (function (_super) {
     __extends(MQSymbol, _super);
     function MQSymbol(ctrlSeq, html, text, mathspeak) {
-        var _this_1 = _super.call(this) || this;
-        _this_1.setCtrlSeqHtmlTextAndMathspeak(ctrlSeq, html
+        var _this = _super.call(this) || this;
+        _this.setCtrlSeqHtmlTextAndMathspeak(ctrlSeq, html
             ? new DOMView(0, function () { return html.cloneNode(true); })
             : undefined, text, mathspeak);
-        return _this_1;
+        return _this;
     }
     MQSymbol.prototype.setCtrlSeqHtmlTextAndMathspeak = function (ctrlSeq, html, text, mathspeak) {
         if (!text && !!ctrlSeq) {
@@ -5155,8 +5141,8 @@ var MQSymbol = /** @class */ (function (_super) {
         return this.textTemplate.join('');
     };
     MQSymbol.prototype.mathspeak = function (_opts) {
-        if (this.mathspeakOverride) {
-            return _super.prototype.mathspeak.call(this);
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
         }
         return this.mathspeakName || '';
     };
@@ -5181,14 +5167,14 @@ function bindVanillaSymbol(ch, htmlEntity, mathspeak) {
 var BinaryOperator = /** @class */ (function (_super) {
     __extends(BinaryOperator, _super);
     function BinaryOperator(ctrlSeq, html, text, mathspeak, treatLikeSymbol) {
-        var _this_1 = this;
+        var _this = this;
         if (treatLikeSymbol) {
-            _this_1 = _super.call(this, ctrlSeq, h('span', {}, [html || h.text(ctrlSeq || '')]), undefined, mathspeak) || this;
+            _this = _super.call(this, ctrlSeq, h('span', {}, [html || h.text(ctrlSeq || '')]), undefined, mathspeak) || this;
         }
         else {
-            _this_1 = _super.call(this, ctrlSeq, h('span', { class: 'mq-binary-operator' }, html ? [html] : []), text, mathspeak) || this;
+            _this = _super.call(this, ctrlSeq, h('span', { class: 'mq-binary-operator' }, html ? [html] : []), text, mathspeak) || this;
         }
-        return _this_1;
+        return _this;
     }
     return BinaryOperator;
 }(MQSymbol));
@@ -5205,9 +5191,9 @@ function bindBinaryOperator(ctrlSeq, htmlEntity, text, mathspeak) {
 var MathBlock = /** @class */ (function (_super) {
     __extends(MathBlock, _super);
     function MathBlock() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ariaLabel = 'block';
-        return _this_1;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ariaLabel = 'block';
+        return _this;
     }
     MathBlock.prototype.join = function (methodName) {
         return this.foldChildren('', function (fold, child) {
@@ -5417,12 +5403,12 @@ API.StaticMath = function (APIClasses) {
     return _c = /** @class */ (function (_super) {
             __extends(StaticMath, _super);
             function StaticMath(el) {
-                var _this_1 = _super.call(this, el) || this;
-                var innerFields = (_this_1.innerFields = []);
-                _this_1.__controller.root.postOrder(function (node) {
+                var _this = _super.call(this, el) || this;
+                var innerFields = (_this.innerFields = []);
+                _this.__controller.root.postOrder(function (node) {
                     node.registerInnerField(innerFields, APIClasses.InnerMathField);
                 });
-                return _this_1;
+                return _this;
             }
             StaticMath.prototype.__mathquillify = function (opts, _interfaceVersion) {
                 this.config(opts);
@@ -6202,9 +6188,9 @@ baseOptionProcessors.autoParenthesizedFunctions = function (cmds) {
 var Letter = /** @class */ (function (_super) {
     __extends(Letter, _super);
     function Letter(ch) {
-        var _this_1 = _super.call(this, ch) || this;
-        _this_1.letter = ch;
-        return _this_1;
+        var _this = _super.call(this, ch) || this;
+        _this.letter = ch;
+        return _this;
     }
     Letter.prototype.checkAutoCmds = function (cursor) {
         //exit early if in simple subscript and disableAutoSubstitutionInSubscripts is set.
@@ -6542,14 +6528,14 @@ LatexCmds.operatorname = /** @class */ (function (_super) {
 LatexCmds.f = /** @class */ (function (_super) {
     __extends(class_4, _super);
     function class_4() {
-        var _this_1 = this;
+        var _this = this;
         var letter = 'f';
-        _this_1 = _super.call(this, letter) || this;
-        _this_1.letter = letter;
-        _this_1.domView = new DOMView(0, function () {
+        _this = _super.call(this, letter) || this;
+        _this.letter = letter;
+        _this.domView = new DOMView(0, function () {
             return h('var', { class: 'mq-f' }, [h.text('f')]);
         });
-        return _this_1;
+        return _this;
     }
     class_4.prototype.italicize = function (bool) {
         // Why is this necesssary? Does someone replace the `f` at some
@@ -6694,9 +6680,9 @@ LatexCmds.Gamma =
 var LatexFragment = /** @class */ (function (_super) {
     __extends(LatexFragment, _super);
     function LatexFragment(latex) {
-        var _this_1 = _super.call(this) || this;
-        _this_1.latexStr = latex;
-        return _this_1;
+        var _this = _super.call(this) || this;
+        _this.latexStr = latex;
+        return _this;
     }
     LatexFragment.prototype.createLeftOf = function (cursor) {
         var block = latexMathParser.parse(this.latexStr);
@@ -6720,8 +6706,8 @@ var LatexFragment = /** @class */ (function (_super) {
         });
     };
     LatexFragment.prototype.mathspeak = function () {
-        if (this.mathspeakOverride) {
-            return _super.prototype.mathspeak.call(this);
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
         }
         return latexMathParser.parse(this.latexStr).mathspeak();
     };
@@ -6903,12 +6889,12 @@ LatexCmds['\u2192'] = LatexCmds.to = To;
 var Inequality = /** @class */ (function (_super) {
     __extends(Inequality, _super);
     function Inequality(data, strict) {
-        var _this_1 = this;
+        var _this = this;
         var strictness = strict ? 'Strict' : '';
-        _this_1 = _super.call(this, data["ctrlSeq".concat(strictness)], h.entityText(data["htmlEntity".concat(strictness)]), data["text".concat(strictness)], data["mathspeak".concat(strictness)]) || this;
-        _this_1.data = data;
-        _this_1.strict = strict;
-        return _this_1;
+        _this = _super.call(this, data["ctrlSeq".concat(strictness)], h.entityText(data["htmlEntity".concat(strictness)]), data["text".concat(strictness)], data["mathspeak".concat(strictness)]) || this;
+        _this.data = data;
+        _this.strict = strict;
+        return _this;
     }
     Inequality.prototype.swap = function (strict) {
         this.strict = strict;
@@ -7188,16 +7174,16 @@ var SVG_SYMBOLS = {
 var Style = /** @class */ (function (_super) {
     __extends(Style, _super);
     function Style(ctrlSeq, tagName, attrs, ariaLabel, opts) {
-        var _this_1 = _super.call(this, ctrlSeq, new DOMView(1, function (blocks) { return h.block(tagName, attrs, blocks[0]); })) || this;
-        _this_1.ariaLabel = ariaLabel || ctrlSeq.replace(/^\\/, '');
-        _this_1.mathspeakTemplate = [
-            'Start' + _this_1.ariaLabel + ',',
-            'End' + _this_1.ariaLabel,
+        var _this = _super.call(this, ctrlSeq, new DOMView(1, function (blocks) { return h.block(tagName, attrs, blocks[0]); })) || this;
+        _this.ariaLabel = ariaLabel || ctrlSeq.replace(/^\\/, '');
+        _this.mathspeakTemplate = [
+            'Start' + _this.ariaLabel + ',',
+            'End' + _this.ariaLabel,
         ];
         // In most cases, mathspeak should announce the start and end of style blocks.
         // There is one exception currently (mathrm).
-        _this_1.shouldNotSpeakDelimiters = opts && opts.shouldNotSpeakDelimiters;
-        return _this_1;
+        _this.shouldNotSpeakDelimiters = opts && opts.shouldNotSpeakDelimiters;
+        return _this;
     }
     Style.prototype.mathspeak = function (opts) {
         if (!this.shouldNotSpeakDelimiters || (opts && opts.ignoreShorthand)) {
@@ -7295,7 +7281,7 @@ LatexCmds.textcolor = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     class_8.prototype.parser = function () {
-        var _this_1 = this;
+        var _this = this;
         var optWhitespace = Parser.optWhitespace;
         var string = Parser.string;
         var regex = Parser.regex;
@@ -7304,8 +7290,8 @@ LatexCmds.textcolor = /** @class */ (function (_super) {
             .then(regex(/^[#\w\s.,()%-]*/))
             .skip(string('}'))
             .then(function (color) {
-            _this_1.setColor(color);
-            return _super.prototype.parser.call(_this_1);
+            _this.setColor(color);
+            return _super.prototype.parser.call(_this);
         });
     };
     class_8.prototype.isStyleBlock = function () {
@@ -7323,23 +7309,23 @@ var Class = (LatexCmds['class'] = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     class_9.prototype.parser = function () {
-        var _this_1 = this;
+        var _this = this;
         var string = Parser.string, regex = Parser.regex;
         return Parser.optWhitespace
             .then(string('{'))
             .then(regex(/^[-\w\s\\\xA0-\xFF]*/))
             .skip(string('}'))
             .then(function (cls) {
-            _this_1.cls = cls || '';
-            _this_1.domView = new DOMView(1, function (blocks) {
+            _this.cls = cls || '';
+            _this.domView = new DOMView(1, function (blocks) {
                 return h.block('span', { class: "mq-class ".concat(cls) }, blocks[0]);
             });
-            _this_1.ariaLabel = cls + ' class';
-            _this_1.mathspeakTemplate = [
-                'Start ' + _this_1.ariaLabel + ',',
-                'End ' + _this_1.ariaLabel,
+            _this.ariaLabel = cls + ' class';
+            _this.mathspeakTemplate = [
+                'Start ' + _this.ariaLabel + ',',
+                'End ' + _this.ariaLabel,
             ];
-            return _super.prototype.parser.call(_this_1);
+            return _super.prototype.parser.call(_this);
         });
     };
     class_9.prototype.latexRecursive = function (ctx) {
@@ -7375,9 +7361,9 @@ Options.prototype.charsThatBreakOutOfSupSub = '';
 var SupSub = /** @class */ (function (_super) {
     __extends(SupSub, _super);
     function SupSub() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '_{...}^{...}';
-        return _this_1;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ctrlSeq = '_{...}^{...}';
+        return _this;
     }
     SupSub.prototype.setEnds = function (ends) {
         pray('SupSub ends must be MathBlocks', ends[L] instanceof MathBlock && ends[R] instanceof MathBlock);
@@ -7594,6 +7580,12 @@ var SupSub = /** @class */ (function (_super) {
                 };
             })(this, 'sub sup'.split(' ')[i], 'sup sub'.split(' ')[i], 'down up'.split(' ')[i]);
     };
+    SupSub.prototype.mathspeak = function () {
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
+        }
+        return _super.prototype.mathspeak.call(this);
+    };
     return SupSub;
 }(MathCommand));
 function insLeftOfMeUnlessAtEnd(cursor) {
@@ -7612,9 +7604,9 @@ function insLeftOfMeUnlessAtEnd(cursor) {
 var SubscriptCommand = /** @class */ (function (_super) {
     __extends(SubscriptCommand, _super);
     function SubscriptCommand() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.supsub = 'sub';
-        _this_1.domView = new DOMView(1, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.supsub = 'sub';
+        _this.domView = new DOMView(1, function (blocks) {
             return h('span', { class: 'mq-supsub mq-non-leaf' }, [
                 h.block('span', { class: 'mq-sub' }, blocks[0]),
                 h('span', { style: 'display:inline-block;width:0' }, [
@@ -7622,10 +7614,10 @@ var SubscriptCommand = /** @class */ (function (_super) {
                 ]),
             ]);
         });
-        _this_1.textTemplate = ['_'];
-        _this_1.mathspeakTemplate = ['Subscript,', ', Baseline'];
-        _this_1.ariaLabel = 'subscript';
-        return _this_1;
+        _this.textTemplate = ['_'];
+        _this.mathspeakTemplate = ['Subscript,', ', Baseline'];
+        _this.ariaLabel = 'subscript';
+        return _this;
     }
     SubscriptCommand.prototype.finalizeTree = function () {
         this.downInto = this.sub = this.getEnd(L);
@@ -7640,20 +7632,20 @@ LatexCmds.superscript =
         LatexCmds['^'] = /** @class */ (function (_super) {
             __extends(SuperscriptCommand, _super);
             function SuperscriptCommand() {
-                var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-                _this_1.supsub = 'sup';
-                _this_1.domView = new DOMView(1, function (blocks) {
+                var _this = _super !== null && _super.apply(this, arguments) || this;
+                _this.supsub = 'sup';
+                _this.domView = new DOMView(1, function (blocks) {
                     return h('span', { class: 'mq-supsub mq-non-leaf mq-sup-only' }, [
                         h.block('span', { class: 'mq-sup' }, blocks[0]),
                     ]);
                 });
-                _this_1.textTemplate = ['^(', ')'];
-                _this_1.ariaLabel = 'superscript';
-                _this_1.mathspeakTemplate = ['Superscript,', ', Baseline'];
-                return _this_1;
+                _this.textTemplate = ['^(', ')'];
+                _this.ariaLabel = 'superscript';
+                _this.mathspeakTemplate = ['Superscript,', ', Baseline'];
+                return _this;
             }
             SuperscriptCommand.prototype.mathspeak = function (opts) {
-                if (this.mathspeakOverride) {
+                if (this.mathSpeakCallback) {
                     return _super.prototype.mathspeak.call(this);
                 }
                 // Simplify basic exponent speech for common whole numbers.
@@ -7708,8 +7700,8 @@ LatexCmds.superscript =
 var SummationNotation = /** @class */ (function (_super) {
     __extends(SummationNotation, _super);
     function SummationNotation(ch, symbol, ariaLabel) {
-        var _this_1 = _super.call(this) || this;
-        _this_1.ariaLabel = ariaLabel || ch.replace(/^\\/, '');
+        var _this = _super.call(this) || this;
+        _this.ariaLabel = ariaLabel || ch.replace(/^\\/, '');
         var domView = new DOMView(2, function (blocks) {
             return h('span', { class: 'mq-large-operator mq-non-leaf' }, [
                 h('span', { class: 'mq-to' }, [h.block('span', {}, blocks[1])]),
@@ -7717,8 +7709,8 @@ var SummationNotation = /** @class */ (function (_super) {
                 h('span', { class: 'mq-from' }, [h.block('span', {}, blocks[0])]),
             ]);
         });
-        MQSymbol.prototype.setCtrlSeqHtmlTextAndMathspeak.call(_this_1, ch, domView);
-        return _this_1;
+        MQSymbol.prototype.setCtrlSeqHtmlTextAndMathspeak.call(_this, ch, domView);
+        return _this;
     }
     SummationNotation.prototype.createLeftOf = function (cursor) {
         _super.prototype.createLeftOf.call(this, cursor);
@@ -7749,8 +7741,8 @@ var SummationNotation = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     SummationNotation.prototype.mathspeak = function () {
-        if (this.mathspeakOverride) {
-            return _super.prototype.mathspeak.call(this);
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
         }
         return ('Start ' +
             this.ariaLabel +
@@ -7812,9 +7804,9 @@ LatexCmds['\u222b'] =
         LatexCmds.integral = /** @class */ (function (_super) {
             __extends(class_10, _super);
             function class_10() {
-                var _this_1 = _super.call(this, '\\int ', '', 'integral') || this;
-                _this_1.ariaLabel = 'integral';
-                _this_1.domView = new DOMView(2, function (blocks) {
+                var _this = _super.call(this, '\\int ', '', 'integral') || this;
+                _this.ariaLabel = 'integral';
+                _this.domView = new DOMView(2, function (blocks) {
                     return h('span', { class: 'mq-int mq-non-leaf' }, [
                         h('big', {}, [h.text(U_INTEGRAL)]),
                         h('span', { class: 'mq-supsub mq-non-leaf' }, [
@@ -7828,7 +7820,7 @@ LatexCmds['\u222b'] =
                         ]),
                     ]);
                 });
-                return _this_1;
+                return _this;
             }
             class_10.prototype.createLeftOf = function (cursor) {
                 // FIXME: refactor rather than overriding
@@ -7842,9 +7834,9 @@ var Fraction = (LatexCmds.frac =
             LatexCmds.fraction = /** @class */ (function (_super) {
                 __extends(FracNode, _super);
                 function FracNode() {
-                    var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-                    _this_1.ctrlSeq = '\\frac';
-                    _this_1.domView = new DOMView(2, function (blocks) {
+                    var _this = _super !== null && _super.apply(this, arguments) || this;
+                    _this.ctrlSeq = '\\frac';
+                    _this.domView = new DOMView(2, function (blocks) {
                         return h('span', { class: 'mq-fraction mq-non-leaf' }, [
                             h.block('span', { class: 'mq-numerator' }, blocks[0]),
                             h.block('span', { class: 'mq-denominator' }, blocks[1]),
@@ -7853,8 +7845,8 @@ var Fraction = (LatexCmds.frac =
                             ]),
                         ]);
                     });
-                    _this_1.textTemplate = ['(', ')/(', ')'];
-                    return _this_1;
+                    _this.textTemplate = ['(', ')/(', ')'];
+                    return _this;
                 }
                 FracNode.prototype.finalizeTree = function () {
                     var endsL = this.getEnd(L);
@@ -7879,8 +7871,8 @@ var Fraction = (LatexCmds.frac =
                         var cursor = opts.createdLeftOf;
                         return cursor.parent.mathspeak();
                     }
-                    if (this.mathspeakOverride) {
-                        return _super.prototype.mathspeak.call(this);
+                    if (this.mathSpeakCallback) {
+                        return this.mathSpeakCallback(this.latex());
                     }
                     var numText = getCtrlSeqsFromBlock(this.getEnd(L));
                     var denText = getCtrlSeqsFromBlock(this.getEnd(R));
@@ -8023,13 +8015,13 @@ LatexCmds.percent = LatexCmds.percentof = PercentOfBuilder;
 var Token = /** @class */ (function (_super) {
     __extends(Token, _super);
     function Token() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.tokenId = '';
-        _this_1.ctrlSeq = '\\token';
-        _this_1.textTemplate = ['token(', ')'];
-        _this_1.mathspeakTemplate = ['StartToken,', ', EndToken'];
-        _this_1.ariaLabel = 'token';
-        return _this_1;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.tokenId = '';
+        _this.ctrlSeq = '\\token';
+        _this.textTemplate = ['token(', ')'];
+        _this.mathspeakTemplate = ['StartToken,', ', EndToken'];
+        _this.ariaLabel = 'token';
+        return _this;
     }
     Token.prototype.html = function () {
         var out = h('span', {
@@ -8046,8 +8038,8 @@ var Token = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     Token.prototype.mathspeak = function () {
-        if (this.mathspeakOverride) {
-            return _super.prototype.mathspeak.call(this);
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
         }
         // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
         var ariaLabelArray = [];
@@ -8081,9 +8073,9 @@ LatexCmds.token = Token;
 var SquareRoot = /** @class */ (function (_super) {
     __extends(SquareRoot, _super);
     function SquareRoot() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\sqrt';
-        _this_1.domView = new DOMView(1, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ctrlSeq = '\\sqrt';
+        _this.domView = new DOMView(1, function (blocks) {
             return h('span', { class: 'mq-non-leaf mq-sqrt-container' }, [
                 h('span', { class: 'mq-scaled mq-sqrt-prefix' }, [
                     SVG_SYMBOLS.sqrt.html(),
@@ -8091,10 +8083,10 @@ var SquareRoot = /** @class */ (function (_super) {
                 h.block('span', { class: 'mq-non-leaf mq-sqrt-stem' }, blocks[0]),
             ]);
         });
-        _this_1.textTemplate = ['sqrt(', ')'];
-        _this_1.mathspeakTemplate = ['StartRoot,', ', EndRoot'];
-        _this_1.ariaLabel = 'root';
-        return _this_1;
+        _this.textTemplate = ['sqrt(', ')'];
+        _this.mathspeakTemplate = ['StartRoot,', ', EndRoot'];
+        _this.ariaLabel = 'root';
+        return _this;
     }
     SquareRoot.prototype.parser = function () {
         return latexMathParser.optBlock
@@ -8115,24 +8107,24 @@ LatexCmds.sqrt = SquareRoot;
 LatexCmds.hat = /** @class */ (function (_super) {
     __extends(Hat, _super);
     function Hat() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\hat';
-        _this_1.domView = new DOMView(1, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ctrlSeq = '\\hat';
+        _this.domView = new DOMView(1, function (blocks) {
             return h('span', { class: 'mq-non-leaf' }, [
                 h('span', { class: 'mq-hat-prefix' }, [h.text('^')]),
                 h.block('span', { class: 'mq-hat-stem' }, blocks[0]),
             ]);
         });
-        _this_1.textTemplate = ['hat(', ')'];
-        return _this_1;
+        _this.textTemplate = ['hat(', ')'];
+        return _this;
     }
     return Hat;
 }(MathCommand));
 var NthRoot = /** @class */ (function (_super) {
     __extends(NthRoot, _super);
     function NthRoot() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.domView = new DOMView(2, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.domView = new DOMView(2, function (blocks) {
             return h('span', { class: 'mq-nthroot-container mq-non-leaf' }, [
                 h.block('sup', { class: 'mq-nthroot mq-non-leaf' }, blocks[0]),
                 h('span', { class: 'mq-scaled mq-sqrt-container' }, [
@@ -8143,8 +8135,8 @@ var NthRoot = /** @class */ (function (_super) {
                 ]),
             ]);
         });
-        _this_1.textTemplate = ['sqrt[', '](', ')'];
-        return _this_1;
+        _this.textTemplate = ['sqrt[', '](', ')'];
+        return _this;
     }
     NthRoot.prototype.latexRecursive = function (ctx) {
         this.checkCursorContextOpen(ctx);
@@ -8156,8 +8148,8 @@ var NthRoot = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     NthRoot.prototype.mathspeak = function () {
-        if (this.mathspeakOverride) {
-            return _super.prototype.mathspeak.call(this);
+        if (this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
         }
         var indexMathspeak = this.getEnd(L).mathspeak();
         var radicandMathspeak = this.getEnd(R).mathspeak();
@@ -8193,15 +8185,15 @@ LatexCmds.cbrt = /** @class */ (function (_super) {
 var DiacriticAbove = /** @class */ (function (_super) {
     __extends(DiacriticAbove, _super);
     function DiacriticAbove(ctrlSeq, html, textTemplate) {
-        var _this_1 = this;
+        var _this = this;
         var domView = new DOMView(1, function (blocks) {
             return h('span', { class: 'mq-non-leaf' }, [
                 h('span', { class: 'mq-diacritic-above' }, [html]),
                 h.block('span', { class: 'mq-diacritic-stem' }, blocks[0]),
             ]);
         });
-        _this_1 = _super.call(this, ctrlSeq, domView, textTemplate) || this;
-        return _this_1;
+        _this = _super.call(this, ctrlSeq, domView, textTemplate) || this;
+        return _this;
     }
     return DiacriticAbove;
 }(MathCommand));
@@ -8237,19 +8229,19 @@ var Bracket = /** @class */ (function (_super) {
     __extends(Bracket, _super);
     function Bracket(side, open, close, ctrlSeq, end) {
         var _c;
-        var _this_1 = _super.call(this, '\\left' + ctrlSeq, undefined, [open, close]) || this;
-        _this_1.side = side;
-        _this_1.sides = (_c = {},
+        var _this = _super.call(this, '\\left' + ctrlSeq, undefined, [open, close]) || this;
+        _this.side = side;
+        _this.sides = (_c = {},
             _c[L] = { ch: open, ctrlSeq: ctrlSeq },
             _c[R] = { ch: close, ctrlSeq: end },
             _c);
-        return _this_1;
+        return _this;
     }
     Bracket.prototype.numBlocks = function () {
         return 1;
     };
     Bracket.prototype.html = function () {
-        var _this_1 = this;
+        var _this = this;
         var leftSymbol = this.getSymbol(L);
         var rightSymbol = this.getSymbol(R);
         // wait until now so that .side may
@@ -8260,7 +8252,7 @@ var Bracket = /** @class */ (function (_super) {
                 h('span', {
                     style: 'width:' + leftSymbol.width,
                     class: 'mq-scaled mq-bracket-l mq-paren' +
-                        (_this_1.side === R ? ' mq-ghost' : ''),
+                        (_this.side === R ? ' mq-ghost' : ''),
                 }, [leftSymbol.html()]),
                 h.block('span', {
                     style: 'margin-left:' +
@@ -8272,7 +8264,7 @@ var Bracket = /** @class */ (function (_super) {
                 h('span', {
                     style: 'width:' + rightSymbol.width,
                     class: 'mq-scaled mq-bracket-r mq-paren' +
-                        (_this_1.side === L ? ' mq-ghost' : ''),
+                        (_this.side === L ? ' mq-ghost' : ''),
                 }, [rightSymbol.html()]),
             ]);
         });
@@ -8290,10 +8282,11 @@ var Bracket = /** @class */ (function (_super) {
         this.checkCursorContextClose(ctx);
     };
     Bracket.prototype.mathspeak = function (opts) {
-        if (this.mathspeakOverride) {
-            return (opts === null || opts === void 0 ? void 0 : opts.createdLeftOf)
-                ? this.mathspeakOverride(this.sides[this.side].ch)
-                : _super.prototype.mathspeak.call(this);
+        if (!(opts === null || opts === void 0 ? void 0 : opts.createdLeftOf) && this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.latex());
+        }
+        else if ((opts === null || opts === void 0 ? void 0 : opts.createdLeftOf) && this.mathSpeakCallback) {
+            return this.mathSpeakCallback(this.sides[this.side].ch);
         }
         var open = this.sides[L].ch, close = this.sides[R].ch;
         if (open === '|' && close === '|') {
@@ -8619,9 +8612,9 @@ var rightBinomialSymbol = SVG_SYMBOLS[')'];
 var Binomial = /** @class */ (function (_super) {
     __extends(Binomial, _super);
     function Binomial() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\binom';
-        _this_1.domView = new DOMView(2, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ctrlSeq = '\\binom';
+        _this.domView = new DOMView(2, function (blocks) {
             return h('span', { class: 'mq-non-leaf mq-bracket-container' }, [
                 h('span', {
                     style: 'width:' + leftBinomialSymbol.width,
@@ -8645,10 +8638,10 @@ var Binomial = /** @class */ (function (_super) {
                 }, [rightBinomialSymbol.html()]),
             ]);
         });
-        _this_1.textTemplate = ['choose(', ',', ')'];
-        _this_1.mathspeakTemplate = ['StartBinomial,', 'Choose', ', EndBinomial'];
-        _this_1.ariaLabel = 'binomial';
-        return _this_1;
+        _this.textTemplate = ['choose(', ',', ')'];
+        _this.mathspeakTemplate = ['StartBinomial,', 'Choose', ', EndBinomial'];
+        _this.ariaLabel = 'binomial';
+        return _this;
     }
     return Binomial;
 }(DelimsNode));
@@ -8666,14 +8659,14 @@ LatexCmds.choose = /** @class */ (function (_super) {
 var MathFieldNode = /** @class */ (function (_super) {
     __extends(MathFieldNode, _super);
     function MathFieldNode() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\MathQuillMathField';
-        _this_1.domView = new DOMView(1, function (blocks) {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.ctrlSeq = '\\MathQuillMathField';
+        _this.domView = new DOMView(1, function (blocks) {
             return h('span', { class: 'mq-editable-field' }, [
                 h.block('span', { class: 'mq-root-block', 'aria-hidden': 'true' }, blocks[0]),
             ]);
         });
-        return _this_1;
+        return _this;
     }
     MathFieldNode.prototype.parser = function () {
         var self = this, string = Parser.string, regex = Parser.regex, succeed = Parser.succeed;
@@ -8797,690 +8790,4 @@ var EmbedNode = /** @class */ (function (_super) {
     return EmbedNode;
 }(MQSymbol));
 LatexCmds.embed = EmbedNode;
-/*************************************************
- * Abstract classes of text blocks
- ************************************************/
-/**
- * Blocks of plain text, with one or two TextPiece's as children.
- * Represents flat strings of typically serif-font Roman characters, as
- * opposed to hierchical, nested, tree-structured math.
- * Wraps a single HTMLSpanElement.
- */
-var TextBlock = /** @class */ (function (_super) {
-    __extends(TextBlock, _super);
-    function TextBlock() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\text';
-        _this_1.ariaLabel = 'Text';
-        _this_1.mathspeakTemplate = ['StartText', 'EndText'];
-        return _this_1;
-    }
-    TextBlock.prototype.replaces = function (replacedText) {
-        if (replacedText instanceof Fragment) {
-            this.replacedText = replacedText.remove().domFrag().text();
-        }
-        else if (typeof replacedText === 'string')
-            this.replacedText = replacedText;
-    };
-    TextBlock.prototype.setDOMFrag = function (el) {
-        _super.prototype.setDOM.call(this, el);
-        var endsL = this.getEnd(L);
-        if (endsL) {
-            var children = this.domFrag().children();
-            if (!children.isEmpty()) {
-                endsL.setDOM(children.oneText());
-            }
-        }
-        return this;
-    };
-    TextBlock.prototype.createLeftOf = function (cursor) {
-        var textBlock = this;
-        _super.prototype.createLeftOf.call(this, cursor);
-        cursor.insAtRightEnd(textBlock);
-        if (textBlock.replacedText)
-            for (var i = 0; i < textBlock.replacedText.length; i += 1)
-                textBlock.write(cursor, textBlock.replacedText.charAt(i));
-        var textBlockR = textBlock[R];
-        if (textBlockR)
-            textBlockR.siblingCreated(cursor.options, L);
-        var textBlockL = textBlock[L];
-        if (textBlockL)
-            textBlockL.siblingCreated(cursor.options, R);
-        textBlock.bubble(function (node) {
-            node.reflow();
-            return undefined;
-        });
-    };
-    TextBlock.prototype.parser = function () {
-        var textBlock = this;
-        // TODO: correctly parse text mode
-        var string = Parser.string;
-        var regex = Parser.regex;
-        var optWhitespace = Parser.optWhitespace;
-        return optWhitespace
-            .then(string('{'))
-            .then(regex(/^[^}]*/))
-            .skip(string('}'))
-            .map(function (text) {
-            if (text.length === 0)
-                return new Fragment(0, 0);
-            new TextPiece(text).adopt(textBlock, 0, 0);
-            return textBlock;
-        });
-    };
-    TextBlock.prototype.textContents = function () {
-        return this.foldChildren('', function (text, child) {
-            return text + child.textStr;
-        });
-    };
-    TextBlock.prototype.text = function () {
-        return '"' + this.textContents() + '"';
-    };
-    TextBlock.prototype.latexRecursive = function (ctx) {
-        this.checkCursorContextOpen(ctx);
-        var contents = this.textContents();
-        if (contents.length > 0) {
-            ctx.latex += this.ctrlSeq + '{';
-            ctx.latex += contents
-                .replace(/\\/g, '\\backslash ')
-                .replace(/[{}]/g, '\\$&');
-            ctx.latex += '}';
-        }
-        this.checkCursorContextClose(ctx);
-    };
-    TextBlock.prototype.html = function () {
-        var out = h('span', { class: 'mq-text-mode' }, [
-            h.text(this.textContents()),
-        ]);
-        this.setDOM(out);
-        NodeBase.linkElementByCmdNode(out, this);
-        return out;
-    };
-    TextBlock.prototype.mathspeak = function (opts) {
-        if (opts && opts.ignoreShorthand) {
-            if (this.mathspeakOverride) {
-                return _super.prototype.mathspeak.call(this);
-            }
-            return (this.mathspeakTemplate[0] +
-                ', ' +
-                this.textContents() +
-                ', ' +
-                this.mathspeakTemplate[1]);
-        }
-        else {
-            return this.textContents();
-        }
-    };
-    TextBlock.prototype.isTextBlock = function () {
-        return true;
-    };
-    // editability methods: called by the cursor for editing, cursor movements,
-    // and selection of the MathQuill tree, these all take in a direction and
-    // the cursor
-    TextBlock.prototype.moveTowards = function (dir, cursor) {
-        cursor.insAtDirEnd(-dir, this);
-        cursor.controller.aria
-            .queueDirEndOf(-dir)
-            .queue(cursor.parent, true);
-    };
-    TextBlock.prototype.moveOutOf = function (dir, cursor) {
-        cursor.insDirOf(dir, this);
-        cursor.controller.aria.queueDirOf(dir).queue(this);
-    };
-    TextBlock.prototype.unselectInto = function (dir, cursor) {
-        this.moveTowards(dir, cursor);
-    };
-    // TODO: make these methods part of a shared mixin or something.
-    TextBlock.prototype.selectTowards = function (dir, cursor) {
-        MathCommand.prototype.selectTowards.call(this, dir, cursor);
-    };
-    TextBlock.prototype.deleteTowards = function (dir, cursor) {
-        MathCommand.prototype.deleteTowards.call(this, dir, cursor);
-    };
-    TextBlock.prototype.selectOutOf = function (dir, cursor) {
-        cursor.insDirOf(dir, this);
-    };
-    TextBlock.prototype.deleteOutOf = function (_dir, cursor) {
-        // backspace and delete at ends of block don't unwrap
-        if (this.isEmpty())
-            cursor.insRightOf(this);
-    };
-    TextBlock.prototype.write = function (cursor, ch) {
-        cursor.show().deleteSelection();
-        if (ch !== '$') {
-            var cursorL = cursor[L];
-            if (!cursorL)
-                new TextPiece(ch).createLeftOf(cursor);
-            else if (cursorL instanceof TextPiece)
-                cursorL.appendText(ch);
-        }
-        else if (this.isEmpty()) {
-            cursor.insRightOf(this);
-            new VanillaSymbol('\\$', h.text('$')).createLeftOf(cursor);
-        }
-        else if (!cursor[R])
-            cursor.insRightOf(this);
-        else if (!cursor[L])
-            cursor.insLeftOf(this);
-        else {
-            // split apart
-            var leftBlock = new TextBlock();
-            var leftPc = this.getEnd(L);
-            if (leftPc) {
-                leftPc.disown().domFrag().detach();
-                leftPc.adopt(leftBlock, 0, 0);
-            }
-            cursor.insLeftOf(this);
-            _super.prototype.createLeftOf.call(leftBlock, cursor); // micro-optimization, not for correctness
-        }
-        this.bubble(function (node) {
-            node.reflow();
-            return undefined;
-        });
-        // TODO needs tests
-        cursor.controller.aria.alert(ch);
-    };
-    TextBlock.prototype.writeLatex = function (cursor, latex) {
-        var cursorL = cursor[L];
-        if (!cursorL)
-            new TextPiece(latex).createLeftOf(cursor);
-        else if (cursorL instanceof TextPiece)
-            cursorL.appendText(latex);
-        this.bubble(function (node) {
-            node.reflow();
-            return undefined;
-        });
-    };
-    TextBlock.prototype.seek = function (clientX, cursor) {
-        cursor.hide();
-        var textPc = TextBlockFuseChildren(this);
-        if (!textPc)
-            return;
-        // insert cursor at approx position in DOMTextNode
-        var textNode = this.domFrag().children().oneText();
-        var range = document.createRange();
-        range.selectNodeContents(textNode);
-        var rects = range.getClientRects();
-        if (rects.length === 1) {
-            var _c = rects[0], width = _c.width, left = _c.left;
-            var avgChWidth = width / this.textContents().length;
-            var approxPosition = Math.round((clientX - left) / avgChWidth);
-            if (approxPosition <= 0) {
-                cursor.insAtLeftEnd(this);
-            }
-            else if (approxPosition >= textPc.textStr.length) {
-                cursor.insAtRightEnd(this);
-            }
-            else {
-                cursor.insLeftOf(textPc.splitRight(approxPosition));
-            }
-        }
-        else {
-            cursor.insAtLeftEnd(this);
-        }
-        // move towards mousedown (clientX)
-        var displ = clientX - cursor.show().getBoundingClientRectWithoutMargin().left; // displacement
-        var dir = displ && displ < 0 ? L : R;
-        var prevDispl = dir;
-        // displ * prevDispl > 0 iff displacement direction === previous direction
-        while (cursor[dir] && displ * prevDispl > 0) {
-            cursor[dir].moveTowards(dir, cursor);
-            prevDispl = displ;
-            displ = clientX - cursor.getBoundingClientRectWithoutMargin().left;
-        }
-        if (dir * displ < -dir * prevDispl)
-            cursor[-dir].moveTowards(-dir, cursor);
-        if (!cursor.anticursor) {
-            // about to start mouse-selecting, the anticursor is gonna get put here
-            var cursorL = cursor[L];
-            this.anticursorPosition =
-                cursorL && cursorL.textStr.length;
-            // ^ get it? 'cos if there's no cursor[L], it's 0... I'm a terrible person.
-        }
-        else if (cursor.anticursor.parent === this) {
-            // mouse-selecting within this TextBlock, re-insert the anticursor
-            var cursorL = cursor[L];
-            var cursorPosition = cursorL && cursorL.textStr.length;
-            if (this.anticursorPosition === cursorPosition) {
-                cursor.anticursor = Anticursor.fromCursor(cursor);
-            }
-            else {
-                if (this.anticursorPosition < cursorPosition) {
-                    var newTextPc = cursorL.splitRight(this.anticursorPosition);
-                    cursor[L] = newTextPc;
-                }
-                else {
-                    var cursorR = cursor[R];
-                    var newTextPc = cursorR.splitRight(this.anticursorPosition - cursorPosition);
-                }
-                cursor.anticursor = new Anticursor(this, newTextPc[L], newTextPc);
-            }
-        }
-    };
-    TextBlock.prototype.blur = function (cursor) {
-        MathBlock.prototype.blur.call(this, cursor);
-        if (!cursor)
-            return;
-        if (this.textContents() === '') {
-            this.remove();
-            if (cursor[L] === this)
-                cursor[L] = this[L];
-            else if (cursor[R] === this)
-                cursor[R] = this[R];
-        }
-        else
-            TextBlockFuseChildren(this);
-    };
-    TextBlock.prototype.focus = function () {
-        MathBlock.prototype.focus.call(this);
-    };
-    return TextBlock;
-}(MQNode));
-function TextBlockFuseChildren(self) {
-    self.domFrag().oneElement().normalize();
-    var children = self.domFrag().children();
-    if (children.isEmpty())
-        return;
-    var textPcDom = children.oneText();
-    pray('only node in TextBlock span is Text node', textPcDom.nodeType === 3);
-    // nodeType === 3 has meant a Text node since ancient times:
-    //   http://reference.sitepoint.com/javascript/Node/nodeType
-    var textPc = new TextPiece(textPcDom.data);
-    textPc.setDOM(textPcDom);
-    self.children().disown();
-    textPc.adopt(self, 0, 0);
-    return textPc;
-}
-/**
- * Piece of plain text, with a TextBlock as a parent and no children.
- * Wraps a single DOMTextNode.
- * For convenience, has a .textStr property that's just a JavaScript string
- * mirroring the text contents of the DOMTextNode.
- * Text contents must always be nonempty.
- */
-var TextPiece = /** @class */ (function (_super) {
-    __extends(TextPiece, _super);
-    function TextPiece(text) {
-        var _this_1 = _super.call(this) || this;
-        _this_1.textStr = text;
-        return _this_1;
-    }
-    TextPiece.prototype.html = function () {
-        var out = h.text(this.textStr);
-        this.setDOM(out);
-        return out;
-    };
-    TextPiece.prototype.appendText = function (text) {
-        this.textStr += text;
-        this.domFrag().oneText().appendData(text);
-    };
-    TextPiece.prototype.prependText = function (text) {
-        this.textStr = text + this.textStr;
-        this.domFrag().oneText().insertData(0, text);
-    };
-    TextPiece.prototype.insTextAtDirEnd = function (text, dir) {
-        prayDirection(dir);
-        if (dir === R)
-            this.appendText(text);
-        else
-            this.prependText(text);
-    };
-    TextPiece.prototype.splitRight = function (i) {
-        var newPc = new TextPiece(this.textStr.slice(i)).adopt(this.parent, this, this[R]);
-        newPc.setDOM(this.domFrag().oneText().splitText(i));
-        this.textStr = this.textStr.slice(0, i);
-        return newPc;
-    };
-    TextPiece.prototype.endChar = function (dir, text) {
-        return text.charAt(dir === L ? 0 : -1 + text.length);
-    };
-    TextPiece.prototype.moveTowards = function (dir, cursor) {
-        prayDirection(dir);
-        var ch = this.endChar(-dir, this.textStr);
-        var from = this[-dir];
-        if (from instanceof TextPiece)
-            from.insTextAtDirEnd(ch, dir);
-        else
-            new TextPiece(ch).createDir(-dir, cursor);
-        return this.deleteTowards(dir, cursor);
-    };
-    TextPiece.prototype.mathspeak = function () {
-        return this.textStr;
-    };
-    TextPiece.prototype.latexRecursive = function (ctx) {
-        this.checkCursorContextOpen(ctx);
-        ctx.latex += this.textStr;
-        this.checkCursorContextClose(ctx);
-    };
-    TextPiece.prototype.deleteTowards = function (dir, cursor) {
-        if (this.textStr.length > 1) {
-            var deletedChar;
-            if (dir === R) {
-                this.domFrag().oneText().deleteData(0, 1);
-                deletedChar = this.textStr[0];
-                this.textStr = this.textStr.slice(1);
-            }
-            else {
-                // note that the order of these 2 lines is annoyingly important
-                // (the second line mutates this.textStr.length)
-                this.domFrag()
-                    .oneText()
-                    .deleteData(-1 + this.textStr.length, 1);
-                deletedChar = this.textStr[this.textStr.length - 1];
-                this.textStr = this.textStr.slice(0, -1);
-            }
-            cursor.controller.aria.queue(deletedChar);
-        }
-        else {
-            this.remove();
-            cursor[dir] = this[dir];
-            cursor.controller.aria.queue(this.textStr);
-        }
-    };
-    TextPiece.prototype.selectTowards = function (dir, cursor) {
-        prayDirection(dir);
-        var anticursor = cursor.anticursor;
-        if (!anticursor)
-            return;
-        var ch = this.endChar(-dir, this.textStr);
-        if (anticursor[dir] === this) {
-            var newPc = new TextPiece(ch).createDir(dir, cursor);
-            anticursor[dir] = newPc;
-            cursor.insDirOf(dir, newPc);
-        }
-        else {
-            var from = this[-dir];
-            if (from instanceof TextPiece)
-                from.insTextAtDirEnd(ch, dir);
-            else {
-                var newPc = new TextPiece(ch).createDir(-dir, cursor);
-                var selection = cursor.selection;
-                if (selection) {
-                    newPc.domFrag().insDirOf(-dir, selection.domFrag());
-                }
-            }
-            if (this.textStr.length === 1 && anticursor[-dir] === this) {
-                anticursor[-dir] = this[-dir]; // `this` will be removed in deleteTowards
-            }
-        }
-        return this.deleteTowards(dir, cursor);
-    };
-    return TextPiece;
-}(MQNode));
-LatexCmds.text =
-    LatexCmds.textnormal =
-        LatexCmds.textrm =
-            LatexCmds.textup =
-                LatexCmds.textmd =
-                    TextBlock;
-function makeTextBlock(latex, ariaLabel, tagName, attrs) {
-    return /** @class */ (function (_super) {
-        __extends(class_14, _super);
-        function class_14() {
-            var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-            _this_1.ctrlSeq = latex;
-            _this_1.mathspeakTemplate = ['Start' + ariaLabel, 'End' + ariaLabel];
-            _this_1.ariaLabel = ariaLabel;
-            return _this_1;
-        }
-        class_14.prototype.html = function () {
-            var out = h(tagName, attrs, [h.text(this.textContents())]);
-            this.setDOM(out);
-            NodeBase.linkElementByCmdNode(out, this);
-            return out;
-        };
-        return class_14;
-    }(TextBlock));
-}
-LatexCmds.em =
-    LatexCmds.italic =
-        LatexCmds.italics =
-            LatexCmds.emph =
-                LatexCmds.textit =
-                    LatexCmds.textsl =
-                        makeTextBlock('\\textit', 'Italic', 'i', { class: 'mq-text-mode' });
-LatexCmds.strong =
-    LatexCmds.bold =
-        LatexCmds.textbf =
-            makeTextBlock('\\textbf', 'Bold', 'b', { class: 'mq-text-mode' });
-LatexCmds.sf = LatexCmds.textsf = makeTextBlock('\\textsf', 'Sans serif font', 'span', { class: 'mq-sans-serif mq-text-mode' });
-LatexCmds.tt = LatexCmds.texttt = makeTextBlock('\\texttt', 'Mono space font', 'span', { class: 'mq-monospace mq-text-mode' });
-LatexCmds.textsc = makeTextBlock('\\textsc', 'Variable font', 'span', {
-    style: 'font-variant:small-caps',
-    class: 'mq-text-mode',
-});
-LatexCmds.uppercase = makeTextBlock('\\uppercase', 'Uppercase', 'span', {
-    style: 'text-transform:uppercase',
-    class: 'mq-text-mode',
-});
-LatexCmds.lowercase = makeTextBlock('\\lowercase', 'Lowercase', 'span', {
-    style: 'text-transform:lowercase',
-    class: 'mq-text-mode',
-});
-var RootMathCommand = /** @class */ (function (_super) {
-    __extends(RootMathCommand, _super);
-    function RootMathCommand(cursor) {
-        var _this_1 = _super.call(this, '$') || this;
-        _this_1.domView = new DOMView(1, function (blocks) {
-            return h.block('span', { class: 'mq-math-mode' }, blocks[0]);
-        });
-        _this_1.cursor = cursor;
-        return _this_1;
-    }
-    RootMathCommand.prototype.createBlocks = function () {
-        _super.prototype.createBlocks.call(this);
-        var endsL = this.getEnd(L); // TODO - how do we know this is a RootMathCommand?
-        endsL.cursor = this.cursor;
-        endsL.write = function (cursor, ch) {
-            if (ch !== '$')
-                MathBlock.prototype.write.call(this, cursor, ch);
-            else if (this.isEmpty()) {
-                cursor.insRightOf(this.parent);
-                this.parent.deleteTowards(undefined, cursor);
-                new VanillaSymbol('\\$', h.text('$')).createLeftOf(cursor.show());
-            }
-            else if (!cursor[R])
-                cursor.insRightOf(this.parent);
-            else if (!cursor[L])
-                cursor.insLeftOf(this.parent);
-            else
-                MathBlock.prototype.write.call(this, cursor, ch);
-        };
-    };
-    RootMathCommand.prototype.latexRecursive = function (ctx) {
-        this.checkCursorContextOpen(ctx);
-        ctx.latex += '$';
-        this.getEnd(L).latexRecursive(ctx);
-        ctx.latex += '$';
-        this.checkCursorContextClose(ctx);
-    };
-    return RootMathCommand;
-}(MathCommand));
-var RootTextBlock = /** @class */ (function (_super) {
-    __extends(RootTextBlock, _super);
-    function RootTextBlock() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    RootTextBlock.prototype.keystroke = function (key, e, ctrlr) {
-        if (key === 'Spacebar' || key === 'Shift-Spacebar')
-            return;
-        return _super.prototype.keystroke.call(this, key, e, ctrlr);
-    };
-    RootTextBlock.prototype.write = function (cursor, ch) {
-        cursor.show().deleteSelection();
-        if (ch === '$')
-            new RootMathCommand(cursor).createLeftOf(cursor);
-        else {
-            var html;
-            if (ch === '<')
-                html = h.entityText('&lt;');
-            else if (ch === '>')
-                html = h.entityText('&gt;');
-            new VanillaSymbol(ch, html).createLeftOf(cursor);
-        }
-    };
-    return RootTextBlock;
-}(RootMathBlock));
-API.TextField = function (APIClasses) {
-    var _c;
-    return _c = /** @class */ (function (_super) {
-            __extends(TextField, _super);
-            function TextField() {
-                return _super !== null && _super.apply(this, arguments) || this;
-            }
-            TextField.prototype.__mathquillify = function () {
-                _super.prototype.mathquillify.call(this, 'mq-editable-field mq-text-mode');
-                return this;
-            };
-            TextField.prototype.latex = function (latex) {
-                if (latex) {
-                    this.__controller.renderLatexText(latex);
-                    if (this.__controller.blurred)
-                        this.__controller.cursor.hide().parent.blur();
-                    var _this = this; // just to help help TS out
-                    return _this;
-                }
-                return this.__controller.exportLatex();
-            };
-            return TextField;
-        }(APIClasses.EditableField)),
-        _c.RootBlock = RootTextBlock,
-        _c;
-};
-/****************************************
- * Input box to type backslash commands
- ***************************************/
-CharCmds['\\'] = /** @class */ (function (_super) {
-    __extends(LatexCommandInput, _super);
-    function LatexCommandInput() {
-        var _this_1 = _super !== null && _super.apply(this, arguments) || this;
-        _this_1.ctrlSeq = '\\';
-        _this_1.domView = new DOMView(1, function (blocks) {
-            return h('span', { class: 'mq-latex-command-input-wrapper mq-non-leaf' }, [
-                h('span', { class: 'mq-latex-command-input mq-non-leaf' }, [
-                    h.text('\\'),
-                    h.block('span', {}, blocks[0]),
-                ]),
-            ]);
-        });
-        _this_1.textTemplate = ['\\'];
-        return _this_1;
-    }
-    LatexCommandInput.prototype.replaces = function (replacedFragment) {
-        this._replacedFragment = replacedFragment.disown();
-        this.isEmpty = function () {
-            return false;
-        };
-    };
-    LatexCommandInput.prototype.createBlocks = function () {
-        _super.prototype.createBlocks.call(this);
-        var endsL = this.getEnd(L);
-        endsL.focus = function () {
-            this.parent.domFrag().addClass('mq-hasCursor');
-            if (this.isEmpty())
-                this.parent.domFrag().removeClass('mq-empty');
-            return this;
-        };
-        endsL.blur = function () {
-            this.parent.domFrag().removeClass('mq-hasCursor');
-            if (this.isEmpty())
-                this.parent.domFrag().addClass('mq-empty');
-            return this;
-        };
-        endsL.write = function (cursor, ch) {
-            cursor.show().deleteSelection();
-            if (ch.match(/[a-z]/i)) {
-                new VanillaSymbol(ch).createLeftOf(cursor);
-                // TODO needs tests
-                cursor.controller.aria.alert(ch);
-            }
-            else {
-                var cmd = this.parent.renderCommand(cursor);
-                // TODO needs tests
-                cursor.controller.aria.queue(cmd.mathspeak({ createdLeftOf: cursor }));
-                if (ch !== '\\' || !this.isEmpty())
-                    cursor.parent.write(cursor, ch);
-                else
-                    cursor.controller.aria.alert();
-            }
-        };
-        var originalKeystroke = endsL.keystroke;
-        endsL.keystroke = function (key, e, ctrlr) {
-            if (key === 'Tab' || key === 'Enter' || key === 'Spacebar') {
-                var cmd = this.parent.renderCommand(ctrlr.cursor);
-                // TODO needs tests
-                ctrlr.aria.alert(cmd.mathspeak({ createdLeftOf: ctrlr.cursor }));
-                e === null || e === void 0 ? void 0 : e.preventDefault();
-                return;
-            }
-            return originalKeystroke.call(this, key, e, ctrlr);
-        };
-    };
-    LatexCommandInput.prototype.createLeftOf = function (cursor) {
-        _super.prototype.createLeftOf.call(this, cursor);
-        if (this._replacedFragment) {
-            var frag = this.domFrag();
-            var el_1 = frag.oneElement();
-            this._replacedFragment.domFrag().addClass('mq-blur');
-            //FIXME: is monkey-patching the mousedown and mousemove handlers the right way to do this?
-            var rewriteMousedownEventTarget = function (e) {
-                {
-                    // TODO - overwritting e.target
-                    e.target = el_1;
-                    el_1.dispatchEvent(e);
-                    return false;
-                }
-            };
-            el_1.addEventListener('mousedown', rewriteMousedownEventTarget);
-            el_1.addEventListener('mouseup', rewriteMousedownEventTarget);
-            this._replacedFragment.domFrag().insertBefore(frag.children().first());
-        }
-    };
-    LatexCommandInput.prototype.latexRecursive = function (ctx) {
-        this.checkCursorContextOpen(ctx);
-        ctx.latex += '\\';
-        this.getEnd(L).latexRecursive(ctx);
-        ctx.latex += ' ';
-        this.checkCursorContextClose(ctx);
-    };
-    LatexCommandInput.prototype.renderCommand = function (cursor) {
-        this.setDOM(this.domFrag().children().lastElement());
-        this.remove();
-        if (this[R]) {
-            cursor.insLeftOf(this[R]);
-        }
-        else {
-            cursor.insAtRightEnd(this.parent);
-        }
-        var latex = this.getEnd(L).latex();
-        if (!latex)
-            latex = ' ';
-        var cmd = LatexCmds[latex];
-        if (cmd) {
-            var node = void 0;
-            if (isMQNodeClass(cmd)) {
-                node = new cmd(latex);
-            }
-            else {
-                node = cmd(latex);
-            }
-            if (this._replacedFragment)
-                node.replaces(this._replacedFragment);
-            node.createLeftOf(cursor);
-            return node;
-        }
-        else {
-            var node = new TextBlock();
-            node.replaces(latex);
-            node.createLeftOf(cursor);
-            cursor.insRightOf(node);
-            if (this._replacedFragment) {
-                this._replacedFragment.remove();
-            }
-            return node;
-        }
-    };
-    return LatexCommandInput;
-}(MathCommand));
 
-module.exports = MathQuill;

@@ -627,6 +627,10 @@ LatexCmds.superscript =
 
       textTemplate = ['^(', ')'];
       mathspeak(opts?: MathspeakOptions) {
+        if (this.mathspeakOverride) {
+          return super.mathspeak();
+        }
+
         // Simplify basic exponent speech for common whole numbers.
         var child = this.upInto;
         if (child !== undefined) {
@@ -723,6 +727,9 @@ class SummationNotation extends MathCommand {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
+    }
     return (
       'Start ' +
       this.ariaLabel +
@@ -853,6 +860,10 @@ var Fraction =
         if (opts && opts.createdLeftOf) {
           var cursor = opts.createdLeftOf;
           return cursor.parent.mathspeak();
+        }
+
+        if (this.mathspeakOverride) {
+          return super.mathspeak();
         }
 
         var numText = getCtrlSeqsFromBlock(this.getEnd(L));
@@ -1037,6 +1048,10 @@ class Token extends MQSymbol {
   }
 
   mathspeak() {
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
+    }
+
     // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
     let ariaLabelArray: string[] = [];
 
@@ -1136,6 +1151,10 @@ class NthRoot extends SquareRoot {
     this.checkCursorContextClose(ctx);
   }
   mathspeak() {
+    if (this.mathspeakOverride) {
+      return super.mathspeak();
+    }
+
     var indexMathspeak = this.getEnd(L).mathspeak();
     var radicandMathspeak = this.getEnd(R).mathspeak();
     this.getEnd(L).ariaLabel = 'Index';
@@ -1284,6 +1303,12 @@ class Bracket extends DelimsNode {
     this.checkCursorContextClose(ctx);
   }
   mathspeak(opts?: MathspeakOptions) {
+    if (this.mathspeakOverride) {
+      return opts?.createdLeftOf
+        ? this.mathspeakOverride(this.sides[this.side as Direction].ch)
+        : super.mathspeak();
+    }
+
     var open = this.sides[L].ch,
       close = this.sides[R].ch;
     if (open === '|' && close === '|') {
