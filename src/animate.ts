@@ -34,7 +34,7 @@ const animate = (function () {
     rafShim = requestAnimationFrame;
     cancelShim = cancelAnimationFrame;
   } else {
-    rafShim = (cb: () => void) => setTimeout(cb, 13);
+    rafShim = (cb: () => void) => window.setTimeout(cb, 13);
     cancelShim = clearTimeout;
   }
 

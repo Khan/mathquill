@@ -19,7 +19,10 @@
     "importHelpers": true,
     "noEmit": true,
     "pretty": true,
-    "typeRoots": ["./node_modules/@types"]
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules"],
+    "types": ["vitest/importMeta"],
+    "module": "es2020"
   },
-  "exclude": ["./build/"]
+  "exclude": ["./build/", "./node_modules/", "./test/", "./vitest.config.ts"]
 }

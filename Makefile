@@ -128,9 +128,11 @@ setup-gitconfig:
 prettify-all:
 	npx prettier --write '**/*.{ts,js,css,html}'
 
+RM_INSRC_TESTS = sed '/\/\/ rm_below_makefile/,/\/\/ rm_above_makefile/d'
+
 # add contents of source-code-form.txt to top of compiled file
 $(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
-	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
+	cat $^ | $(RM_INSRC_TESTS) | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	echo 'module.exports = MathQuill;' >> $@
 	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
@@ -140,7 +142,7 @@ $(UGLY_JS): $(BUILD_JS) $(NODE_MODULES_INSTALLED)
 	$(UGLIFY) $(UGLIFY_OPTS) < $< > $@
 
 $(BASIC_JS): $(SOURCES_BASIC) $(BUILD_DIR_EXISTS)
-	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
+	cat $^ | $(RM_INSRC_TESTS) | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
 
