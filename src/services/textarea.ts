@@ -44,7 +44,7 @@ class Controller extends Controller_scrollHoriz {
     //
     // Note, this timeout may be cleared by the blur handler in focusBlur.js
     if (!ctrlr.textareaSelectionTimeout) {
-      ctrlr.textareaSelectionTimeout = setTimeout(function () {
+      ctrlr.textareaSelectionTimeout = window.setTimeout(function () {
         ctrlr.setTextareaSelection();
       });
     }
@@ -140,7 +140,7 @@ class Controller extends Controller_scrollHoriz {
     var ctrlr = this,
       cursor = ctrlr.cursor;
     if (cursor.selection) {
-      setTimeout(function () {
+      window.setTimeout(function () {
         ctrlr.notify('edit'); // deletes selection if present
         cursor.parent.bubble(function (node) {
           (node as MQNode).reflow();

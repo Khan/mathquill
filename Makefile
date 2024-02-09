@@ -21,6 +21,9 @@ endif
 
 # inputs
 SRC_DIR = ./src
+TEST_DIR = ./test
+INTRO = $(TEST_DIR)/intro.js
+OUTRO = $(TEST_DIR)/outro.js
 
 BASE_SOURCES = \
   $(SRC_DIR)/utils.ts \
@@ -128,9 +131,11 @@ setup-gitconfig:
 prettify-all:
 	npx prettier --write '**/*.{ts,js,css,html}'
 
+RM_INSRC_TESTS = sed '/\/\/ rm_below_makefile/,/\/\/ rm_above_makefile/d'
+
 # add contents of source-code-form.txt to top of compiled file
 $(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
-	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
+	cat $^ | $(RM_INSRC_TESTS) | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	echo 'module.exports = MathQuill;' >> $@
 	perl -pi -e 'print `cat source-code-form.txt` if $$. == 1' $@
@@ -139,7 +144,8 @@ $(BUILD_JS): $(SOURCES_FULL) $(BUILD_DIR_EXISTS)
 $(UGLY_JS): $(BUILD_JS) $(NODE_MODULES_INSTALLED)
 	$(UGLIFY) $(UGLIFY_OPTS) < $< > $@
 
-$(BASIC_JS): $(SOURCES_BASIC) $(BUILD_DIR_EXISTS)
+# used for testing
+$(BASIC_JS): $(INTRO) $(SOURCES_BASIC) $(OUTRO) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/escape-non-ascii | ./script/tsc-emit-only > $@
 	perl -pi -e s/mq-/$(MQ_CLASS_PREFIX)mq-/g $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@
@@ -197,6 +203,6 @@ benchmark: dev $(BUILD_TEST) $(BASIC_JS) $(BASIC_CSS)
 	@echo
 	@echo "** now open benchmark/{render,select,update}.html in your browser. **"
 
-$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(BUILD_DIR_EXISTS)
+$(BUILD_TEST): $(INTRO) $(SOURCES_FULL) $(TEST_SUPPORT) $(UNIT_TESTS) $(OUTRO) $(BUILD_DIR_EXISTS)
 	cat $^ | ./script/tsc-emit-only > $@
 	perl -pi -e s/{VERSION}/v$(VERSION)/ $@

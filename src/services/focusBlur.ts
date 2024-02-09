@@ -26,7 +26,7 @@ class Controller_focusBlur extends Controller_exportText {
       this.root.domFrag().removeClass('mq-suppress-grouping');
     } else {
       this.root.domFrag().addClass('mq-suppress-grouping');
-      this.__disableGroupingTimeout = setTimeout(() => {
+      this.__disableGroupingTimeout = window.setTimeout(() => {
         this.root.domFrag().removeClass('mq-suppress-grouping');
       }, seconds * 1000);
     }
@@ -57,7 +57,7 @@ class Controller_focusBlur extends Controller_exportText {
     }
     this.disableGroupingForSeconds(0);
     this.blurred = true;
-    this.blurTimeout = setTimeout(() => {
+    this.blurTimeout = window.setTimeout(() => {
       // wait for blur on window; if
       this.root.postOrder(function (node) {
         node.intentionalBlur();
@@ -79,7 +79,7 @@ class Controller_focusBlur extends Controller_exportText {
       this.cursor.selection.clear();
     }
     //detaching during blur explodes in WebKit
-    setTimeout(() => {
+    window.setTimeout(() => {
       domFrag(this.getTextareaSpanOrThrow()).detach();
       this.blurred = true;
     });

@@ -104,3 +104,106 @@ class Aria {
     return this;
   }
 }
+
+// rm_below_makefile
+
+// We need to add these delimiters to delete the tests in MakeFile because we
+//   don't bundle and tree shake out unused code.
+// To run any in-source tests, uncomment the "if" block and run the command
+//   `npm run test`.
+
+// if (import.meta?.vitest) {
+//   const { it, expect, vi } = import.meta.vitest;
+
+//   const ctrlrStub = {
+//     container: document.createElement('div'),
+//     containerHasFocus: () => true,
+//     options: {
+//       logAriaAlerts: true,
+//     },
+//   } as unknown as Controller;
+
+//   const hMock = (tag: string) => {
+//     const el = document.createElement(tag);
+//     return el;
+//   };
+
+//   vi.stubGlobal('prayDirection', () => {});
+
+//   vi.stubGlobal('h', hMock);
+//   vi.stubGlobal('domFrag', (el: HTMLElement) => el);
+//   vi.stubGlobal(
+//     'MQNode',
+//     class MQNode {
+//       mathspeak() {
+//         return 'hello';
+//       }
+//       parent = null;
+//     }
+//   );
+//   vi.stubGlobal('L', -1);
+//   vi.stubGlobal('R', 1);
+
+//   it('should queue and alert', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.queue('hello').queue('world').alert();
+//     expect(aria.msg).toBe('hello world');
+//     expect(aria.span.textContent).toBe(aria.msg);
+//   });
+
+//   it('should clear', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.queue('hello').queue('world').clear();
+//     expect(aria.items).toEqual([]);
+//   });
+
+//   it('should queueDirOf', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria
+//       .queueDirOf(R)
+//       .queue('the rise')
+//       .queueDirOf(L)
+//       .queue('the fall')
+//       .alert();
+//     expect(aria.msg).toEqual('after the rise before the fall');
+//     expect(aria.span.textContent).toEqual(aria.msg);
+//   });
+
+//   it('should queueDirEndOf', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria
+//       .queueDirEndOf(R)
+//       .queue('the rise')
+//       .queueDirEndOf(L)
+//       .queue('the fall')
+//       .alert();
+//     expect(aria.msg).toEqual('end of the rise beginning of the fall');
+//     expect(aria.span.textContent).toEqual(aria.msg);
+//   });
+
+//   it('should queue with MQNode item without parent or ariaLabel', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.queue(new MQNode());
+//     expect(aria.items).toEqual(['hello']);
+//   });
+
+//   it('should queue with MQNode item with parent and ariaLabel', () => {
+//     const aria = new Aria(ctrlrStub);
+//     const parent = new MQNode();
+//     parent.ariaLabel = 'i am a parent';
+//     const node = new MQNode();
+//     node.parent = parent;
+//     node.ariaLabel = 'block';
+//     aria.queue(node, true);
+//     expect(aria.items).toEqual(['i am a parent hello']);
+//   });
+
+//   it('should queue with MQNode item with ariaLabel and no parent', () => {
+//     const aria = new Aria(ctrlrStub);
+//     const node = new MQNode();
+//     node.ariaLabel = 'goodbye';
+//     aria.queue(node, true);
+//     expect(aria.items).toEqual(['goodbye hello']);
+//   });
+// }
+// rm_above_makefile

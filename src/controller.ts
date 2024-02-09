@@ -131,7 +131,7 @@ class ControllerBase {
     ) {
       if (ariaPostLabel !== this.ariaPostLabel && typeof timeout === 'number') {
         if (this._ariaAlertTimeout) clearTimeout(this._ariaAlertTimeout);
-        this._ariaAlertTimeout = setTimeout(() => {
+        this._ariaAlertTimeout = window.setTimeout(() => {
           if (this.containerHasFocus()) {
             // Voice the new label, but do not update content mathspeak to prevent double-speech.
             this.aria.alert(

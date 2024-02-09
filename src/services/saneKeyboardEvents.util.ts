@@ -7,7 +7,7 @@ class EveryTick<Args extends unknown[] = []> {
   listen(fn: (...args: Args | []) => void) {
     this.fn = fn;
     clearTimeout(this.timeoutId);
-    this.timeoutId = setTimeout(this.fn);
+    this.timeoutId = window.setTimeout(this.fn);
   }
 
   listenOnce(fn: (...args: Args | []) => void) {
