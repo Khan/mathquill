@@ -253,7 +253,7 @@ var animate = (function () {
         cancelShim = cancelAnimationFrame;
     }
     else {
-        rafShim = function (cb) { return setTimeout(cb, 13); };
+        rafShim = function (cb) { return window.setTimeout(cb, 13); };
         cancelShim = clearTimeout;
     }
     return function (duration, cb) {
@@ -2055,7 +2055,7 @@ var ControllerBase = /** @class */ (function () {
             if (ariaPostLabel !== this.ariaPostLabel && typeof timeout === 'number') {
                 if (this._ariaAlertTimeout)
                     clearTimeout(this._ariaAlertTimeout);
-                this._ariaAlertTimeout = setTimeout(function () {
+                this._ariaAlertTimeout = window.setTimeout(function () {
                     if (_this_1.containerHasFocus()) {
                         // Voice the new label, but do not update content mathspeak to prevent double-speech.
                         _this_1.aria.alert(_this_1.root.mathspeak().trim() + ' ' + ariaPostLabel.trim());
@@ -2782,7 +2782,7 @@ var EveryTick = /** @class */ (function () {
     EveryTick.prototype.listen = function (fn) {
         this.fn = fn;
         clearTimeout(this.timeoutId);
-        this.timeoutId = setTimeout(this.fn);
+        this.timeoutId = window.setTimeout(this.fn);
     };
     EveryTick.prototype.listenOnce = function (fn) {
         var _this_1 = this;
@@ -3228,7 +3228,7 @@ var Controller_focusBlur = /** @class */ (function (_super) {
             }
             _this_1.disableGroupingForSeconds(0);
             _this_1.blurred = true;
-            _this_1.blurTimeout = setTimeout(function () {
+            _this_1.blurTimeout = window.setTimeout(function () {
                 // wait for blur on window; if
                 _this_1.root.postOrder(function (node) {
                     node.intentionalBlur();
@@ -3248,7 +3248,7 @@ var Controller_focusBlur = /** @class */ (function (_super) {
                 _this_1.cursor.selection.clear();
             }
             //detaching during blur explodes in WebKit
-            setTimeout(function () {
+            window.setTimeout(function () {
                 domFrag(_this_1.getTextareaSpanOrThrow()).detach();
                 _this_1.blurred = true;
             });
@@ -3271,7 +3271,7 @@ var Controller_focusBlur = /** @class */ (function (_super) {
         }
         else {
             this.root.domFrag().addClass('mq-suppress-grouping');
-            this.__disableGroupingTimeout = setTimeout(function () {
+            this.__disableGroupingTimeout = window.setTimeout(function () {
                 _this_1.root.domFrag().removeClass('mq-suppress-grouping');
             }, seconds * 1000);
         }
@@ -4615,7 +4615,7 @@ var Controller = /** @class */ (function (_super) {
         //
         // Note, this timeout may be cleared by the blur handler in focusBlur.js
         if (!ctrlr.textareaSelectionTimeout) {
-            ctrlr.textareaSelectionTimeout = setTimeout(function () {
+            ctrlr.textareaSelectionTimeout = window.setTimeout(function () {
                 ctrlr.setTextareaSelection();
             });
         }
@@ -4704,7 +4704,7 @@ var Controller = /** @class */ (function (_super) {
     Controller.prototype.cut = function () {
         var ctrlr = this, cursor = ctrlr.cursor;
         if (cursor.selection) {
-            setTimeout(function () {
+            window.setTimeout(function () {
                 ctrlr.notify('edit'); // deletes selection if present
                 cursor.parent.bubble(function (node) {
                     node.reflow();
