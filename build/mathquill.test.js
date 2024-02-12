@@ -305,46 +305,62 @@ var __assign = (this && this.__assign) || function () {
         };
         Aria.prototype.queue = function (item, shouldDescribe) {
             if (shouldDescribe === void 0) { shouldDescribe = false; }
-            var output = '';
-            if (item instanceof MQNode) {
-                // Some constructs include verbal shorthand (such as simple fractions and exponents).
-                // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
-                // since doing so may be ambiguous or confusing.
-                var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
-                if (shouldDescribe) {
-                    // used to ensure item is described when cursor reaches block boundaries
-                    if (item.parent &&
-                        item.parent.ariaLabel &&
-                        item.ariaLabel === 'block') {
-                        output = item.parent.ariaLabel + ' ' + itemMathspeak;
-                        if (item.mathspeakOverride) {
-                            output = item.parent.mathspeak();
-                        }
-                    }
-                    else if (item.ariaLabel) {
-                        output = item.ariaLabel + ' ' + itemMathspeak;
-                        if (item.mathspeakOverride) {
-                            output = item.mathspeak();
-                        }
-                    }
-                }
-                if (output === '') {
-                    output = itemMathspeak;
-                }
-            }
-            else {
-                output = item || '';
-            }
-            this.items.push(output);
+            this.items.push(this.processQueueItems(item, shouldDescribe));
             return this;
         };
-        Aria.prototype.queueDirOf = function (dir) {
-            prayDirection(dir);
-            return this.queue(dir === L ? 'before' : 'after');
+        Aria.prototype.processQueueItems = function (item, shouldDescribe) {
+            if (shouldDescribe === void 0) { shouldDescribe = false; }
+            var items = Array.isArray(item) ? item : [item];
+            var processedItems = items.map(function (item) {
+                if (item instanceof MQNode) {
+                    // Some constructs include verbal shorthand (such as simple fractions and exponents).
+                    // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
+                    // since doing so may be ambiguous or confusing.
+                    var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
+                    if (shouldDescribe) {
+                        // used to ensure item is described when cursor reaches block boundaries
+                        if (item.parent &&
+                            item.parent.ariaLabel &&
+                            item.ariaLabel === 'block') {
+                            return item.parent.ariaLabel + ' ' + itemMathspeak;
+                        }
+                        else if (item.ariaLabel) {
+                            return item.ariaLabel + ' ' + itemMathspeak;
+                        }
+                    }
+                    return itemMathspeak;
+                }
+                return item || '';
+            });
+            return processedItems.join(' ');
         };
-        Aria.prototype.queueDirEndOf = function (dir) {
+        Aria.prototype.queueDirOf = function (dir, items, shouldDescribe) {
+            if (shouldDescribe === void 0) { shouldDescribe = false; }
             prayDirection(dir);
-            return this.queue(dir === L ? 'beginning of' : 'end of');
+            var str = dir === L ? 'before' : 'after';
+            return this.queueDir(str, items, shouldDescribe);
+        };
+        Aria.prototype.queueDirEndOf = function (dir, items, shouldDescribe) {
+            if (shouldDescribe === void 0) { shouldDescribe = false; }
+            prayDirection(dir);
+            var str = dir === L ? 'beginning of' : 'end of';
+            return this.queueDir(str, items, shouldDescribe);
+        };
+        Aria.prototype.queueDir = function (dirStr, items, shouldDescribe) {
+            if (shouldDescribe === void 0) { shouldDescribe = false; }
+            if (this.controller.ariaStringsOverrideMap &&
+                this.controller.ariaStringsOverrideMap[dirStr]) {
+                return this.queue(this.controller.ariaStringsOverrideMap[dirStr](this.processQueueItems(items, shouldDescribe)));
+            }
+            return this.queue(dirStr).queue(items, shouldDescribe);
+        };
+        Aria.prototype.queueSelected = function (items, shouldDescribe) {
+            if (shouldDescribe === void 0) { shouldDescribe = false; }
+            if (this.controller.ariaStringsOverrideMap &&
+                this.controller.ariaStringsOverrideMap.selected) {
+                return this.queue(this.controller.ariaStringsOverrideMap.selected(this.processQueueItems(items, shouldDescribe)), shouldDescribe);
+            }
+            return this.queue(items, shouldDescribe).queue(' selected');
         };
         Aria.prototype.alert = function (t) {
             this.attach();
@@ -2204,6 +2220,10 @@ var __assign = (this && this.__assign) || function () {
         ControllerBase.prototype.exportMathSpeak = function () {
             return this.root.mathspeak();
         };
+        ControllerBase.prototype.setAriaStringsOverrideMap = function (ariaStringsOverrideMap) {
+            this.ariaStringsOverrideMap = ariaStringsOverrideMap;
+            return this;
+        };
         // overridden
         ControllerBase.prototype.updateMathspeak = function () { };
         ControllerBase.prototype.scrollHoriz = function () { };
@@ -2418,6 +2438,10 @@ var __assign = (this && this.__assign) || function () {
             };
             AbstractMathQuill.prototype.controller = function () {
                 return this.__controller;
+            };
+            AbstractMathQuill.prototype.setAriaStringsOverrideMap = function (map) {
+                this.__controller.setAriaStringsOverrideMap(map);
+                return this;
             };
             return AbstractMathQuill;
         }(Progenote));
@@ -3429,6 +3453,7 @@ var __assign = (this && this.__assign) || function () {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         MQNode.prototype.keystroke = function (key, e, ctrlr) {
+            var _c, _d, _e, _f, _g, _h;
             var cursor = ctrlr.cursor;
             switch (key) {
                 case 'Ctrl-Shift-Backspace':
@@ -3452,16 +3477,16 @@ var __assign = (this && this.__assign) || function () {
                 // End -> move to the end of the current block.
                 case 'End':
                     ctrlr.notify('move').cursor.insAtRightEnd(cursor.parent);
-                    ctrlr.aria.queue('end of').queue(cursor.parent, true);
+                    ctrlr.aria.queueDirEndOf(R, cursor.parent, true);
                     break;
                 // Ctrl-End -> move all the way to the end of the root block.
                 case 'Ctrl-End':
                     ctrlr.notify('move').cursor.insAtRightEnd(ctrlr.root);
-                    ctrlr.aria
-                        .queue('end of')
-                        .queue(ctrlr.ariaLabel)
-                        .queue(ctrlr.root)
-                        .queue(ctrlr.ariaPostLabel);
+                    ctrlr.aria.queueDirEndOf(R, [
+                        ctrlr.ariaLabel,
+                        ctrlr.root,
+                        ctrlr.ariaPostLabel,
+                    ]);
                     break;
                 // Shift-End -> select to the end of the current block.
                 case 'Shift-End':
@@ -3474,16 +3499,16 @@ var __assign = (this && this.__assign) || function () {
                 // Home -> move to the start of the current block.
                 case 'Home':
                     ctrlr.notify('move').cursor.insAtLeftEnd(cursor.parent);
-                    ctrlr.aria.queue('beginning of').queue(cursor.parent, true);
+                    ctrlr.aria.queueDirEndOf(L, cursor.parent, true);
                     break;
                 // Ctrl-Home -> move all the way to the start of the root block.
                 case 'Ctrl-Home':
                     ctrlr.notify('move').cursor.insAtLeftEnd(ctrlr.root);
-                    ctrlr.aria
-                        .queue('beginning of')
-                        .queue(ctrlr.ariaLabel)
-                        .queue(ctrlr.root)
-                        .queue(ctrlr.ariaPostLabel);
+                    ctrlr.aria.queueDirEndOf(L, [
+                        ctrlr.ariaLabel,
+                        ctrlr.root,
+                        ctrlr.ariaPostLabel,
+                    ]);
                     break;
                 // Shift-Home -> select to the start of the current block.
                 case 'Shift-Home':
@@ -3557,21 +3582,32 @@ var __assign = (this && this.__assign) || function () {
                 case 'Ctrl-Alt-Up': // speak parent block that has focus
                     if (cursor.parent.parent && cursor.parent.parent instanceof MQNode)
                         ctrlr.aria.queue(cursor.parent.parent);
-                    else
-                        ctrlr.aria.queue('nothing above');
+                    else {
+                        var str = 'nothing above';
+                        ctrlr.aria.queue(((_c = ctrlr.ariaStringsOverrideMap) === null || _c === void 0 ? void 0 : _c[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
+                    }
                     break;
                 case 'Ctrl-Alt-Down': // speak current block that has focus
                     if (cursor.parent && cursor.parent instanceof MQNode)
                         ctrlr.aria.queue(cursor.parent);
-                    else
-                        ctrlr.aria.queue('block is empty');
+                    else {
+                        var str = 'block is empty';
+                        ctrlr.aria.queue(((_d = ctrlr.ariaStringsOverrideMap) === null || _d === void 0 ? void 0 : _d[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
+                    }
                     break;
                 case 'Ctrl-Alt-Left': // speak left-adjacent block
                     if (cursor.parent.parent && cursor.parent.parent.getEnd(L)) {
                         ctrlr.aria.queue(cursor.parent.parent.getEnd(L));
                     }
                     else {
-                        ctrlr.aria.queue('nothing to the left');
+                        var str = 'nothing to the left';
+                        ctrlr.aria.queue(((_e = ctrlr.ariaStringsOverrideMap) === null || _e === void 0 ? void 0 : _e[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
                     }
                     break;
                 case 'Ctrl-Alt-Right': // speak right-adjacent block
@@ -3579,21 +3615,32 @@ var __assign = (this && this.__assign) || function () {
                         ctrlr.aria.queue(cursor.parent.parent.getEnd(R));
                     }
                     else {
-                        ctrlr.aria.queue('nothing to the right');
+                        var str = 'nothing to the right';
+                        ctrlr.aria.queue(((_f = ctrlr.ariaStringsOverrideMap) === null || _f === void 0 ? void 0 : _f[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
                     }
                     break;
                 case 'Ctrl-Alt-Shift-Down': // speak selection
                     if (cursor.selection)
                         ctrlr.aria.queue(cursor.selection.join('mathspeak', ' ').trim() + ' selected');
-                    else
-                        ctrlr.aria.queue('nothing selected');
+                    else {
+                        var str = 'nothing selected';
+                        ctrlr.aria.queue(((_g = ctrlr.ariaStringsOverrideMap) === null || _g === void 0 ? void 0 : _g[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
+                    }
                     break;
                 case 'Ctrl-Alt-=':
                 case 'Ctrl-Alt-Shift-Right': // speak ARIA post label (evaluation or error)
                     if (ctrlr.ariaPostLabel.length)
                         ctrlr.aria.queue(ctrlr.ariaPostLabel);
-                    else
-                        ctrlr.aria.queue('no answer');
+                    else {
+                        var str = 'no answer';
+                        ctrlr.aria.queue(((_h = ctrlr.ariaStringsOverrideMap) === null || _h === void 0 ? void 0 : _h[str])
+                            ? ctrlr.ariaStringsOverrideMap[str]
+                            : str);
+                    }
                     break;
                 default:
                     return;
@@ -3900,8 +3947,9 @@ var __assign = (this && this.__assign) || function () {
             var selection = cursor.selection;
             if (selection) {
                 cursor.controller.aria
+                    // clearing first because selection fires several times, and we don't want repeated speech.
                     .clear()
-                    .queue(selection.join('mathspeak', ' ').trim() + ' selected'); // clearing first because selection fires several times, and we don't want repeated speech.
+                    .queueSelected(selection.join('mathspeak', ' ').trim());
             }
             INCREMENTAL_SELECTION_OPEN = false;
         };
@@ -4846,6 +4894,7 @@ var __assign = (this && this.__assign) || function () {
             this.cursor.hide().parent.blur(this.cursor);
         };
         Controller.prototype.updateMathspeak = function () {
+            var _c;
             var ctrlr = this;
             // If the controller's ARIA label doesn't end with a punctuation mark, add a colon by default to better separate it from mathspeak.
             var ariaLabel = ctrlr.getAriaLabel();
@@ -4854,6 +4903,9 @@ var __assign = (this && this.__assign) || function () {
                 : ariaLabel;
             var mathspeak = ctrlr.root.mathspeak().trim();
             this.aria.clear();
+            var newLabel = ((_c = ctrlr.ariaStringsOverrideMap) === null || _c === void 0 ? void 0 : _c.labelValue)
+                ? ctrlr.ariaStringsOverrideMap.labelValue(ariaLabel, mathspeak)
+                : labelWithSuffix + ' ' + mathspeak;
             var textarea = ctrlr.getTextareaOrThrow();
             // For static math, provide mathspeak in a visually hidden span to allow screen readers and other AT to traverse the content.
             // For editable math, assign the mathspeak to the textarea's ARIA label (AT can use text navigation to interrogate the content).
@@ -4863,12 +4915,10 @@ var __assign = (this && this.__assign) || function () {
             // The mathspeakSpan should exist only for static math, so we use its presence to decide which approach to take.
             if (!!ctrlr.mathspeakSpan) {
                 textarea.setAttribute('aria-label', '');
-                ctrlr.mathspeakSpan.textContent = (labelWithSuffix +
-                    ' ' +
-                    mathspeak).trim();
+                ctrlr.mathspeakSpan.textContent = newLabel.trim();
             }
             else {
-                textarea.setAttribute('aria-label', (labelWithSuffix + ' ' + mathspeak + ' ' + ctrlr.ariaPostLabel).trim());
+                textarea.setAttribute('aria-label', [newLabel, ctrlr.ariaPostLabel].join(' ').trim());
             }
         };
         return Controller;
@@ -5053,9 +5103,7 @@ var __assign = (this && this.__assign) || function () {
             }
             var el = updownInto || this.getEnd(-dir);
             cursor.insAtDirEnd(-dir, el);
-            cursor.controller.aria
-                .queueDirEndOf(-dir)
-                .queue(cursor.parent, true);
+            cursor.controller.aria.queueDirEndOf(-dir, cursor.parent, true);
         };
         MathCommand.prototype.deleteTowards = function (dir, cursor) {
             if (this.isEmpty())
@@ -5177,18 +5225,11 @@ var __assign = (this && this.__assign) || function () {
             });
         };
         MathCommand.prototype.mathspeak = function () {
-            if (this.mathspeakOverride) {
-                var i_1 = 0;
-                var template_1 = this.textTemplate;
-                var tex = this.foldChildren(template_1[i_1], function (fold, block) {
-                    i_1 += 1;
-                    return fold + block.latex() + (template_1[i_1] || '');
-                });
-                // this one runs before a full latex symbol has been formed;
-                //   check if there is more than backslashes in the latex
-                if (!/^(\\)+$/.test(tex)) {
-                    return this.mathspeakOverride(tex);
-                }
+            // this one runs before a full latex symbol has been formed;
+            //   check if there is more than backslashes in the latex
+            var tex = this.latex().trim();
+            if (this.mathspeakOverride && !/^(\\)+$/.test(tex)) {
+                return this.mathspeakOverride(tex);
             }
             var cmd = this, i = 0;
             return cmd.foldChildren(cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ', function (speech, block) {
@@ -5401,11 +5442,11 @@ var __assign = (this && this.__assign) || function () {
             if (!updownInto && this[dir]) {
                 var otherDir = -dir;
                 cursor.insAtDirEnd(otherDir, this[dir]);
-                cursor.controller.aria.queueDirEndOf(otherDir).queue(cursor.parent, true);
+                cursor.controller.aria.queueDirEndOf(otherDir, cursor.parent, true);
             }
             else {
                 cursor.insDirOf(dir, this.parent);
-                cursor.controller.aria.queueDirOf(dir).queue(this.parent);
+                cursor.controller.aria.queueDirOf(dir, this.parent);
             }
         };
         MathBlock.prototype.selectOutOf = function (dir, cursor) {
@@ -9023,13 +9064,11 @@ var __assign = (this && this.__assign) || function () {
         // the cursor
         TextBlock.prototype.moveTowards = function (dir, cursor) {
             cursor.insAtDirEnd(-dir, this);
-            cursor.controller.aria
-                .queueDirEndOf(-dir)
-                .queue(cursor.parent, true);
+            cursor.controller.aria.queueDirEndOf(-dir, cursor.parent, true);
         };
         TextBlock.prototype.moveOutOf = function (dir, cursor) {
             cursor.insDirOf(dir, this);
-            cursor.controller.aria.queueDirOf(dir).queue(this);
+            cursor.controller.aria.queueDirOf(dir, this);
         };
         TextBlock.prototype.unselectInto = function (dir, cursor) {
             this.moveTowards(dir, cursor);
@@ -12827,7 +12866,7 @@ var __assign = (this && this.__assign) || function () {
             });
             test('parsing of advanced symbols', function () {
                 mq.latex('\\oplus');
-                assert.equal(mq.latex(), '\\oplus'); // TODO: better LaTeX parse error behavior
+                assert.equal(mq.latex(), ''); // TODO: better LaTeX parse error behavior
             });
         });
         suite('basic API methods', function () {
