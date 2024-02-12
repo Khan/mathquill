@@ -214,10 +214,8 @@ class Aria {
 //   it('should queueDirOf', () => {
 //     const aria = new Aria(ctrlrStub);
 //     aria
-//       .queueDirOf(R)
-//       .queue('the rise')
-//       .queueDirOf(L)
-//       .queue('the fall')
+//       .queueDirOf(R, 'the rise')
+//       .queueDirOf(L, 'the fall')
 //       .alert();
 //     expect(aria.msg).toEqual('after the rise before the fall');
 //     expect(aria.span.textContent).toEqual(aria.msg);
@@ -226,10 +224,8 @@ class Aria {
 //   it('should queueDirEndOf', () => {
 //     const aria = new Aria(ctrlrStub);
 //     aria
-//       .queueDirEndOf(R)
-//       .queue('the rise')
-//       .queueDirEndOf(L)
-//       .queue('the fall')
+//       .queueDirEndOf(R, 'the rise')
+//       .queueDirEndOf(L, 'the fall')
 //       .alert();
 //     expect(aria.msg).toEqual('end of the rise beginning of the fall');
 //     expect(aria.span.textContent).toEqual(aria.msg);
