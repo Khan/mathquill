@@ -50,7 +50,7 @@ declare namespace MathQuill {
       'nothing to the left': string;
       'block is empty': string;
       'nothing above': string;
-      // ("%{label}s: %{value}s", { label, value }) as in "Math Input: mathspeak"
+      // ("%(label)s: %(value)s", { label, value }) as in "Math Input: mathspeak"
       labelValue: (label: string, value: string) => string;
     }
 

@@ -158,12 +158,7 @@ class MQNode extends NodeBase {
         if (cursor.parent.parent && cursor.parent.parent instanceof MQNode)
           ctrlr.aria.queue(cursor.parent.parent);
         else {
-          const str = 'nothing above';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('nothing above');
         }
         break;
 
@@ -171,12 +166,7 @@ class MQNode extends NodeBase {
         if (cursor.parent && cursor.parent instanceof MQNode)
           ctrlr.aria.queue(cursor.parent);
         else {
-          const str = 'block is empty';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('block is empty');
         }
         break;
 
@@ -184,12 +174,7 @@ class MQNode extends NodeBase {
         if (cursor.parent.parent && cursor.parent.parent.getEnd(L)) {
           ctrlr.aria.queue(cursor.parent.parent.getEnd(L));
         } else {
-          const str = 'nothing to the left';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('nothing to the left');
         }
         break;
 
@@ -197,27 +182,17 @@ class MQNode extends NodeBase {
         if (cursor.parent.parent && cursor.parent.parent.getEnd(R)) {
           ctrlr.aria.queue(cursor.parent.parent.getEnd(R));
         } else {
-          const str = 'nothing to the right';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('nothing to the right');
         }
         break;
 
       case 'Ctrl-Alt-Shift-Down': // speak selection
         if (cursor.selection)
-          ctrlr.aria.queue(
-            cursor.selection.join('mathspeak', ' ').trim() + ' selected'
+          ctrlr.aria.queueSelected(
+            cursor.selection.join('mathspeak', ' ').trim()
           );
         else {
-          const str = 'nothing selected';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('nothing selected');
         }
         break;
 
@@ -225,12 +200,7 @@ class MQNode extends NodeBase {
       case 'Ctrl-Alt-Shift-Right': // speak ARIA post label (evaluation or error)
         if (ctrlr.ariaPostLabel.length) ctrlr.aria.queue(ctrlr.ariaPostLabel);
         else {
-          const str = 'no answer';
-          ctrlr.aria.queue(
-            ctrlr.ariaStringsOverrideMap?.[str]
-              ? ctrlr.ariaStringsOverrideMap[str]
-              : str
-          );
+          ctrlr.aria.queueTranslatableString('no answer');
         }
         break;
 

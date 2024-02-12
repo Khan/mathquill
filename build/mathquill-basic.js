@@ -347,9 +347,9 @@ var __assign = (this && this.__assign) || function () {
             return this.queueDir(str, items, shouldDescribe);
         };
         Aria.prototype.queueDir = function (dirStr, items, shouldDescribe) {
+            var _a;
             if (shouldDescribe === void 0) { shouldDescribe = false; }
-            if (this.controller.ariaStringsOverrideMap &&
-                this.controller.ariaStringsOverrideMap[dirStr]) {
+            if ((_a = this.controller.ariaStringsOverrideMap) === null || _a === void 0 ? void 0 : _a[dirStr]) {
                 return this.queue(this.controller.ariaStringsOverrideMap[dirStr](this.processQueueItems(items, shouldDescribe)));
             }
             return this.queue(dirStr).queue(items, shouldDescribe);
@@ -361,6 +361,14 @@ var __assign = (this && this.__assign) || function () {
                 return this.queue(this.controller.ariaStringsOverrideMap.selected(this.processQueueItems(items, shouldDescribe)), shouldDescribe);
             }
             return this.queue(items, shouldDescribe).queue(' selected');
+        };
+        Aria.prototype.queueTranslatableString = function (item) {
+            var _a;
+            var itemOverride = (_a = this.controller.ariaStringsOverrideMap) === null || _a === void 0 ? void 0 : _a[item];
+            if (itemOverride && typeof itemOverride === 'string') {
+                return this.queue(itemOverride);
+            }
+            return this.queue(item);
         };
         Aria.prototype.alert = function (t) {
             this.attach();
@@ -435,23 +443,13 @@ var __assign = (this && this.__assign) || function () {
     //   });
     //   it('should queueDirOf', () => {
     //     const aria = new Aria(ctrlrStub);
-    //     aria
-    //       .queueDirOf(R)
-    //       .queue('the rise')
-    //       .queueDirOf(L)
-    //       .queue('the fall')
-    //       .alert();
+    //     aria.queueDirOf(R, 'the rise').queueDirOf(L, 'the fall').alert();
     //     expect(aria.msg).toEqual('after the rise before the fall');
     //     expect(aria.span.textContent).toEqual(aria.msg);
     //   });
     //   it('should queueDirEndOf', () => {
     //     const aria = new Aria(ctrlrStub);
-    //     aria
-    //       .queueDirEndOf(R)
-    //       .queue('the rise')
-    //       .queueDirEndOf(L)
-    //       .queue('the fall')
-    //       .alert();
+    //     aria.queueDirEndOf(R, 'the rise').queueDirEndOf(L, 'the fall').alert();
     //     expect(aria.msg).toEqual('end of the rise beginning of the fall');
     //     expect(aria.span.textContent).toEqual(aria.msg);
     //   });
@@ -476,6 +474,52 @@ var __assign = (this && this.__assign) || function () {
     //     node.ariaLabel = 'goodbye';
     //     aria.queue(node, true);
     //     expect(aria.items).toEqual(['goodbye hello']);
+    //   });
+    //   it('should queueSelected', () => {
+    //     const aria = new Aria(ctrlrStub);
+    //     aria.queueSelected('hello').alert();
+    //     expect(aria.msg).toEqual('hello selected');
+    //     expect(aria.span.textContent).toEqual(aria.msg);
+    //   });
+    //   it('should queueTranslatableString and return same string is no override', () => {
+    //     const aria = new Aria(ctrlrStub);
+    //     aria.queueTranslatableString('nothing selected').alert();
+    //     expect(aria.msg).toEqual('nothing selected');
+    //     expect(aria.span.textContent).toEqual(aria.msg);
+    //   });
+    //   it('should queueTranslatableString and return override', () => {
+    //     const aria = new Aria(ctrlrStub);
+    //     aria.controller.ariaStringsOverrideMap = {
+    //       'nothing selected': 'ns',
+    //       before: (s) => `b ${s}`,
+    //       after: (s) => `a ${s}`,
+    //       'beginning of': (s) => `bo ${s}`,
+    //       'end of': (s) => `eo ${s}`,
+    //       selected: (s) => `s ${s}`,
+    //       'no answer': 'nan',
+    //       'nothing to the right': 'ntr',
+    //       'nothing to the left': 'ntl',
+    //       'block is empty': 'bie',
+    //       'nothing above': 'nab',
+    //       labelValue: (label, value) => `${label}! ${value}?`,
+    //       Baseline: 'bl',
+    //       Superscript: 'ss',
+    //     };
+    //     const keys = Object.keys(aria.controller.ariaStringsOverrideMap) as Array<
+    //       keyof AriaStaticStringsMap
+    //     >;
+    //     for (const key of keys) {
+    //       const override = aria.controller.ariaStringsOverrideMap[key];
+    //       if (typeof override === 'string') {
+    //         aria.queueTranslatableString(key).alert();
+    //         expect(aria.msg).toEqual(override);
+    //         aria.clear();
+    //       } else {
+    //         aria.queue(override('test', 'also test')).alert();
+    //         expect(aria.msg).toContain('test');
+    //         aria.clear();
+    //       }
+    //     }
     //   });
     // }
     // rm_above_makefile
@@ -3453,7 +3497,6 @@ var __assign = (this && this.__assign) || function () {
             return _super !== null && _super.apply(this, arguments) || this;
         }
         MQNode.prototype.keystroke = function (key, e, ctrlr) {
-            var _c, _d, _e, _f, _g, _h;
             var cursor = ctrlr.cursor;
             switch (key) {
                 case 'Ctrl-Shift-Backspace':
@@ -3583,20 +3626,14 @@ var __assign = (this && this.__assign) || function () {
                     if (cursor.parent.parent && cursor.parent.parent instanceof MQNode)
                         ctrlr.aria.queue(cursor.parent.parent);
                     else {
-                        var str = 'nothing above';
-                        ctrlr.aria.queue(((_c = ctrlr.ariaStringsOverrideMap) === null || _c === void 0 ? void 0 : _c[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('nothing above');
                     }
                     break;
                 case 'Ctrl-Alt-Down': // speak current block that has focus
                     if (cursor.parent && cursor.parent instanceof MQNode)
                         ctrlr.aria.queue(cursor.parent);
                     else {
-                        var str = 'block is empty';
-                        ctrlr.aria.queue(((_d = ctrlr.ariaStringsOverrideMap) === null || _d === void 0 ? void 0 : _d[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('block is empty');
                     }
                     break;
                 case 'Ctrl-Alt-Left': // speak left-adjacent block
@@ -3604,10 +3641,7 @@ var __assign = (this && this.__assign) || function () {
                         ctrlr.aria.queue(cursor.parent.parent.getEnd(L));
                     }
                     else {
-                        var str = 'nothing to the left';
-                        ctrlr.aria.queue(((_e = ctrlr.ariaStringsOverrideMap) === null || _e === void 0 ? void 0 : _e[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('nothing to the left');
                     }
                     break;
                 case 'Ctrl-Alt-Right': // speak right-adjacent block
@@ -3615,20 +3649,14 @@ var __assign = (this && this.__assign) || function () {
                         ctrlr.aria.queue(cursor.parent.parent.getEnd(R));
                     }
                     else {
-                        var str = 'nothing to the right';
-                        ctrlr.aria.queue(((_f = ctrlr.ariaStringsOverrideMap) === null || _f === void 0 ? void 0 : _f[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('nothing to the right');
                     }
                     break;
                 case 'Ctrl-Alt-Shift-Down': // speak selection
                     if (cursor.selection)
-                        ctrlr.aria.queue(cursor.selection.join('mathspeak', ' ').trim() + ' selected');
+                        ctrlr.aria.queueSelected(cursor.selection.join('mathspeak', ' ').trim());
                     else {
-                        var str = 'nothing selected';
-                        ctrlr.aria.queue(((_g = ctrlr.ariaStringsOverrideMap) === null || _g === void 0 ? void 0 : _g[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('nothing selected');
                     }
                     break;
                 case 'Ctrl-Alt-=':
@@ -3636,10 +3664,7 @@ var __assign = (this && this.__assign) || function () {
                     if (ctrlr.ariaPostLabel.length)
                         ctrlr.aria.queue(ctrlr.ariaPostLabel);
                     else {
-                        var str = 'no answer';
-                        ctrlr.aria.queue(((_h = ctrlr.ariaStringsOverrideMap) === null || _h === void 0 ? void 0 : _h[str])
-                            ? ctrlr.ariaStringsOverrideMap[str]
-                            : str);
+                        ctrlr.aria.queueTranslatableString('no answer');
                     }
                     break;
                 default:
@@ -7612,7 +7637,7 @@ var __assign = (this && this.__assign) || function () {
                         cursor.clearSelection().insRightOf(this.parent);
                     cmd.createLeftOf(cursor.show());
                     cursor.controller.aria
-                        .queue('Baseline')
+                        .queueTranslatableString('Baseline')
                         .alert(cmd.mathspeak({ createdLeftOf: cursor }));
                     return;
                 }
@@ -7621,7 +7646,7 @@ var __assign = (this && this.__assign) || function () {
                     !cursor.selection &&
                     cursor.options.charsThatBreakOutOfSupSub.indexOf(ch) > -1) {
                     cursor.insRightOf(this.parent);
-                    cursor.controller.aria.queue('Baseline');
+                    cursor.controller.aria.queueTranslatableString('Baseline');
                 }
                 MathBlock.prototype.write.call(this, cursor, ch);
             };

@@ -100,10 +100,7 @@ class Aria {
     items: AriaQueueItem | AriaQueueItem[],
     shouldDescribe: boolean = false
   ) {
-    if (
-      this.controller.ariaStringsOverrideMap &&
-      this.controller.ariaStringsOverrideMap[dirStr]
-    ) {
+    if (this.controller.ariaStringsOverrideMap?.[dirStr]) {
       return this.queue(
         this.controller.ariaStringsOverrideMap[dirStr](
           this.processQueueItems(items, shouldDescribe)
@@ -129,6 +126,14 @@ class Aria {
       );
     }
     return this.queue(items, shouldDescribe).queue(' selected');
+  }
+
+  queueTranslatableString(item: keyof AriaStaticStringsMap) {
+    const itemOverride = this.controller.ariaStringsOverrideMap?.[item];
+    if (itemOverride && typeof itemOverride === 'string') {
+      return this.queue(itemOverride);
+    }
+    return this.queue(item);
   }
 
   alert(t?: AriaQueueItem) {
@@ -213,20 +218,14 @@ class Aria {
 
 //   it('should queueDirOf', () => {
 //     const aria = new Aria(ctrlrStub);
-//     aria
-//       .queueDirOf(R, 'the rise')
-//       .queueDirOf(L, 'the fall')
-//       .alert();
+//     aria.queueDirOf(R, 'the rise').queueDirOf(L, 'the fall').alert();
 //     expect(aria.msg).toEqual('after the rise before the fall');
 //     expect(aria.span.textContent).toEqual(aria.msg);
 //   });
 
 //   it('should queueDirEndOf', () => {
 //     const aria = new Aria(ctrlrStub);
-//     aria
-//       .queueDirEndOf(R, 'the rise')
-//       .queueDirEndOf(L, 'the fall')
-//       .alert();
+//     aria.queueDirEndOf(R, 'the rise').queueDirEndOf(L, 'the fall').alert();
 //     expect(aria.msg).toEqual('end of the rise beginning of the fall');
 //     expect(aria.span.textContent).toEqual(aria.msg);
 //   });
@@ -254,6 +253,55 @@ class Aria {
 //     node.ariaLabel = 'goodbye';
 //     aria.queue(node, true);
 //     expect(aria.items).toEqual(['goodbye hello']);
+//   });
+
+//   it('should queueSelected', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.queueSelected('hello').alert();
+//     expect(aria.msg).toEqual('hello selected');
+//     expect(aria.span.textContent).toEqual(aria.msg);
+//   });
+
+//   it('should queueTranslatableString and return same string is no override', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.queueTranslatableString('nothing selected').alert();
+//     expect(aria.msg).toEqual('nothing selected');
+//     expect(aria.span.textContent).toEqual(aria.msg);
+//   });
+
+//   it('should queueTranslatableString and return override', () => {
+//     const aria = new Aria(ctrlrStub);
+//     aria.controller.ariaStringsOverrideMap = {
+//       'nothing selected': 'ns',
+//       before: (s) => `b ${s}`,
+//       after: (s) => `a ${s}`,
+//       'beginning of': (s) => `bo ${s}`,
+//       'end of': (s) => `eo ${s}`,
+//       selected: (s) => `s ${s}`,
+//       'no answer': 'nan',
+//       'nothing to the right': 'ntr',
+//       'nothing to the left': 'ntl',
+//       'block is empty': 'bie',
+//       'nothing above': 'nab',
+//       labelValue: (label, value) => `${label}! ${value}?`,
+//       Baseline: 'bl',
+//       Superscript: 'ss',
+//     };
+//     const keys = Object.keys(aria.controller.ariaStringsOverrideMap) as Array<
+//       keyof AriaStaticStringsMap
+//     >;
+//     for (const key of keys) {
+//       const override = aria.controller.ariaStringsOverrideMap[key];
+//       if (typeof override === 'string') {
+//         aria.queueTranslatableString(key).alert();
+//         expect(aria.msg).toEqual(override);
+//         aria.clear();
+//       } else {
+//         aria.queue(override('test', 'also test')).alert();
+//         expect(aria.msg).toContain('test');
+//         aria.clear();
+//       }
+//     }
 //   });
 // }
 // rm_above_makefile
