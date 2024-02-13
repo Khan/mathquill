@@ -318,11 +318,18 @@ class MathCommand extends MathElement {
   }
   mathspeakTemplate = [''];
   mathspeak() {
-    // this one runs before a full latex symbol has been formed;
-    //   check if there is more than backslashes in the latex
-    const tex = this.latex().trim();
-    if (this.mathspeakOverride && !/^(\\)+$/.test(tex)) {
-      return this.mathspeakOverride(tex);
+    if (this.mathspeakOverride) {
+      let i = 0;
+      const template = this.textTemplate;
+      var tex = this.foldChildren(template[i], function (fold, block) {
+        i += 1;
+        return fold + block.latex() + (template[i] || '');
+      });
+      // this one runs before a full latex symbol has been formed;
+      //   check if there is more than backslashes in the latex
+      if (!/^(\\)+$/.test(tex)) {
+        return this.mathspeakOverride(tex);
+      }
     }
     var cmd = this,
       i = 0;

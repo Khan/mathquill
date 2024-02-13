@@ -5080,11 +5080,18 @@ var MathCommand = /** @class */ (function (_super) {
         });
     };
     MathCommand.prototype.mathspeak = function () {
-        // this one runs before a full latex symbol has been formed;
-        //   check if there is more than backslashes in the latex
-        var tex = this.latex().trim();
-        if (this.mathspeakOverride && !/^(\\)+$/.test(tex)) {
-            return this.mathspeakOverride(tex);
+        if (this.mathspeakOverride) {
+            var i_1 = 0;
+            var template_1 = this.textTemplate;
+            var tex = this.foldChildren(template_1[i_1], function (fold, block) {
+                i_1 += 1;
+                return fold + block.latex() + (template_1[i_1] || '');
+            });
+            // this one runs before a full latex symbol has been formed;
+            //   check if there is more than backslashes in the latex
+            if (!/^(\\)+$/.test(tex)) {
+                return this.mathspeakOverride(tex);
+            }
         }
         var cmd = this, i = 0;
         return cmd.foldChildren(cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ', function (speech, block) {

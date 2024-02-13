@@ -317,9 +317,15 @@ var __assign = (this && this.__assign) || function () {
                         item.parent.ariaLabel &&
                         item.ariaLabel === 'block') {
                         output = item.parent.ariaLabel + ' ' + itemMathspeak;
+                        if (item.mathspeakOverride) {
+                            output = item.parent.mathspeak();
+                        }
                     }
                     else if (item.ariaLabel) {
                         output = item.ariaLabel + ' ' + itemMathspeak;
+                        if (item.mathspeakOverride) {
+                            output = item.mathspeak();
+                        }
                     }
                 }
                 if (output === '') {
@@ -1432,6 +1438,9 @@ var __assign = (this && this.__assign) || function () {
             pray('Abstract chToCmd() method is never called', false);
         };
         NodeBase.prototype.mathspeak = function (_options) {
+            if (this.mathspeakOverride) {
+                return this.mathspeakOverride(this.latex());
+            }
             return '';
         };
         NodeBase.prototype.seek = function (_clientX, _cursor) { };
@@ -2063,6 +2072,7 @@ var __assign = (this && this.__assign) || function () {
             this.aria = new Aria(this.getControllerSelf());
             this.ariaLabel = 'Math Input';
             this.ariaPostLabel = '';
+            this.mathSpeakCallback = undefined;
             root.controller = this.getControllerSelf();
             this.cursor = root.cursor = new Cursor(root, options, this.getControllerSelf());
             // TODO: stop depending on root.cursor, and rm it
@@ -2414,7 +2424,18 @@ var __assign = (this && this.__assign) || function () {
         var EditableField = /** @class */ (function (_super) {
             __extends(EditableField, _super);
             function EditableField() {
-                return _super !== null && _super.apply(this, arguments) || this;
+                var _this_1 = _super !== null && _super.apply(this, arguments) || this;
+                /**
+                 * Provide a function to replace the default mathspeak generation with one that
+                 * translates TeX to a readable string.
+                 * @param callback - A function that takes TeX and returns a readable string.
+                 */
+                _this_1.setMathspeakOverride = function (fn) {
+                    // override function on node class
+                    NodeBase.prototype.mathspeakOverride = fn;
+                    return _this_1;
+                };
+                return _this_1;
             }
             EditableField.prototype.mathquillify = function (classNames) {
                 _super.prototype.mathquillify.call(this, classNames);
@@ -5156,6 +5177,19 @@ var __assign = (this && this.__assign) || function () {
             });
         };
         MathCommand.prototype.mathspeak = function () {
+            if (this.mathspeakOverride) {
+                var i_1 = 0;
+                var template_1 = this.textTemplate;
+                var tex = this.foldChildren(template_1[i_1], function (fold, block) {
+                    i_1 += 1;
+                    return fold + block.latex() + (template_1[i_1] || '');
+                });
+                // this one runs before a full latex symbol has been formed;
+                //   check if there is more than backslashes in the latex
+                if (!/^(\\)+$/.test(tex)) {
+                    return this.mathspeakOverride(tex);
+                }
+            }
             var cmd = this, i = 0;
             return cmd.foldChildren(cmd.mathspeakTemplate[i] || 'Start' + cmd.ctrlSeq + ' ', function (speech, block) {
                 i += 1;
@@ -5225,6 +5259,9 @@ var __assign = (this && this.__assign) || function () {
             return this.textTemplate.join('');
         };
         MQSymbol.prototype.mathspeak = function (_opts) {
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
+            }
             return this.mathspeakName || '';
         };
         MQSymbol.prototype.placeCursor = function () { };
@@ -6787,6 +6824,9 @@ var __assign = (this && this.__assign) || function () {
             });
         };
         LatexFragment.prototype.mathspeak = function () {
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
+            }
             return latexMathParser.parse(this.latexStr).mathspeak();
         };
         LatexFragment.prototype.parser = function () {
@@ -7717,6 +7757,9 @@ var __assign = (this && this.__assign) || function () {
                     return _this_1;
                 }
                 SuperscriptCommand.prototype.mathspeak = function (opts) {
+                    if (this.mathspeakOverride) {
+                        return _super.prototype.mathspeak.call(this);
+                    }
                     // Simplify basic exponent speech for common whole numbers.
                     var child = this.upInto;
                     if (child !== undefined) {
@@ -7810,6 +7853,9 @@ var __assign = (this && this.__assign) || function () {
             this.checkCursorContextClose(ctx);
         };
         SummationNotation.prototype.mathspeak = function () {
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
+            }
             return ('Start ' +
                 this.ariaLabel +
                 ' from ' +
@@ -7936,6 +7982,9 @@ var __assign = (this && this.__assign) || function () {
                         if (opts && opts.createdLeftOf) {
                             var cursor = opts.createdLeftOf;
                             return cursor.parent.mathspeak();
+                        }
+                        if (this.mathspeakOverride) {
+                            return _super.prototype.mathspeak.call(this);
                         }
                         var numText = getCtrlSeqsFromBlock(this.getEnd(L));
                         var denText = getCtrlSeqsFromBlock(this.getEnd(R));
@@ -8101,6 +8150,9 @@ var __assign = (this && this.__assign) || function () {
             this.checkCursorContextClose(ctx);
         };
         Token.prototype.mathspeak = function () {
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
+            }
             // If the caller responsible for creating this token has set an aria-label attribute for the inner children, use them in the mathspeak calculation.
             var ariaLabelArray = [];
             this.domFrag()
@@ -8208,6 +8260,9 @@ var __assign = (this && this.__assign) || function () {
             this.checkCursorContextClose(ctx);
         };
         NthRoot.prototype.mathspeak = function () {
+            if (this.mathspeakOverride) {
+                return _super.prototype.mathspeak.call(this);
+            }
             var indexMathspeak = this.getEnd(L).mathspeak();
             var radicandMathspeak = this.getEnd(R).mathspeak();
             this.getEnd(L).ariaLabel = 'Index';
@@ -8339,6 +8394,11 @@ var __assign = (this && this.__assign) || function () {
             this.checkCursorContextClose(ctx);
         };
         Bracket.prototype.mathspeak = function (opts) {
+            if (this.mathspeakOverride) {
+                return (opts === null || opts === void 0 ? void 0 : opts.createdLeftOf)
+                    ? this.mathspeakOverride(this.sides[this.side].ch)
+                    : _super.prototype.mathspeak.call(this);
+            }
             var open = this.sides[L].ch, close = this.sides[R].ch;
             if (open === '|' && close === '|') {
                 this.mathspeakTemplate = ['StartAbsoluteValue,', ', EndAbsoluteValue'];
@@ -8942,6 +9002,9 @@ var __assign = (this && this.__assign) || function () {
         };
         TextBlock.prototype.mathspeak = function (opts) {
             if (opts && opts.ignoreShorthand) {
+                if (this.mathspeakOverride) {
+                    return _super.prototype.mathspeak.call(this);
+                }
                 return (this.mathspeakTemplate[0] +
                     ', ' +
                     this.textContents() +
@@ -12761,11 +12824,6 @@ var __assign = (this && this.__assign) || function () {
             test('typing $', function () {
                 mq.typedText('$');
                 assert.equal(mq.latex(), '\\$');
-            });
-            test('parsing of advanced symbols', function () {
-                mq.latex('\\oplus');
-                console.log(mq.latex());
-                assert.equal(mq.latex(), '\\oplus');
             });
         });
         suite('basic API methods', function () {
