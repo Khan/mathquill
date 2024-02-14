@@ -95,7 +95,7 @@ suite('Public API', function () {
 
     test('parsing of advanced symbols', function () {
       mq.latex('\\oplus');
-      assert.equal(mq.latex(), ''); // TODO: better LaTeX parse error behavior
+      assert.equal(mq.latex(), '\\oplus'); // TODO: better LaTeX parse error behavior
     });
   });
 
