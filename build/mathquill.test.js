@@ -12825,6 +12825,10 @@ var __assign = (this && this.__assign) || function () {
                 mq.typedText('$');
                 assert.equal(mq.latex(), '\\$');
             });
+            test('parsing of advanced symbols', function () {
+                mq.latex('\\oplus');
+                assert.equal(mq.latex(), '\\oplus'); // TODO: better LaTeX parse error behavior
+            });
         });
         suite('basic API methods', function () {
             var mq;

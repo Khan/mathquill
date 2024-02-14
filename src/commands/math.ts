@@ -321,7 +321,7 @@ class MathCommand extends MathElement {
     if (this.mathspeakOverride) {
       let i = 0;
       const template = this.textTemplate;
-      var tex = this.foldChildren(template[i], function (fold, block) {
+      const tex = this.foldChildren(template[i], function (fold, block) {
         i += 1;
         return fold + block.latex() + (template[i] || '');
       });

@@ -92,6 +92,11 @@ suite('Public API', function () {
       mq.typedText('$');
       assert.equal(mq.latex(), '\\$');
     });
+
+    test('parsing of advanced symbols', function () {
+      mq.latex('\\oplus');
+      assert.equal(mq.latex(), '\\oplus'); // TODO: better LaTeX parse error behavior
+    });
   });
 
   suite('basic API methods', function () {
