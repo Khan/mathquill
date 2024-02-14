@@ -306,46 +306,70 @@ var Aria = /** @class */ (function () {
     };
     Aria.prototype.queue = function (item, shouldDescribe) {
         if (shouldDescribe === void 0) { shouldDescribe = false; }
-        var output = '';
-        if (item instanceof MQNode) {
-            // Some constructs include verbal shorthand (such as simple fractions and exponents).
-            // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
-            // since doing so may be ambiguous or confusing.
-            var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
-            if (shouldDescribe) {
-                // used to ensure item is described when cursor reaches block boundaries
-                if (item.parent &&
-                    item.parent.ariaLabel &&
-                    item.ariaLabel === 'block') {
-                    output = item.parent.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathspeakOverride) {
-                        output = item.parent.mathspeak();
-                    }
-                }
-                else if (item.ariaLabel) {
-                    output = item.ariaLabel + ' ' + itemMathspeak;
-                    if (item.mathspeakOverride) {
-                        output = item.mathspeak();
-                    }
-                }
-            }
-            if (output === '') {
-                output = itemMathspeak;
-            }
-        }
-        else {
-            output = item || '';
-        }
-        this.items.push(output);
+        this.items.push(this.processQueueItems(item, shouldDescribe));
         return this;
     };
-    Aria.prototype.queueDirOf = function (dir) {
-        prayDirection(dir);
-        return this.queue(dir === L ? 'before' : 'after');
+    Aria.prototype.processQueueItems = function (item, shouldDescribe) {
+        if (shouldDescribe === void 0) { shouldDescribe = false; }
+        var items = Array.isArray(item) ? item : [item];
+        var processedItems = items.map(function (item) {
+            if (item instanceof MQNode) {
+                // Some constructs include verbal shorthand (such as simple fractions and exponents).
+                // Since ARIA alerts relate to moving through interactive content, we don't want to use that shorthand if it exists
+                // since doing so may be ambiguous or confusing.
+                var itemMathspeak = item.mathspeak({ ignoreShorthand: true });
+                if (shouldDescribe) {
+                    // used to ensure item is described when cursor reaches block boundaries
+                    if (item.parent &&
+                        item.parent.ariaLabel &&
+                        item.ariaLabel === 'block') {
+                        return item.parent.ariaLabel + ' ' + itemMathspeak;
+                    }
+                    else if (item.ariaLabel) {
+                        return item.ariaLabel + ' ' + itemMathspeak;
+                    }
+                }
+                return itemMathspeak;
+            }
+            return item || '';
+        });
+        return processedItems.join(' ');
     };
-    Aria.prototype.queueDirEndOf = function (dir) {
+    Aria.prototype.queueDirOf = function (dir, items, shouldDescribe) {
+        if (shouldDescribe === void 0) { shouldDescribe = false; }
         prayDirection(dir);
-        return this.queue(dir === L ? 'beginning of' : 'end of');
+        var str = dir === L ? 'before' : 'after';
+        return this.queueDir(str, items, shouldDescribe);
+    };
+    Aria.prototype.queueDirEndOf = function (dir, items, shouldDescribe) {
+        if (shouldDescribe === void 0) { shouldDescribe = false; }
+        prayDirection(dir);
+        var str = dir === L ? 'beginning of' : 'end of';
+        return this.queueDir(str, items, shouldDescribe);
+    };
+    Aria.prototype.queueDir = function (dirStr, items, shouldDescribe) {
+        var _a;
+        if (shouldDescribe === void 0) { shouldDescribe = false; }
+        if ((_a = this.controller.ariaStringsOverrideMap) === null || _a === void 0 ? void 0 : _a[dirStr]) {
+            return this.queue(this.controller.ariaStringsOverrideMap[dirStr](this.processQueueItems(items, shouldDescribe)));
+        }
+        return this.queue(dirStr).queue(items, shouldDescribe);
+    };
+    Aria.prototype.queueSelected = function (items, shouldDescribe) {
+        if (shouldDescribe === void 0) { shouldDescribe = false; }
+        if (this.controller.ariaStringsOverrideMap &&
+            this.controller.ariaStringsOverrideMap.selected) {
+            return this.queue(this.controller.ariaStringsOverrideMap.selected(this.processQueueItems(items, shouldDescribe)), shouldDescribe);
+        }
+        return this.queue(items, shouldDescribe).queue(' selected');
+    };
+    Aria.prototype.queueTranslatableString = function (item) {
+        var _a;
+        var itemOverride = (_a = this.controller.ariaStringsOverrideMap) === null || _a === void 0 ? void 0 : _a[item];
+        if (itemOverride && typeof itemOverride === 'string') {
+            return this.queue(itemOverride);
+        }
+        return this.queue(item);
     };
     Aria.prototype.alert = function (t) {
         this.attach();
@@ -2116,6 +2140,10 @@ var ControllerBase = /** @class */ (function () {
     ControllerBase.prototype.exportMathSpeak = function () {
         return this.root.mathspeak();
     };
+    ControllerBase.prototype.setAriaStringsOverrideMap = function (ariaStringsOverrideMap) {
+        this.ariaStringsOverrideMap = ariaStringsOverrideMap;
+        return this;
+    };
     // overridden
     ControllerBase.prototype.updateMathspeak = function () { };
     ControllerBase.prototype.scrollHoriz = function () { };
@@ -2330,6 +2358,10 @@ function getInterface(v) {
         };
         AbstractMathQuill.prototype.controller = function () {
             return this.__controller;
+        };
+        AbstractMathQuill.prototype.setAriaStringsOverrideMap = function (map) {
+            this.__controller.setAriaStringsOverrideMap(map);
+            return this;
         };
         return AbstractMathQuill;
     }(Progenote));
@@ -3355,16 +3387,16 @@ var MQNode = /** @class */ (function (_super) {
             // End -> move to the end of the current block.
             case 'End':
                 ctrlr.notify('move').cursor.insAtRightEnd(cursor.parent);
-                ctrlr.aria.queue('end of').queue(cursor.parent, true);
+                ctrlr.aria.queueDirEndOf(R, cursor.parent, true);
                 break;
             // Ctrl-End -> move all the way to the end of the root block.
             case 'Ctrl-End':
                 ctrlr.notify('move').cursor.insAtRightEnd(ctrlr.root);
-                ctrlr.aria
-                    .queue('end of')
-                    .queue(ctrlr.ariaLabel)
-                    .queue(ctrlr.root)
-                    .queue(ctrlr.ariaPostLabel);
+                ctrlr.aria.queueDirEndOf(R, [
+                    ctrlr.ariaLabel,
+                    ctrlr.root,
+                    ctrlr.ariaPostLabel,
+                ]);
                 break;
             // Shift-End -> select to the end of the current block.
             case 'Shift-End':
@@ -3377,16 +3409,16 @@ var MQNode = /** @class */ (function (_super) {
             // Home -> move to the start of the current block.
             case 'Home':
                 ctrlr.notify('move').cursor.insAtLeftEnd(cursor.parent);
-                ctrlr.aria.queue('beginning of').queue(cursor.parent, true);
+                ctrlr.aria.queueDirEndOf(L, cursor.parent, true);
                 break;
             // Ctrl-Home -> move all the way to the start of the root block.
             case 'Ctrl-Home':
                 ctrlr.notify('move').cursor.insAtLeftEnd(ctrlr.root);
-                ctrlr.aria
-                    .queue('beginning of')
-                    .queue(ctrlr.ariaLabel)
-                    .queue(ctrlr.root)
-                    .queue(ctrlr.ariaPostLabel);
+                ctrlr.aria.queueDirEndOf(L, [
+                    ctrlr.ariaLabel,
+                    ctrlr.root,
+                    ctrlr.ariaPostLabel,
+                ]);
                 break;
             // Shift-Home -> select to the start of the current block.
             case 'Shift-Home':
@@ -3460,21 +3492,23 @@ var MQNode = /** @class */ (function (_super) {
             case 'Ctrl-Alt-Up': // speak parent block that has focus
                 if (cursor.parent.parent && cursor.parent.parent instanceof MQNode)
                     ctrlr.aria.queue(cursor.parent.parent);
-                else
-                    ctrlr.aria.queue('nothing above');
+                else {
+                    ctrlr.aria.queueTranslatableString('nothing above');
+                }
                 break;
             case 'Ctrl-Alt-Down': // speak current block that has focus
                 if (cursor.parent && cursor.parent instanceof MQNode)
                     ctrlr.aria.queue(cursor.parent);
-                else
-                    ctrlr.aria.queue('block is empty');
+                else {
+                    ctrlr.aria.queueTranslatableString('block is empty');
+                }
                 break;
             case 'Ctrl-Alt-Left': // speak left-adjacent block
                 if (cursor.parent.parent && cursor.parent.parent.getEnd(L)) {
                     ctrlr.aria.queue(cursor.parent.parent.getEnd(L));
                 }
                 else {
-                    ctrlr.aria.queue('nothing to the left');
+                    ctrlr.aria.queueTranslatableString('nothing to the left');
                 }
                 break;
             case 'Ctrl-Alt-Right': // speak right-adjacent block
@@ -3482,21 +3516,23 @@ var MQNode = /** @class */ (function (_super) {
                     ctrlr.aria.queue(cursor.parent.parent.getEnd(R));
                 }
                 else {
-                    ctrlr.aria.queue('nothing to the right');
+                    ctrlr.aria.queueTranslatableString('nothing to the right');
                 }
                 break;
             case 'Ctrl-Alt-Shift-Down': // speak selection
                 if (cursor.selection)
-                    ctrlr.aria.queue(cursor.selection.join('mathspeak', ' ').trim() + ' selected');
-                else
-                    ctrlr.aria.queue('nothing selected');
+                    ctrlr.aria.queueSelected(cursor.selection.join('mathspeak', ' ').trim());
+                else {
+                    ctrlr.aria.queueTranslatableString('nothing selected');
+                }
                 break;
             case 'Ctrl-Alt-=':
             case 'Ctrl-Alt-Shift-Right': // speak ARIA post label (evaluation or error)
                 if (ctrlr.ariaPostLabel.length)
                     ctrlr.aria.queue(ctrlr.ariaPostLabel);
-                else
-                    ctrlr.aria.queue('no answer');
+                else {
+                    ctrlr.aria.queueTranslatableString('no answer');
+                }
                 break;
             default:
                 return;
@@ -3803,8 +3839,9 @@ var Controller_keystroke = /** @class */ (function (_super) {
         var selection = cursor.selection;
         if (selection) {
             cursor.controller.aria
+                // clearing first because selection fires several times, and we don't want repeated speech.
                 .clear()
-                .queue(selection.join('mathspeak', ' ').trim() + ' selected'); // clearing first because selection fires several times, and we don't want repeated speech.
+                .queueSelected(selection.join('mathspeak', ' ').trim());
         }
         INCREMENTAL_SELECTION_OPEN = false;
     };
@@ -4749,6 +4786,7 @@ var Controller = /** @class */ (function (_super) {
         this.cursor.hide().parent.blur(this.cursor);
     };
     Controller.prototype.updateMathspeak = function () {
+        var _c;
         var ctrlr = this;
         // If the controller's ARIA label doesn't end with a punctuation mark, add a colon by default to better separate it from mathspeak.
         var ariaLabel = ctrlr.getAriaLabel();
@@ -4757,6 +4795,9 @@ var Controller = /** @class */ (function (_super) {
             : ariaLabel;
         var mathspeak = ctrlr.root.mathspeak().trim();
         this.aria.clear();
+        var newLabel = ((_c = ctrlr.ariaStringsOverrideMap) === null || _c === void 0 ? void 0 : _c.labelValue)
+            ? ctrlr.ariaStringsOverrideMap.labelValue(ariaLabel, mathspeak)
+            : labelWithSuffix + ' ' + mathspeak;
         var textarea = ctrlr.getTextareaOrThrow();
         // For static math, provide mathspeak in a visually hidden span to allow screen readers and other AT to traverse the content.
         // For editable math, assign the mathspeak to the textarea's ARIA label (AT can use text navigation to interrogate the content).
@@ -4766,12 +4807,10 @@ var Controller = /** @class */ (function (_super) {
         // The mathspeakSpan should exist only for static math, so we use its presence to decide which approach to take.
         if (!!ctrlr.mathspeakSpan) {
             textarea.setAttribute('aria-label', '');
-            ctrlr.mathspeakSpan.textContent = (labelWithSuffix +
-                ' ' +
-                mathspeak).trim();
+            ctrlr.mathspeakSpan.textContent = newLabel.trim();
         }
         else {
-            textarea.setAttribute('aria-label', (labelWithSuffix + ' ' + mathspeak + ' ' + ctrlr.ariaPostLabel).trim());
+            textarea.setAttribute('aria-label', [newLabel, ctrlr.ariaPostLabel].join(' ').trim());
         }
     };
     return Controller;
@@ -4956,9 +4995,7 @@ var MathCommand = /** @class */ (function (_super) {
         }
         var el = updownInto || this.getEnd(-dir);
         cursor.insAtDirEnd(-dir, el);
-        cursor.controller.aria
-            .queueDirEndOf(-dir)
-            .queue(cursor.parent, true);
+        cursor.controller.aria.queueDirEndOf(-dir, cursor.parent, true);
     };
     MathCommand.prototype.deleteTowards = function (dir, cursor) {
         if (this.isEmpty())
@@ -5304,11 +5341,11 @@ var MathBlock = /** @class */ (function (_super) {
         if (!updownInto && this[dir]) {
             var otherDir = -dir;
             cursor.insAtDirEnd(otherDir, this[dir]);
-            cursor.controller.aria.queueDirEndOf(otherDir).queue(cursor.parent, true);
+            cursor.controller.aria.queueDirEndOf(otherDir, cursor.parent, true);
         }
         else {
             cursor.insDirOf(dir, this.parent);
-            cursor.controller.aria.queueDirOf(dir).queue(this.parent);
+            cursor.controller.aria.queueDirOf(dir, this.parent);
         }
     };
     MathBlock.prototype.selectOutOf = function (dir, cursor) {
@@ -7474,7 +7511,7 @@ var SupSub = /** @class */ (function (_super) {
                     cursor.clearSelection().insRightOf(this.parent);
                 cmd.createLeftOf(cursor.show());
                 cursor.controller.aria
-                    .queue('Baseline')
+                    .queueTranslatableString('Baseline')
                     .alert(cmd.mathspeak({ createdLeftOf: cursor }));
                 return;
             }
@@ -7483,7 +7520,7 @@ var SupSub = /** @class */ (function (_super) {
                 !cursor.selection &&
                 cursor.options.charsThatBreakOutOfSupSub.indexOf(ch) > -1) {
                 cursor.insRightOf(this.parent);
-                cursor.controller.aria.queue('Baseline');
+                cursor.controller.aria.queueTranslatableString('Baseline');
             }
             MathBlock.prototype.write.call(this, cursor, ch);
         };
@@ -8926,13 +8963,11 @@ var TextBlock = /** @class */ (function (_super) {
     // the cursor
     TextBlock.prototype.moveTowards = function (dir, cursor) {
         cursor.insAtDirEnd(-dir, this);
-        cursor.controller.aria
-            .queueDirEndOf(-dir)
-            .queue(cursor.parent, true);
+        cursor.controller.aria.queueDirEndOf(-dir, cursor.parent, true);
     };
     TextBlock.prototype.moveOutOf = function (dir, cursor) {
         cursor.insDirOf(dir, this);
-        cursor.controller.aria.queueDirOf(dir).queue(this);
+        cursor.controller.aria.queueDirOf(dir, this);
     };
     TextBlock.prototype.unselectInto = function (dir, cursor) {
         this.moveTowards(dir, cursor);

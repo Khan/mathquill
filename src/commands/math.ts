@@ -192,9 +192,11 @@ class MathCommand extends MathElement {
 
     const el = updownInto || this.getEnd(-dir as Direction);
     cursor.insAtDirEnd(-dir as Direction, el);
-    cursor.controller.aria
-      .queueDirEndOf(-dir as Direction)
-      .queue(cursor.parent, true);
+    cursor.controller.aria.queueDirEndOf(
+      -dir as Direction,
+      cursor.parent,
+      true
+    );
   }
   deleteTowards(dir: Direction, cursor: Cursor) {
     if (this.isEmpty()) cursor[dir] = this.remove()[dir];
@@ -596,10 +598,10 @@ class MathBlock extends MathElement {
     if (!updownInto && this[dir]) {
       const otherDir = -dir as Direction;
       cursor.insAtDirEnd(otherDir, this[dir] as MQNode);
-      cursor.controller.aria.queueDirEndOf(otherDir).queue(cursor.parent, true);
+      cursor.controller.aria.queueDirEndOf(otherDir, cursor.parent, true);
     } else {
       cursor.insDirOf(dir, this.parent);
-      cursor.controller.aria.queueDirOf(dir).queue(this.parent);
+      cursor.controller.aria.queueDirOf(dir, this.parent);
     }
   }
   selectOutOf(dir: Direction, cursor: Cursor) {

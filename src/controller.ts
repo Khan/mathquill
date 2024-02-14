@@ -36,6 +36,8 @@ class ControllerBase {
   textareaSpan: HTMLElement | undefined;
   mathspeakSpan: HTMLElement | undefined;
 
+  ariaStringsOverrideMap: AriaStaticStringsMap | undefined;
+
   constructor(
     root: ControllerRoot,
     container: HTMLElement,
@@ -192,6 +194,11 @@ class ControllerBase {
   // and http://www.gh-mathspeak.com/examples/grammar-rules/
   exportMathSpeak() {
     return this.root.mathspeak();
+  }
+
+  setAriaStringsOverrideMap(ariaStringsOverrideMap: AriaStaticStringsMap) {
+    this.ariaStringsOverrideMap = ariaStringsOverrideMap;
+    return this;
   }
 
   // overridden

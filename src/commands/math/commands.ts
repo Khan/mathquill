@@ -420,7 +420,7 @@ class SupSub extends MathCommand {
         else cursor.clearSelection().insRightOf(this.parent);
         cmd.createLeftOf(cursor.show());
         cursor.controller.aria
-          .queue('Baseline')
+          .queueTranslatableString('Baseline')
           .alert(cmd.mathspeak({ createdLeftOf: cursor }));
         return;
       }
@@ -431,7 +431,7 @@ class SupSub extends MathCommand {
         cursor.options.charsThatBreakOutOfSupSub.indexOf(ch) > -1
       ) {
         cursor.insRightOf(this.parent);
-        cursor.controller.aria.queue('Baseline');
+        cursor.controller.aria.queueTranslatableString('Baseline');
       }
       MathBlock.prototype.write.call(this, cursor, ch);
     };
