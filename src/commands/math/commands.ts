@@ -234,7 +234,7 @@ LatexCmds.textcolor = class extends MathCommand {
     this.checkCursorContextOpen(ctx);
     var blocks0 = this.blocks![0];
     ctx.latex += '\\textcolor{' + this.color + '}{';
-    blocks0.latexRecursive(ctx);
+    blocks0.latexRecursive?.(ctx);
     ctx.latex += '}';
     this.checkCursorContextClose(ctx);
   }
@@ -289,7 +289,7 @@ var Class = (LatexCmds['class'] = class extends MathCommand {
 
     var blocks0 = this.blocks![0];
     ctx.latex += '\\class{' + this.cls + '}{';
-    blocks0.latexRecursive(ctx);
+    blocks0.latexRecursive?.(ctx);
     ctx.latex += '}';
 
     this.checkCursorContextClose(ctx);
@@ -464,7 +464,7 @@ class SupSub extends MathCommand {
     if (this.sub) {
       ctx.latex += '_{';
       const beforeLength = ctx.latex.length;
-      this.sub.latexRecursive(ctx);
+      this.sub.latexRecursive?.(ctx);
       const afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
@@ -477,7 +477,7 @@ class SupSub extends MathCommand {
     if (this.sup) {
       ctx.latex += '^{';
       const beforeLength = ctx.latex.length;
-      this.sup.latexRecursive(ctx);
+      this.sup.latexRecursive?.(ctx);
       const afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written. so we write a space
@@ -707,7 +707,7 @@ class SummationNotation extends MathCommand {
 
     ctx.latex += this.ctrlSeq + '_{';
     let beforeLength = ctx.latex.length;
-    this.getEnd(L).latexRecursive(ctx);
+    this.getEnd(L).latexRecursive?.(ctx);
     let afterLength = ctx.latex.length;
     if (afterLength === beforeLength) {
       // nothing was written so we write a space
@@ -716,7 +716,7 @@ class SummationNotation extends MathCommand {
 
     ctx.latex += '}^{';
     beforeLength = ctx.latex.length;
-    this.getEnd(R).latexRecursive(ctx);
+    this.getEnd(R).latexRecursive?.(ctx);
     afterLength = ctx.latex.length;
     if (beforeLength === afterLength) {
       // nothing was written so we write a space
@@ -1143,9 +1143,9 @@ class NthRoot extends SquareRoot {
     this.checkCursorContextOpen(ctx);
 
     ctx.latex += '\\sqrt[';
-    this.getEnd(L).latexRecursive(ctx);
+    this.getEnd(L).latexRecursive?.(ctx);
     ctx.latex += ']{';
-    this.getEnd(R).latexRecursive(ctx);
+    this.getEnd(R).latexRecursive?.(ctx);
     ctx.latex += '}';
 
     this.checkCursorContextClose(ctx);
@@ -1297,7 +1297,7 @@ class Bracket extends DelimsNode {
     this.checkCursorContextOpen(ctx);
 
     ctx.latex += '\\left' + this.sides[L].ctrlSeq;
-    this.getEnd(L).latexRecursive(ctx);
+    this.getEnd(L).latexRecursive?.(ctx);
     ctx.latex += '\\right' + this.sides[R].ctrlSeq;
 
     this.checkCursorContextClose(ctx);
@@ -1799,7 +1799,7 @@ class MathFieldNode extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
 
-    this.getEnd(L).latexRecursive(ctx);
+    this.getEnd(L).latexRecursive?.(ctx);
 
     this.checkCursorContextClose(ctx);
   }

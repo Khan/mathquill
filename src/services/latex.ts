@@ -143,7 +143,7 @@ class Controller_latex extends Controller_keystroke {
       }
     }
 
-    this.root.latexRecursive(ctx);
+    this.root.latexRecursive?.(ctx);
 
     // need to clean the latex
     var originalLatex = ctx.latex;

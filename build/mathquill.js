@@ -4027,6 +4027,7 @@ var Controller_latex = /** @class */ (function (_super) {
         return this;
     };
     Controller_latex.prototype.exportLatexSelection = function () {
+        var _c, _d;
         var ctx = {
             latex: '',
             startIndex: -1,
@@ -4053,7 +4054,7 @@ var Controller_latex = /** @class */ (function (_super) {
                 ctx.endSelectionAfter = this.cursor.parent;
             }
         }
-        this.root.latexRecursive(ctx);
+        (_d = (_c = this.root).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         // need to clean the latex
         var originalLatex = ctx.latex;
         var cleanLatex = this.cleanLatex(originalLatex);
@@ -5091,9 +5092,10 @@ var MathCommand = /** @class */ (function (_super) {
         this.checkCursorContextOpen(ctx);
         ctx.latex += this.ctrlSeq || '';
         this.eachChild(function (child) {
+            var _c;
             ctx.latex += '{';
             var beforeLength = ctx.latex.length;
-            child.latexRecursive(ctx);
+            (_c = child.latexRecursive) === null || _c === void 0 ? void 0 : _c.call(child, ctx);
             var afterLength = ctx.latex.length;
             if (beforeLength === afterLength) {
                 // nothing was written so we write a space
@@ -5118,12 +5120,7 @@ var MathCommand = /** @class */ (function (_super) {
     };
     MathCommand.prototype.mathspeak = function () {
         if (this.mathspeakOverride) {
-            var i_1 = 0;
-            var template_1 = this.textTemplate;
-            var tex = this.foldChildren(template_1[i_1], function (fold, block) {
-                i_1 += 1;
-                return fold + block.latex() + (template_1[i_1] || '');
-            });
+            var tex = this.latex();
             // this one runs before a full latex symbol has been formed;
             //   check if there is more than backslashes in the latex
             if (!/^(\\)+$/.test(tex)) {
@@ -5269,7 +5266,7 @@ var MathBlock = /** @class */ (function (_super) {
     };
     MathBlock.prototype.latexRecursive = function (ctx) {
         this.checkCursorContextOpen(ctx);
-        this.eachChild(function (child) { return child.latexRecursive(ctx); });
+        this.eachChild(function (child) { var _c; return (_c = child.latexRecursive) === null || _c === void 0 ? void 0 : _c.call(child, ctx); });
         this.checkCursorContextClose(ctx);
     };
     MathBlock.prototype.text = function () {
@@ -7331,10 +7328,11 @@ LatexCmds.textcolor = /** @class */ (function (_super) {
         ];
     };
     class_8.prototype.latexRecursive = function (ctx) {
+        var _c;
         this.checkCursorContextOpen(ctx);
         var blocks0 = this.blocks[0];
         ctx.latex += '\\textcolor{' + this.color + '}{';
-        blocks0.latexRecursive(ctx);
+        (_c = blocks0.latexRecursive) === null || _c === void 0 ? void 0 : _c.call(blocks0, ctx);
         ctx.latex += '}';
         this.checkCursorContextClose(ctx);
     };
@@ -7387,10 +7385,11 @@ var Class = (LatexCmds['class'] = /** @class */ (function (_super) {
         });
     };
     class_9.prototype.latexRecursive = function (ctx) {
+        var _c;
         this.checkCursorContextOpen(ctx);
         var blocks0 = this.blocks[0];
         ctx.latex += '\\class{' + this.cls + '}{';
-        blocks0.latexRecursive(ctx);
+        (_c = blocks0.latexRecursive) === null || _c === void 0 ? void 0 : _c.call(blocks0, ctx);
         ctx.latex += '}';
         this.checkCursorContextClose(ctx);
     };
@@ -7553,11 +7552,12 @@ var SupSub = /** @class */ (function (_super) {
             _super.prototype.deleteTowards.call(this, dir, cursor);
     };
     SupSub.prototype.latexRecursive = function (ctx) {
+        var _c, _d, _e, _f;
         this.checkCursorContextOpen(ctx);
         if (this.sub) {
             ctx.latex += '_{';
             var beforeLength = ctx.latex.length;
-            this.sub.latexRecursive(ctx);
+            (_d = (_c = this.sub).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
             var afterLength = ctx.latex.length;
             if (beforeLength === afterLength) {
                 // nothing was written. so we write a space
@@ -7568,7 +7568,7 @@ var SupSub = /** @class */ (function (_super) {
         if (this.sup) {
             ctx.latex += '^{';
             var beforeLength = ctx.latex.length;
-            this.sup.latexRecursive(ctx);
+            (_f = (_e = this.sup).latexRecursive) === null || _f === void 0 ? void 0 : _f.call(_e, ctx);
             var afterLength = ctx.latex.length;
             if (beforeLength === afterLength) {
                 // nothing was written. so we write a space
@@ -7772,10 +7772,11 @@ var SummationNotation = /** @class */ (function (_super) {
         }
     };
     SummationNotation.prototype.latexRecursive = function (ctx) {
+        var _c, _d, _e, _f;
         this.checkCursorContextOpen(ctx);
         ctx.latex += this.ctrlSeq + '_{';
         var beforeLength = ctx.latex.length;
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         var afterLength = ctx.latex.length;
         if (afterLength === beforeLength) {
             // nothing was written so we write a space
@@ -7783,7 +7784,7 @@ var SummationNotation = /** @class */ (function (_super) {
         }
         ctx.latex += '}^{';
         beforeLength = ctx.latex.length;
-        this.getEnd(R).latexRecursive(ctx);
+        (_f = (_e = this.getEnd(R)).latexRecursive) === null || _f === void 0 ? void 0 : _f.call(_e, ctx);
         afterLength = ctx.latex.length;
         if (beforeLength === afterLength) {
             // nothing was written so we write a space
@@ -8191,11 +8192,12 @@ var NthRoot = /** @class */ (function (_super) {
         return _this_1;
     }
     NthRoot.prototype.latexRecursive = function (ctx) {
+        var _c, _d, _e, _f;
         this.checkCursorContextOpen(ctx);
         ctx.latex += '\\sqrt[';
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         ctx.latex += ']{';
-        this.getEnd(R).latexRecursive(ctx);
+        (_f = (_e = this.getEnd(R)).latexRecursive) === null || _f === void 0 ? void 0 : _f.call(_e, ctx);
         ctx.latex += '}';
         this.checkCursorContextClose(ctx);
     };
@@ -8327,9 +8329,10 @@ var Bracket = /** @class */ (function (_super) {
         return SVG_SYMBOLS[ch] || { width: '0', html: '' };
     };
     Bracket.prototype.latexRecursive = function (ctx) {
+        var _c, _d;
         this.checkCursorContextOpen(ctx);
         ctx.latex += '\\left' + this.sides[L].ctrlSeq;
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         ctx.latex += '\\right' + this.sides[R].ctrlSeq;
         this.checkCursorContextClose(ctx);
     };
@@ -8783,8 +8786,9 @@ var MathFieldNode = /** @class */ (function (_super) {
         innerFields.push(newField);
     };
     MathFieldNode.prototype.latexRecursive = function (ctx) {
+        var _c, _d;
         this.checkCursorContextOpen(ctx);
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         this.checkCursorContextClose(ctx);
     };
     MathFieldNode.prototype.text = function () {
@@ -9330,9 +9334,10 @@ var RootMathCommand = /** @class */ (function (_super) {
         };
     };
     RootMathCommand.prototype.latexRecursive = function (ctx) {
+        var _c, _d;
         this.checkCursorContextOpen(ctx);
         ctx.latex += '$';
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         ctx.latex += '$';
         this.checkCursorContextClose(ctx);
     };
@@ -9479,9 +9484,10 @@ CharCmds['\\'] = /** @class */ (function (_super) {
         }
     };
     LatexCommandInput.prototype.latexRecursive = function (ctx) {
+        var _c, _d;
         this.checkCursorContextOpen(ctx);
         ctx.latex += '\\';
-        this.getEnd(L).latexRecursive(ctx);
+        (_d = (_c = this.getEnd(L)).latexRecursive) === null || _d === void 0 ? void 0 : _d.call(_c, ctx);
         ctx.latex += ' ';
         this.checkCursorContextClose(ctx);
     };
