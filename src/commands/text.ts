@@ -515,7 +515,7 @@ class RootMathCommand extends MathCommand {
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
     ctx.latex += '$';
-    this.getEnd(L).latexRecursive(ctx);
+    this.getEnd(L).latexRecursive?.(ctx);
     ctx.latex += '$';
     this.checkCursorContextClose(ctx);
   }

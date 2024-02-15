@@ -289,7 +289,7 @@ class MathCommand extends MathElement {
       ctx.latex += '{';
 
       let beforeLength = ctx.latex.length;
-      child.latexRecursive(ctx);
+      child.latexRecursive?.(ctx);
       let afterLength = ctx.latex.length;
       if (beforeLength === afterLength) {
         // nothing was written so we write a space
@@ -321,12 +321,7 @@ class MathCommand extends MathElement {
   mathspeakTemplate = [''];
   mathspeak() {
     if (this.mathspeakOverride) {
-      let i = 0;
-      const template = this.textTemplate;
-      const tex = this.foldChildren(template[i], function (fold, block) {
-        i += 1;
-        return fold + block.latex() + (template[i] || '');
-      });
+      const tex = this.latex();
       // this one runs before a full latex symbol has been formed;
       //   check if there is more than backslashes in the latex
       if (!/^(\\)+$/.test(tex)) {
@@ -519,7 +514,7 @@ class MathBlock extends MathElement {
   }
   latexRecursive(ctx: LatexContext) {
     this.checkCursorContextOpen(ctx);
-    this.eachChild((child) => child.latexRecursive(ctx));
+    this.eachChild((child) => child.latexRecursive?.(ctx));
     this.checkCursorContextClose(ctx);
   }
   text() {
