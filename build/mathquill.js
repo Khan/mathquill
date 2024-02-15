@@ -5119,9 +5119,8 @@ var MathCommand = /** @class */ (function (_super) {
         });
     };
     MathCommand.prototype.mathspeak = function () {
-        var tex = this.latex();
-        console.log({ test: tex });
         if (this.mathspeakOverride) {
+            var tex = this.latex();
             // this one runs before a full latex symbol has been formed;
             //   check if there is more than backslashes in the latex
             if (!/^(\\)+$/.test(tex)) {
