@@ -42,3 +42,25 @@ License, v. 2.0: [http://mozilla.org/MPL/2.0/](http://mozilla.org/MPL/2.0/)
 The quick-and-dirty is you can do whatever if modifications to MathQuill are in
 public GitHub forks. (Other ways to publicize modifications are also fine, as
 are private use modifications. See also: [MPL 2.0 FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/))
+
+## Khan Academy - Releasing
+
+These notes are specific to Khan Academy's fork of Mathquill and cover how we
+release updates.
+
+New releases are published through [Github
+Releases](https://github.com/Khan/mathquill/releases) and currently are the
+following set of manual steps:
+
+  1. Bump the version in `package.json` (using semver as a guide for what the
+     new version number should be)
+  2. Run `make`
+  3. Run `npm pack`
+  4. Create a [new release](https://github.com/Khan/mathquill/releases/new).
+     The git tag for the release should be the version number prefixed with a
+     `"v"` (for example: release 1.0.1 has the tag `v1.0.1`). The title is the
+     same as the git tag (ie. `v1.0.1`). Drag the `.tgz` file that was created
+     by step 3 onto the release to attach it.
+
+Once you've done these steps, you can update applications that use Mathquill to
+use this new release.
