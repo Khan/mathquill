@@ -1,6 +1,6 @@
 /**
  * @license
- * MathQuill v1.0.1, by Han, Jeanine, and Mary
+ * MathQuill v1.0.2, by Han, Jeanine, and Mary
  * http://mathquill.com | maintainers@mathquill.com
  *
  * This Source Code Form is subject to the terms of the
