@@ -1,6 +1,6 @@
 /**
  * @license
- * MathQuill v1.0.2, by Han, Jeanine, and Mary
+ * MathQuill v1.0.3, by Han, Jeanine, and Mary
  * http://mathquill.com | maintainers@mathquill.com
  *
  * This Source Code Form is subject to the terms of the
@@ -2211,7 +2211,7 @@ function MathQuill(el) {
     return MQ1(el);
 }
 MathQuill.prototype = Progenote.prototype;
-MathQuill.VERSION = 'v1.0.2';
+MathQuill.VERSION = 'v1.0.3';
 MathQuill.interfaceVersion = function (v) {
     // shim for #459-era interface versioning (ended with #495)
     if (v !== 1)
