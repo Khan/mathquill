@@ -89,8 +89,10 @@ UGLY_BASIC_JS = $(BUILD_DIR)/mathquill-basic.min.js
 UGLIFY ?= ./node_modules/.bin/uglifyjs
 UGLIFY_OPTS ?= --mangle --compress hoist_vars=true --comments
 
+# We set --relative-urls and --rootpath so relative font paths are correctly
+# translated in the resulting CSS
 LESSC ?= ./node_modules/.bin/lessc
-LESS_OPTS ?=
+LESS_OPTS ?= --strict-imports --relative-urls --rootpath=build/
 ifdef OMIT_FONT_FACE
   LESS_OPTS += --modify-var="omit-font-face=true"
 endif
